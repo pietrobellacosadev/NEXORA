@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.api.routes import health, municipios
+from app.api.routes import health, municipios, groq
 
 app = FastAPI(
     title="NEXORA API",
@@ -23,3 +23,4 @@ app.add_middleware(
 
 app.include_router(health.router, prefix="/api")
 app.include_router(municipios.router, prefix="/api")
+app.include_router(groq.router, prefix="/api")
