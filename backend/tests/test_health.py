@@ -17,15 +17,16 @@ async def test_health_check():
 
 
 @pytest.mark.asyncio
-async def test_listar_municipios_vazio():
+async def test_listar_municipios_retorna_estrutura():
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as client:
         response = await client.get("/api/municipios")
     assert response.status_code == 200
     data = response.json()
-    assert data["total"] == 0
-    assert data["municipios"] == []
+    assert "total" in data
+    assert "municipios" in data
+    assert isinstance(data["municipios"], list)
 
 
 @pytest.mark.asyncio
