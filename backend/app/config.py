@@ -31,9 +31,10 @@ class Settings(BaseSettings):
     groq_api_key_consolidator: SecretStr = Field(default=SecretStr(""))
 
     # ── GroqCloud — modelos por agente ────────────────────────────────────────
-    groq_model_market: str = Field(default="llama-3.1-8b-instant")
-    groq_model_social: str = Field(default="llama-3.1-8b-instant")
-    groq_model_consolidator: str = Field(default="llama-3.3-70b-versatile")
+    # Modelos confirmados disponíveis na conta GroqCloud (verificado em 2026-11)
+    groq_model_market: str = Field(default="openai/gpt-oss-20b")
+    groq_model_social: str = Field(default="openai/gpt-oss-20b")
+    groq_model_consolidator: str = Field(default="openai/gpt-oss-120b")
 
     # ── GroqCloud — limites de consumo ────────────────────────────────────────
     groq_max_tokens: int = Field(default=2048)
