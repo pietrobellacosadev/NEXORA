@@ -1,0 +1,50 @@
+﻿# ─── Segredos ───────────────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ─── Python / backend ────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+dist/
+build/
+*.egg-info/
+*.egg
+*.whl
+htmlcov/
+.coverage
+.coverage.*
+.pytest_cache/
+*.db
+*.sqlite3
+
+# ─── Node / frontend ─────────────────────────────────────────────────────────
+node_modules/
+dist/
+.vite/
+*.local
+
+# ─── IDEs e editores ─────────────────────────────────────────────────────────
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ─── Logs ────────────────────────────────────────────────────────────────────
+*.log
+logs/
+npm-debug.log*
+
+# ─── Playwright ───────────────────────────────────────────────────────────────
+/test-results/
+/playwright-report/
+/playwright/.cache/

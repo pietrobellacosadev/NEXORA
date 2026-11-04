@@ -1,0 +1,100 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   NEXORA — Reset e estilos globais
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--nav-height);
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  background: var(--color-paper);
+  background-image: radial-gradient(
+    1200px 400px at 50% -120px,
+    color-mix(in srgb, var(--color-market) 12%, transparent),
+    transparent
+  );
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height);
+  min-height: 100dvh;
+}
+
+/* ── Tipografia base ─────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+p { margin: 0 0 var(--space-2); }
+
+a {
+  color: var(--color-market);
+  text-decoration: none;
+}
+
+a:hover { text-decoration: underline; }
+
+/* ── Foco acessível ──────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 3px solid var(--color-market);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Formulários ─────────────────────────────────────────────────────────── */
+button, select, input, textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button { cursor: pointer; }
+
+/* ── Scrollbar personalizada ─────────────────────────────────────────────── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-muted) 60%, transparent) transparent;
+}
+
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-muted) 55%, transparent);
+  border-radius: 10px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-market);
+  background-clip: content-box;
+}
+
+/* ── Animações globais ───────────────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,21 @@
+.card {
+  background: var(--color-card);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.card--market  { border-top: 5px solid var(--color-market); }
+.card--social  { border-top: 5px solid var(--color-social); }
+.card--warn    { border-top: 5px solid var(--color-warn); background: var(--color-warn-bg); }
+
+.card--hoverable {
+  cursor: pointer;
+  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+}
+
+.card--hoverable:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}

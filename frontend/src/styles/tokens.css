@@ -1,0 +1,104 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   NEXORA — Design Tokens
+   Paleta extraída do protótipo oficial. NÃO altere sem aprovação.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Cores principais ──────────────────────────────────────────────────── */
+  --color-ink:        #1f2a33;
+  --color-paper:      #f5f7f6;
+  --color-card:       #ffffff;
+  --color-line:       #d3dadd;
+  --color-muted:      #5d6a72;
+  --color-highlight:  #e4eaec;
+
+  /* Pilar Mercado (azul-petróleo) */
+  --color-market:     #2f6f9f;
+  --color-market-dk:  #1d5280;
+
+  /* Pilar Social (verde-esmeralda) */
+  --color-social:     #2f7a59;
+  --color-social-dk:  #1b6148;
+
+  /* Alerta / dado ausente */
+  --color-warn:       #8a5d0c;
+  --color-warn-bg:    #fbf3df;
+
+  /* ── Gradientes ────────────────────────────────────────────────────────── */
+  --gradient-hero:    linear-gradient(110deg, #2a6798 0%, #2b7f86 52%, #2f7a59 100%);
+  --gradient-market:  linear-gradient(135deg, #2f6f9f, #1d5280);
+  --gradient-social:  linear-gradient(135deg, #2f7a59, #1b6148);
+
+  /* ── Tipografia ────────────────────────────────────────────────────────── */
+  --font-sans:        "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-size-xs:     0.72rem;
+  --font-size-sm:     0.84rem;
+  --font-size-base:   1rem;
+  --font-size-lg:     1.15rem;
+  --font-size-xl:     1.3rem;
+  --font-size-2xl:    1.6rem;
+  --font-size-3xl:    1.9rem;
+  --line-height:      1.6;
+
+  /* ── Espaçamentos ──────────────────────────────────────────────────────── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+
+  /* ── Raios de borda ────────────────────────────────────────────────────── */
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   16px;
+  --radius-xl:   22px;
+  --radius-pill: 999px;
+
+  /* ── Sombras ───────────────────────────────────────────────────────────── */
+  --shadow-sm:  0 1px 2px rgba(31, 42, 51, 0.06);
+  --shadow-md:  0 4px 16px rgba(31, 42, 51, 0.08);
+  --shadow-lg:  0 8px 24px rgba(31, 42, 51, 0.14);
+  --shadow-xl:  0 16px 48px rgba(0, 0, 0, 0.22);
+
+  /* ── Transições ────────────────────────────────────────────────────────── */
+  --transition-fast:   150ms ease;
+  --transition-normal: 200ms ease;
+  --transition-slow:   300ms ease;
+
+  /* ── Layout ────────────────────────────────────────────────────────────── */
+  --max-width:       1240px;
+  --sidebar-width:   340px;
+  --nav-height:      64px;
+}
+
+/* ── Tema escuro ─────────────────────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-ink:       #e6ecef;
+    --color-paper:     #161c20;
+    --color-card:      #1e262b;
+    --color-line:      #34414a;
+    --color-muted:     #9fadb5;
+    --color-highlight: #26313a;
+    --color-market:    #6fb0e0;
+    --color-social:    #6cc59b;
+    --color-warn:      #e8b64f;
+    --color-warn-bg:   #2f2812;
+  }
+}
+
+:root[data-theme="dark"] {
+  --color-ink:       #e6ecef;
+  --color-paper:     #161c20;
+  --color-card:      #1e262b;
+  --color-line:      #34414a;
+  --color-muted:     #9fadb5;
+  --color-highlight: #26313a;
+  --color-market:    #6fb0e0;
+  --color-social:    #6cc59b;
+  --color-warn:      #e8b64f;
+  --color-warn-bg:   #2f2812;
+}
