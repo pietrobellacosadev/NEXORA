@@ -1,104 +1,155 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   NEXORA — Design Tokens
-   Paleta extraída do protótipo oficial. NÃO altere sem aprovação.
+   NEXORA — Design Tokens v2
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* ── Cores principais ──────────────────────────────────────────────────── */
-  --color-ink:        #1f2a33;
-  --color-paper:      #f5f7f6;
+  /* ── Cores neutras ──────────────────────────────────────────────────────── */
+  --color-ink:        #1a2332;
+  --color-paper:      #f4f6f8;
   --color-card:       #ffffff;
-  --color-line:       #d3dadd;
-  --color-muted:      #5d6a72;
-  --color-highlight:  #e4eaec;
+  --color-line:       #e2e8f0;
+  --color-muted:      #64748b;
+  --color-highlight:  #eef2f7;
 
-  /* Pilar Mercado (azul-petróleo) */
-  --color-market:     #2f6f9f;
-  --color-market-dk:  #1d5280;
+  /* ── Pilar Mercado (azul) ──────────────────────────────────────────────── */
+  --color-market:      #2563eb;
+  --color-market-lt:   #eff6ff;
+  --color-market-dk:   #1d4ed8;
+  --color-market-mid:  #3b82f6;
 
-  /* Pilar Social (verde-esmeralda) */
-  --color-social:     #2f7a59;
-  --color-social-dk:  #1b6148;
+  /* ── Pilar Social (verde-esmeralda) ───────────────────────────────────── */
+  --color-social:      #059669;
+  --color-social-lt:   #ecfdf5;
+  --color-social-dk:   #047857;
+  --color-social-mid:  #10b981;
 
-  /* Alerta / dado ausente */
-  --color-warn:       #8a5d0c;
-  --color-warn-bg:    #fbf3df;
+  /* ── IA / Consolidador (violeta) ──────────────────────────────────────── */
+  --color-ai:          #7c3aed;
+  --color-ai-lt:       #f5f3ff;
+  --color-ai-dk:       #6d28d9;
 
-  /* ── Gradientes ────────────────────────────────────────────────────────── */
-  --gradient-hero:    linear-gradient(110deg, #2a6798 0%, #2b7f86 52%, #2f7a59 100%);
-  --gradient-market:  linear-gradient(135deg, #2f6f9f, #1d5280);
-  --gradient-social:  linear-gradient(135deg, #2f7a59, #1b6148);
+  /* ── Alerta / dado ausente ────────────────────────────────────────────── */
+  --color-warn:        #d97706;
+  --color-warn-lt:     #fffbeb;
+  --color-warn-dk:     #b45309;
 
-  /* ── Tipografia ────────────────────────────────────────────────────────── */
-  --font-sans:        "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-size-xs:     0.72rem;
-  --font-size-sm:     0.84rem;
-  --font-size-base:   1rem;
-  --font-size-lg:     1.15rem;
-  --font-size-xl:     1.3rem;
-  --font-size-2xl:    1.6rem;
-  --font-size-3xl:    1.9rem;
-  --line-height:      1.6;
+  /* ── Erro ─────────────────────────────────────────────────────────────── */
+  --color-error:       #dc2626;
+  --color-error-lt:    #fef2f2;
 
-  /* ── Espaçamentos ──────────────────────────────────────────────────────── */
-  --space-1:  4px;
-  --space-2:  8px;
-  --space-3:  12px;
-  --space-4:  16px;
-  --space-5:  20px;
-  --space-6:  24px;
-  --space-8:  32px;
-  --space-10: 40px;
+  /* ── Gradientes ───────────────────────────────────────────────────────── */
+  --gradient-hero:    linear-gradient(135deg, #1e3a5f 0%, #1a5276 40%, #0e6655 100%);
+  --gradient-market:  linear-gradient(135deg, #2563eb, #1d4ed8);
+  --gradient-social:  linear-gradient(135deg, #059669, #047857);
+  --gradient-ai:      linear-gradient(135deg, #7c3aed, #6d28d9);
+  --gradient-card:    linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
 
-  /* ── Raios de borda ────────────────────────────────────────────────────── */
-  --radius-sm:   6px;
-  --radius-md:   10px;
-  --radius-lg:   16px;
-  --radius-xl:   22px;
-  --radius-pill: 999px;
+  /* ── Tipografia ───────────────────────────────────────────────────────── */
+  --font-sans:        "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono:        "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
 
-  /* ── Sombras ───────────────────────────────────────────────────────────── */
-  --shadow-sm:  0 1px 2px rgba(31, 42, 51, 0.06);
-  --shadow-md:  0 4px 16px rgba(31, 42, 51, 0.08);
-  --shadow-lg:  0 8px 24px rgba(31, 42, 51, 0.14);
-  --shadow-xl:  0 16px 48px rgba(0, 0, 0, 0.22);
+  --text-xs:    0.70rem;   /* 11.2px */
+  --text-sm:    0.82rem;   /* 13.1px */
+  --text-base:  0.94rem;   /* 15px   */
+  --text-md:    1.05rem;   /* 16.8px */
+  --text-lg:    1.18rem;   /* 18.9px */
+  --text-xl:    1.35rem;   /* 21.6px */
+  --text-2xl:   1.6rem;    /* 25.6px */
+  --text-3xl:   2rem;      /* 32px   */
+  --text-4xl:   2.5rem;    /* 40px   */
 
-  /* ── Transições ────────────────────────────────────────────────────────── */
-  --transition-fast:   150ms ease;
-  --transition-normal: 200ms ease;
-  --transition-slow:   300ms ease;
+  --leading-tight:  1.2;
+  --leading-snug:   1.4;
+  --leading-normal: 1.6;
 
-  /* ── Layout ────────────────────────────────────────────────────────────── */
-  --max-width:       1240px;
-  --sidebar-width:   340px;
-  --nav-height:      64px;
+  /* ── Espaçamento (escala 4px) ─────────────────────────────────────────── */
+  --sp-1:   4px;
+  --sp-2:   8px;
+  --sp-3:   12px;
+  --sp-4:   16px;
+  --sp-5:   20px;
+  --sp-6:   24px;
+  --sp-8:   32px;
+  --sp-10:  40px;
+  --sp-12:  48px;
+  --sp-16:  64px;
+
+  /* ── Raios de borda ───────────────────────────────────────────────────── */
+  --r-sm:   6px;
+  --r-md:   10px;
+  --r-lg:   16px;
+  --r-xl:   20px;
+  --r-2xl:  28px;
+  --r-full: 9999px;
+
+  /* ── Sombras ──────────────────────────────────────────────────────────── */
+  --shadow-xs:  0 1px 2px rgba(15,23,42,.05);
+  --shadow-sm:  0 1px 3px rgba(15,23,42,.08), 0 1px 2px rgba(15,23,42,.04);
+  --shadow-md:  0 4px 6px rgba(15,23,42,.06), 0 2px 4px rgba(15,23,42,.04);
+  --shadow-lg:  0 10px 15px rgba(15,23,42,.08), 0 4px 6px rgba(15,23,42,.04);
+  --shadow-xl:  0 20px 25px rgba(15,23,42,.10), 0 8px 10px rgba(15,23,42,.04);
+  --shadow-inset: inset 0 1px 2px rgba(15,23,42,.06);
+
+  /* ── Transições ───────────────────────────────────────────────────────── */
+  --ease-out:   cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in:    cubic-bezier(0.4, 0, 1, 1);
+  --ease-inout: cubic-bezier(0.4, 0, 0.2, 1);
+  --t-fast:   120ms;
+  --t-normal: 200ms;
+  --t-slow:   350ms;
+
+  /* ── Layout ───────────────────────────────────────────────────────────── */
+  --max-width:     1280px;
+  --sidebar-width: 360px;
+  --nav-height:    60px;
+
+  /* ── Z-index ──────────────────────────────────────────────────────────── */
+  --z-base:    0;
+  --z-raised:  10;
+  --z-overlay: 100;
+  --z-modal:   200;
+  --z-toast:   300;
 }
 
 /* ── Tema escuro ─────────────────────────────────────────────────────────── */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --color-ink:       #e6ecef;
-    --color-paper:     #161c20;
-    --color-card:      #1e262b;
-    --color-line:      #34414a;
-    --color-muted:     #9fadb5;
-    --color-highlight: #26313a;
-    --color-market:    #6fb0e0;
-    --color-social:    #6cc59b;
-    --color-warn:      #e8b64f;
-    --color-warn-bg:   #2f2812;
+    --color-ink:        #e2e8f0;
+    --color-paper:      #0f172a;
+    --color-card:       #1e293b;
+    --color-line:       #334155;
+    --color-muted:      #94a3b8;
+    --color-highlight:  #1e293b;
+    --color-market:     #60a5fa;
+    --color-market-lt:  #1e3a5f;
+    --color-social:     #34d399;
+    --color-social-lt:  #064e3b;
+    --color-ai:         #a78bfa;
+    --color-ai-lt:      #2e1065;
+    --color-warn:       #fbbf24;
+    --color-warn-lt:    #451a03;
+    --color-error:      #f87171;
+    --color-error-lt:   #450a0a;
+    --gradient-card:    linear-gradient(145deg, #1e293b 0%, #162032 100%);
   }
 }
 
 :root[data-theme="dark"] {
-  --color-ink:       #e6ecef;
-  --color-paper:     #161c20;
-  --color-card:      #1e262b;
-  --color-line:      #34414a;
-  --color-muted:     #9fadb5;
-  --color-highlight: #26313a;
-  --color-market:    #6fb0e0;
-  --color-social:    #6cc59b;
-  --color-warn:      #e8b64f;
-  --color-warn-bg:   #2f2812;
+  --color-ink:        #e2e8f0;
+  --color-paper:      #0f172a;
+  --color-card:       #1e293b;
+  --color-line:       #334155;
+  --color-muted:      #94a3b8;
+  --color-highlight:  #1e293b;
+  --color-market:     #60a5fa;
+  --color-market-lt:  #1e3a5f;
+  --color-social:     #34d399;
+  --color-social-lt:  #064e3b;
+  --color-ai:         #a78bfa;
+  --color-ai-lt:      #2e1065;
+  --color-warn:       #fbbf24;
+  --color-warn-lt:    #451a03;
+  --color-error:      #f87171;
+  --color-error-lt:   #450a0a;
+  --gradient-card:    linear-gradient(145deg, #1e293b 0%, #162032 100%);
 }

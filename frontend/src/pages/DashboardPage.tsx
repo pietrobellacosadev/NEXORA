@@ -1,112 +1,204 @@
-import { Map, BarChart2, GitCompare, MessageSquare, TrendingUp } from 'lucide-react'
+import { motion } from 'motion/react'
 import { Link } from 'react-router-dom'
+import {
+  Map, BarChart2, GitCompare, MessageSquare,
+  TrendingUp, Users, Wifi, Brain, ArrowRight,
+  ShieldCheck,
+} from 'lucide-react'
 import './DashboardPage.css'
+
+const STATS = [
+  { label: 'Municípios analisados', value: '645', icon: Map,      color: 'market' },
+  { label: 'Pilares de análise',    value: '2',   icon: BarChart2, color: 'social'  },
+  { label: 'Agentes de IA',         value: '3',   icon: Brain,    color: 'ai'     },
+  { label: 'Fontes oficiais',       value: '4+',  icon: ShieldCheck, color: 'market' },
+]
 
 const FEATURES = [
   {
-    to: '/',
+    to: '/mapa',
     icon: Map,
     title: 'Mapa Territorial',
-    desc: 'Explore os 645 municípios paulistas em um mapa interativo. Filtre por indicadores de mercado ou sociais.',
+    desc: 'Explore todos os 645 municípios paulistas. Filtre por indicadores de mercado ou sociais e identifique regiões de oportunidade.',
     color: 'market',
+    badge: 'Novo',
   },
   {
     to: '/perfil',
     icon: BarChart2,
     title: 'Perfil Municipal',
-    desc: 'Acesse o perfil detalhado de cada município com indicadores dos dois pilares, fontes e limitações.',
+    desc: 'Indicadores detalhados de cada município, com fontes oficiais, períodos de referência e limitações metodológicas sempre visíveis.',
     color: 'social',
+    badge: null,
   },
   {
     to: '/comparar',
     icon: GitCompare,
     title: 'Comparação',
-    desc: 'Compare até 4 municípios lado a lado, analisando potencial de mercado e social simultaneamente.',
+    desc: 'Compare até 4 municípios lado a lado. Mercado e social analisados em paralelo para uma decisão mais fundamentada.',
     color: 'market',
+    badge: null,
   },
   {
     to: '/investigar',
     icon: MessageSquare,
     title: 'Investigação por IA',
-    desc: 'Faça perguntas e receba análises fundamentadas dos três agentes especializados.',
-    color: 'social',
+    desc: 'Três agentes especializados investigam em paralelo e o Consolidador sintetiza uma análise equilibrada e rastreável.',
+    color: 'ai',
+    badge: 'IA',
   },
 ]
 
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.07 } },
+}
+
+const EASE = [0.16, 1, 0.3, 1] as [number, number, number, number]
+
+const item = {
+  hidden: { opacity: 0, y: 16 },
+  show:   { opacity: 1, y: 0, transition: { duration: 0.4, ease: EASE } },
+}
+
 export default function DashboardPage() {
   return (
-    <div className="dashboard">
-      {/* Hero */}
-      <header className="dashboard__hero">
-        <div className="dashboard__hero-content">
-          <div className="dashboard__hero-brand">
-            <div className="dashboard__logo" aria-hidden="true">
-              <i /><i />
+    <div className="dash">
+
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
+      <motion.header
+        className="dash__hero"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <div className="dash__hero-body">
+          <div className="dash__hero-label">
+            <Wifi size={13} aria-hidden="true" />
+            Plataforma de Inteligência Territorial — São Paulo
+          </div>
+          <h1 className="dash__hero-title">
+            Conectividade orientada<br />
+            por <span className="dash__hero-accent">dados reais</span>
+          </h1>
+          <p className="dash__hero-lead">
+            Analise, com igual importância, o potencial de mercado e o potencial social
+            de expansão da conectividade nos 645 municípios paulistas — com evidências,
+            fontes e limitações sempre à vista.
+          </p>
+          <div className="dash__hero-pills">
+            <span className="dash__pill dash__pill--market">
+              <TrendingUp size={12} aria-hidden="true" />
+              Potencial de Mercado
+            </span>
+            <span className="dash__pill dash__pill--social">
+              <Users size={12} aria-hidden="true" />
+              Potencial Social
+            </span>
+            <span className="dash__pill dash__pill--ai">
+              <Brain size={12} aria-hidden="true" />
+              3 Agentes IA
+            </span>
+          </div>
+          <div className="dash__hero-actions">
+            <Link to="/mapa" className="dash__btn dash__btn--primary">
+              <Map size={15} aria-hidden="true" />
+              Explorar mapa
+              <ArrowRight size={14} aria-hidden="true" />
+            </Link>
+            <Link to="/investigar" className="dash__btn dash__btn--ghost">
+              <Brain size={15} aria-hidden="true" />
+              Investigar município
+            </Link>
+          </div>
+        </div>
+        <div className="dash__hero-visual" aria-hidden="true">
+          <div className="dash__orb dash__orb--a" />
+          <div className="dash__orb dash__orb--b" />
+          <div className="dash__orb dash__orb--c" />
+          <div className="dash__hero-grid">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div key={i} className="dash__hero-grid-cell" style={{ '--i': i } as React.CSSProperties} />
+            ))}
+          </div>
+        </div>
+      </motion.header>
+
+      {/* ── Stats ────────────────────────────────────────────────────────── */}
+      <motion.div
+        className="dash__stats"
+        variants={container}
+        initial="hidden"
+        animate="show"
+      >
+        {STATS.map(({ label, value, icon: Icon, color }) => (
+          <motion.div key={label} className={`dash__stat dash__stat--${color}`} variants={item}>
+            <div className="dash__stat-icon">
+              <Icon size={18} aria-hidden="true" />
             </div>
             <div>
-              <h1 className="dashboard__hero-title">NEXORA</h1>
-              <p className="dashboard__hero-tag">Inteligência territorial · Estado de São Paulo</p>
+              <div className="dash__stat-value">{value}</div>
+              <div className="dash__stat-label">{label}</div>
             </div>
-          </div>
-          <p className="dashboard__hero-lead">
-            Analise, com igual importância, o potencial de mercado e o potencial social de
-            conectividade dos municípios paulistas — com evidências, fontes e limitações à vista.
-          </p>
-          <div className="dashboard__hero-pills">
-            <span className="dashboard__pill dashboard__pill--market">
-              <TrendingUp size={12} aria-hidden="true" />
-              Mercado
-            </span>
-            <span className="dashboard__pill dashboard__pill--social">
-              <span className="dashboard__pill-dot" aria-hidden="true" />
-              Social
-            </span>
-            <span className="dashboard__pill">
-              <span className="dashboard__pill-dot" aria-hidden="true" />
-              645 municípios
-            </span>
-            <span className="dashboard__pill">
-              <span className="dashboard__pill-dot" aria-hidden="true" />
-              3 agentes de IA
-            </span>
-          </div>
-        </div>
-        <div className="dashboard__hero-actions">
-          <Link to="/" className="dashboard__btn dashboard__btn--primary">
-            <Map size={16} aria-hidden="true" />
-            Explorar mapa
-          </Link>
-          <Link to="/investigar" className="dashboard__btn dashboard__btn--ghost">
-            <MessageSquare size={16} aria-hidden="true" />
-            Investigar município
-          </Link>
-        </div>
-      </header>
+          </motion.div>
+        ))}
+      </motion.div>
 
-      {/* Cards de funcionalidades */}
-      <section className="dashboard__features" aria-labelledby="dashboard-features-title">
-        <h2 id="dashboard-features-title" className="dashboard__section-title">
+      {/* ── Funcionalidades ──────────────────────────────────────────────── */}
+      <section aria-labelledby="features-title">
+        <motion.h2
+          id="features-title"
+          className="dash__section-title"
+          initial={{ opacity: 0, x: -12 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.25, duration: 0.4 }}
+        >
+          <span className="dash__section-title-bar" aria-hidden="true" />
           Funcionalidades
-        </h2>
-        <div className="dashboard__grid">
-          {FEATURES.map(({ to, icon: Icon, title, desc, color }) => (
-            <Link key={to} to={to} className={`dashboard__feature-card dashboard__feature-card--${color}`}>
-              <div className="dashboard__feature-icon">
-                <Icon size={22} aria-hidden="true" />
-              </div>
-              <h3 className="dashboard__feature-title">{title}</h3>
-              <p className="dashboard__feature-desc">{desc}</p>
-            </Link>
+        </motion.h2>
+
+        <motion.div
+          className="dash__grid"
+          variants={container}
+          initial="hidden"
+          animate="show"
+        >
+          {FEATURES.map(({ to, icon: Icon, title, desc, color, badge }) => (
+            <motion.div key={to} variants={item}>
+              <Link to={to} className={`dash__card dash__card--${color}`}>
+                <div className="dash__card-top">
+                  <div className="dash__card-icon">
+                    <Icon size={20} aria-hidden="true" />
+                  </div>
+                  {badge && <span className={`dash__badge dash__badge--${color}`}>{badge}</span>}
+                </div>
+                <h3 className="dash__card-title">{title}</h3>
+                <p className="dash__card-desc">{desc}</p>
+                <div className="dash__card-arrow">
+                  <ArrowRight size={15} aria-hidden="true" />
+                </div>
+              </Link>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </section>
 
-      {/* Nota de integridade */}
-      <div className="dashboard__integrity-note" role="note">
-        <strong>Integridade dos dados:</strong> o NEXORA distingue claramente dados oficiais coletados,
-        indicadores calculados, estimativas metodológicas, interpretações da IA e dados indisponíveis.
-        A decisão final permanece sempre com o analista.
-      </div>
+      {/* ── Integridade ──────────────────────────────────────────────────── */}
+      <motion.div
+        className="dash__integrity"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5, duration: 0.4 }}
+        role="note"
+      >
+        <ShieldCheck size={16} className="dash__integrity-icon" aria-hidden="true" />
+        <p>
+          <strong>Integridade dos dados:</strong> o NEXORA distingue dados oficiais coletados,
+          indicadores calculados, estimativas metodológicas, interpretações da IA e dados
+          indisponíveis. A decisão final permanece sempre com o analista.
+        </p>
+      </motion.div>
+
     </div>
   )
 }

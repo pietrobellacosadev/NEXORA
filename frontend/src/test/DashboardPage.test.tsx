@@ -4,24 +4,22 @@ import { MemoryRouter } from 'react-router-dom'
 import DashboardPage from '../pages/DashboardPage'
 
 describe('DashboardPage', () => {
-  it('renderiza o título NEXORA', () => {
-    render(
-      <MemoryRouter>
-        <DashboardPage />
-      </MemoryRouter>
-    )
-    expect(screen.getAllByText('NEXORA').length).toBeGreaterThan(0)
+  it('renderiza o título principal', () => {
+    render(<MemoryRouter><DashboardPage /></MemoryRouter>)
+    expect(screen.getByText(/dados reais/i)).toBeTruthy()
   })
 
-  it('exibe os links de navegação principais', () => {
-    render(
-      <MemoryRouter>
-        <DashboardPage />
-      </MemoryRouter>
-    )
+  it('exibe os cards de funcionalidades', () => {
+    render(<MemoryRouter><DashboardPage /></MemoryRouter>)
     expect(screen.getByText('Mapa Territorial')).toBeTruthy()
     expect(screen.getByText('Perfil Municipal')).toBeTruthy()
     expect(screen.getByText('Comparação')).toBeTruthy()
     expect(screen.getByText('Investigação por IA')).toBeTruthy()
+  })
+
+  it('exibe os stats', () => {
+    render(<MemoryRouter><DashboardPage /></MemoryRouter>)
+    expect(screen.getByText('645')).toBeTruthy()
+    expect(screen.getByText('3')).toBeTruthy()
   })
 })
