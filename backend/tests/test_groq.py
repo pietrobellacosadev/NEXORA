@@ -4,6 +4,7 @@ Não fazem chamadas reais à API — usam mocks para preservar créditos.
 """
 import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
+from pydantic import SecretStr
 from httpx import AsyncClient, ASGITransport
 
 from app.config import Settings
@@ -16,22 +17,27 @@ from app.main import app
 class TestConfigPrioridade:
     def test_chave_especifica_tem_prioridade(self):
         s = Settings(
-            groq_api_key="shared-key",
-            groq_api_key_market="market-key",
+            groq_api_key=SecretStr("shared-key"),
+            groq_api_key_market=SecretStr("market-key"),
         )
         assert s.groq_key_for("market") == "market-key"
 
     def test_fallback_para_chave_compartilhada(self):
         s = Settings(
-            groq_api_key="shared-key",
-            groq_api_key_social="",
+            groq_api_key=SecretStr("shared-key"),
+            groq_api_key_social=SecretStr(""),
         )
         assert s.groq_key_for("social") == "shared-key"
 
     def test_erro_sem_nenhuma_chave(self):
-        s = Settings(groq_api_key="", groq_api_key_market="")
+        s = Settings(groq_api_key=SecretStr(""), groq_api_key_market=SecretStr(""))
         with pytest.raises(ValueError, match="market"):
             s.groq_key_for("market")
+
+    def test_chave_nao_aparece_em_repr(self):
+        s = Settings(groq_api_key=SecretStr("super-secret"))
+        assert "super-secret" not in repr(s)
+        assert "super-secret" not in str(s)
 
     def test_modelo_por_agente(self):
         s = Settings()

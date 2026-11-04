@@ -1,5 +1,5 @@
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field
 
 
 class Settings(BaseSettings):
@@ -22,16 +22,15 @@ class Settings(BaseSettings):
     cors_origin: str = Field(default="http://localhost:5173")
 
     # ── GroqCloud — chave compartilhada (fallback) ────────────────────────────
-    groq_api_key: str = Field(default="")
+    # SecretStr: nunca exposta em __repr__, logs ou serialização padrão
+    groq_api_key: SecretStr = Field(default=SecretStr(""))
 
     # ── GroqCloud — chaves específicas por agente (opcionais) ────────────────
-    groq_api_key_market: str = Field(default="")
-    groq_api_key_social: str = Field(default="")
-    groq_api_key_consolidator: str = Field(default="")
+    groq_api_key_market: SecretStr = Field(default=SecretStr(""))
+    groq_api_key_social: SecretStr = Field(default=SecretStr(""))
+    groq_api_key_consolidator: SecretStr = Field(default=SecretStr(""))
 
     # ── GroqCloud — modelos por agente ────────────────────────────────────────
-    # llama-3.3-70b-versatile: raciocínio avançado, melhor para consolidação
-    # llama-3.1-8b-instant: rápido e econômico, adequado para coleta de dados
     groq_model_market: str = Field(default="llama-3.1-8b-instant")
     groq_model_social: str = Field(default="llama-3.1-8b-instant")
     groq_model_consolidator: str = Field(default="llama-3.3-70b-versatile")
@@ -43,17 +42,22 @@ class Settings(BaseSettings):
 
     def groq_key_for(self, agent: str) -> str:
         """
-        Retorna a chave GroqCloud correta para o agente informado.
-        Prioridade: chave específica do agente > chave compartilhada.
-        Lança ValueError se nenhuma chave estiver configurada.
+        Retorna o valor da chave GroqCloud para o agente.
+        Prioridade: chave específica > chave compartilhada.
+        Lança ValueError se nenhuma estiver configurada.
+        O valor retornado é usado apenas internamente pelo GroqClient.
         """
-        specific = {
-            "market":      self.groq_api_key_market,
-            "social":      self.groq_api_key_social,
+        specific_secret = {
+            "market":       self.groq_api_key_market,
+            "social":       self.groq_api_key_social,
             "consolidator": self.groq_api_key_consolidator,
-        }.get(agent, "")
+        }.get(agent)
 
-        key = specific or self.groq_api_key
+        # .get_secret_value() extrai o valor do SecretStr
+        specific = specific_secret.get_secret_value() if specific_secret else ""
+        shared = self.groq_api_key.get_secret_value()
+
+        key = specific or shared
 
         if not key:
             raise ValueError(
@@ -66,8 +70,8 @@ class Settings(BaseSettings):
     def groq_model_for(self, agent: str) -> str:
         """Retorna o modelo GroqCloud configurado para o agente informado."""
         return {
-            "market":      self.groq_model_market,
-            "social":      self.groq_model_social,
+            "market":       self.groq_model_market,
+            "social":       self.groq_model_social,
             "consolidator": self.groq_model_consolidator,
         }.get(agent, self.groq_model_consolidator)
 

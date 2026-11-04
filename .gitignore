@@ -1,4 +1,4 @@
-﻿# ─── Segredos ───────────────────────────────────────────────────────────────
+﻿# ─── Segredos — NUNCA commitar ────────────────────────────────────────────────
 .env
 .env.*
 !.env.example
@@ -22,7 +22,10 @@ htmlcov/
 .coverage
 .coverage.*
 .pytest_cache/
+
+# ─── Bancos de dados locais ───────────────────────────────────────────────────
 *.db
+*.sqlite
 *.sqlite3
 
 # ─── Node / frontend ─────────────────────────────────────────────────────────
@@ -43,8 +46,14 @@ Thumbs.db
 *.log
 logs/
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# ─── Playwright ───────────────────────────────────────────────────────────────
+# ─── Testes / relatórios ──────────────────────────────────────────────────────
 /test-results/
 /playwright-report/
 /playwright/.cache/
+coverage/
+
+# ─── Build artifacts ──────────────────────────────────────────────────────────
+*.map
