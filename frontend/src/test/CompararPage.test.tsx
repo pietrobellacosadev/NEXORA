@@ -20,7 +20,7 @@ const SUGESTOES_SP = {
   ],
 }
 
-const SUGESTOES_CAMP = {
+const _SUGESTOES_CAMP = {
   municipios: [
     { codigo_ibge: '3509502', nome: 'Campinas', regiao_administrativa: 'Campinas' },
   ],

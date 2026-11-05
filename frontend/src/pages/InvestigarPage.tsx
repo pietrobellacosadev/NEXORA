@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
 import {
@@ -26,7 +26,7 @@ const ESTADO_INICIAL: EstadoInvestigacao = {
 export default function InvestigarPage() {
   const [params] = useSearchParams()
   const [codigoIBGE, setCodigoIBGE] = useState(params.get('municipio') ?? '')
-  const [nomeMunicipio, setNomeMunicipio] = useState(params.get('nome') ?? '')
+  const [nomeMunicipio] = useState(params.get('nome') ?? '')
   const [pergunta, setPergunta] = useState('')
   const [estado, setEstado] = useState<EstadoInvestigacao>(ESTADO_INICIAL)
   const [resultado, setResultado] = useState<ResultadoConsolidado | null>(null)

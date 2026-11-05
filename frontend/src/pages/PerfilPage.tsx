@@ -440,9 +440,11 @@ function IndicadoresChart({ indicadores, pilar }: { indicadores: IndicadorItem[]
               fontSize: '12px',
               boxShadow: 'var(--shadow-lg)',
             }}
-            formatter={(value: number, _: string, props: { payload?: { unidade?: string } }) =>
-              [`${value.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ${props?.payload?.unidade ?? ''}`, 'Valor']
-            }
+            formatter={(value, _name, props) => {
+              const v = value as number
+              const u = (props as { payload?: { unidade?: string } })?.payload?.unidade ?? ''
+              return [`${v.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ${u}`, 'Valor']
+            }}
           />
           <Bar dataKey="valor" radius={[0, 4, 4, 0]} maxBarSize={24}>
             {dados.map((_, i) => (

@@ -503,9 +503,10 @@ function GraficoComparacao({
               fontSize: '12px',
               boxShadow: 'var(--shadow-lg)',
             }}
-            formatter={(value: number) =>
-              value !== null ? value.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) : 'N/D'
-            }
+            formatter={(value) => {
+              const v = value as number | null
+              return v !== null && v !== undefined ? v.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) : 'N/D'
+            }}
           />
           <Legend
             formatter={(value: string) => {
@@ -514,7 +515,7 @@ function GraficoComparacao({
             }}
             wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }}
           />
-          {selecionados.map((p, i) => (
+          {selecionados.map((_p, i) => (
             <Bar
               key={`muni_${i}`}
               dataKey={`muni_${i}`}

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
-import { MapPin, Search, X, Layers, Info, ExternalLink } from 'lucide-react'
+import { MapPin, Search, X, Layers, ExternalLink } from 'lucide-react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import api from '../lib/api'
