@@ -1,29 +1,49 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
-import { MapPin, Search, X, Layers, ExternalLink } from 'lucide-react'
+import {
+  MapPin, Search, X, ChevronRight,
+  TrendingUp, Users, BarChart2, AlertCircle,
+} from 'lucide-react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import api from '../lib/api'
-import type { MunicipioResumo } from '../types'
+import type { MunicipioResumo, PerfilMunicipio, IndicadorItem } from '../types'
 import Spinner from '../components/ui/Spinner'
 import './MapaPage.css'
 
+/* ── Indicadores que queremos destacar no painel lateral ─────────────────── */
+const DESTAQUES_MERCADO = ['cobertura_4g', 'penetracao_internet_fixa', 'pib_per_capita', 'densidade_movel']
+const DESTAQUES_SOCIAL  = ['idhm', 'acesso_internet_domiciliar', 'taxa_alfabetizacao', 'pobreza_extrema_pct']
+
+function formatarValor(ind: IndicadorItem): string {
+  if (ind.valor_num === null || ind.valor_num === undefined) return '–'
+  const v = ind.valor_num
+  if (ind.unidade?.includes('R$') || ind.unidade?.includes('hab') && v > 1000)
+    return v.toLocaleString('pt-BR', { maximumFractionDigits: 0 })
+  if (v >= 1000) return v.toLocaleString('pt-BR', { maximumFractionDigits: 0 })
+  return v.toLocaleString('pt-BR', { maximumFractionDigits: 2 })
+}
+
 export default function MapaPage() {
   const navigate = useNavigate()
-  const mapRef = useRef<L.Map | null>(null)
-  const mapElRef = useRef<HTMLDivElement>(null)
+  const mapRef    = useRef<L.Map | null>(null)
+  const mapElRef  = useRef<HTMLDivElement>(null)
   const geoLayerRef = useRef<L.GeoJSON | null>(null)
   const selectedLayerRef = useRef<L.Layer | null>(null)
-  const nomesRef = useRef<Map<string, string>>(new Map())
+  const nomesRef  = useRef<Map<string, string>>(new Map())
 
-  const [busca, setBusca] = useState('')
+  const [busca, setBusca]         = useState('')
   const [resultados, setResultados] = useState<MunicipioResumo[]>([])
-  const [buscando, setBuscando] = useState(false)
-  const [selecionado, setSelecionado] = useState<MunicipioResumo | null>(null)
-  const [tooltip, setTooltip] = useState('')
+  const [buscando, setBuscando]   = useState(false)
+  const [resumo, setResumo]       = useState<MunicipioResumo | null>(null)
+  const [perfil, setPerfil]       = useState<PerfilMunicipio | null>(null)
+  const [carregandoPerfil, setCarregandoPerfil] = useState(false)
+  const [erroPerfil, setErroPerfil] = useState('')
+  const [tooltip, setTooltip]     = useState('')
+  const [pilar, setPilar]         = useState<'mercado' | 'social'>('mercado')
 
-  // Inicializa o mapa Leaflet
+  /* ── Inicializa Leaflet ─────────────────────────────────────────────────── */
   useEffect(() => {
     if (mapRef.current || !mapElRef.current) return
 
@@ -34,41 +54,40 @@ export default function MapaPage() {
       attributionControl: true,
     })
 
-    // Dark "no-labels" tile — matches NEXORA's #101827 palette
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
-      maxZoom: 13,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/" target="_blank">CARTO</a>',
+    // OpenStreetMap — gratuito, sem API key, sem watermark
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors',
     }).addTo(map)
 
     L.control.zoom({ position: 'bottomright' }).addTo(map)
-
     mapRef.current = map
 
-    // Pré-carrega mapa de nomes (código → nome) para o tooltip
+    // Pré-carrega mapa código → nome para tooltip
     api.get<{ municipios: MunicipioResumo[] }>('/municipios?limite=700')
       .then(({ data }) => {
         data.municipios.forEach(m => nomesRef.current.set(m.codigo_ibge, m.nome))
       })
-      .catch(() => { /* tooltip degradará para código IBGE */ })
+      .catch(() => {})
 
-    // Carrega GeoJSON
+    // Carrega GeoJSON dos municípios de SP
     fetch('/sp_municipios.geojson')
       .then(r => r.json())
       .then(data => {
         const layer = L.geoJSON(data, {
           style: {
-            fillColor: '#63A7F2',
-            fillOpacity: 0.12,
-            color: '#63A7F2',
-            weight: 0.9,
-            opacity: 0.7,
+            fillColor: '#2d7dd2',
+            fillOpacity: 0.10,
+            color: '#2d7dd2',
+            weight: 0.8,
+            opacity: 0.55,
           },
           onEachFeature(feature, featureLayer) {
             const codigo = feature.properties?.codarea
             featureLayer.on({
               mouseover(e) {
                 const l = e.target as L.Path
-                l.setStyle({ fillOpacity: 0.2, weight: 1.5 })
+                l.setStyle({ fillOpacity: 0.25, weight: 1.8, color: '#2d7dd2' })
                 const nome = nomesRef.current.get(codigo) ?? codigo
                 setTooltip(nome || '')
               },
@@ -79,18 +98,17 @@ export default function MapaPage() {
                 setTooltip('')
               },
               click() {
-                // Restaura estilo anterior selecionado
                 if (selectedLayerRef.current) {
                   layer.resetStyle(selectedLayerRef.current as L.Path)
                 }
                 selectedLayerRef.current = featureLayer
                 ;(featureLayer as L.Path).setStyle({
                   fillColor: '#20B8A5',
-                  fillOpacity: 0.40,
+                  fillOpacity: 0.35,
                   color: '#20B8A5',
-                  weight: 2.5,
+                  weight: 2.2,
                 })
-                buscarMunicipio(codigo)
+                selecionarMunicipio(codigo)
               },
             })
           },
@@ -98,22 +116,38 @@ export default function MapaPage() {
         geoLayerRef.current = layer
       })
 
-    return () => {
-      map.remove()
-      mapRef.current = null
-    }
+    return () => { map.remove(); mapRef.current = null }
   }, [])
 
-  const buscarMunicipio = useCallback(async (codigo: string) => {
+  /* ── Seleciona município e carrega perfil real ──────────────────────────── */
+  const selecionarMunicipio = useCallback(async (codigo: string) => {
+    setPilar('mercado')
+    setErroPerfil('')
+    setPerfil(null)
+
+    // Busca resumo básico
     try {
       const { data } = await api.get<MunicipioResumo>(`/municipios/${codigo}`)
-      setSelecionado(data)
+      setResumo(data)
     } catch {
-      setSelecionado(null)
+      setResumo(null)
+    }
+
+    // Busca perfil completo com indicadores reais
+    setCarregandoPerfil(true)
+    try {
+      const { data } = await api.get<PerfilMunicipio>(`/municipios/${codigo}/perfil`)
+      setPerfil(data)
+      // Atualiza resumo com populacao do perfil (mais completo)
+      setResumo(data.municipio)
+    } catch {
+      setErroPerfil('Não foi possível carregar os indicadores.')
+    } finally {
+      setCarregandoPerfil(false)
     }
   }, [])
 
-  // Busca por texto
+  /* ── Busca por texto ────────────────────────────────────────────────────── */
   useEffect(() => {
     if (busca.length < 2) { setResultados([]); return }
     const t = setTimeout(async () => {
@@ -130,6 +164,27 @@ export default function MapaPage() {
     return () => clearTimeout(t)
   }, [busca])
 
+  /* ── Indicadores filtrados para exibição ────────────────────────────────── */
+  const destaqueKeys = pilar === 'mercado' ? DESTAQUES_MERCADO : DESTAQUES_SOCIAL
+  const indicadoresRaw = pilar === 'mercado' ? perfil?.mercado : perfil?.social
+  // Prioriza os destaques mas mostra até 6 no total
+  const indicadores: IndicadorItem[] = indicadoresRaw
+    ? [
+        ...destaqueKeys.map(k => indicadoresRaw.find(i => i.chave === k)).filter(Boolean) as IndicadorItem[],
+        ...indicadoresRaw.filter(i => !destaqueKeys.includes(i.chave)),
+      ].slice(0, 6)
+    : []
+
+  const fechar = () => {
+    setResumo(null)
+    setPerfil(null)
+    setErroPerfil('')
+    if (selectedLayerRef.current && geoLayerRef.current) {
+      geoLayerRef.current.resetStyle(selectedLayerRef.current as L.Path)
+      selectedLayerRef.current = null
+    }
+  }
+
   return (
     <motion.div
       className="mapa-page"
@@ -138,17 +193,21 @@ export default function MapaPage() {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.22 }}
     >
-
-      {/* Painel lateral */}
+      {/* ── Painel lateral ──────────────────────────────────────────────── */}
       <aside className="mapa-panel">
+
+        {/* Cabeçalho */}
         <div className="mapa-panel__header">
-          <MapPin size={16} className="mapa-panel__header-icon" aria-hidden="true" />
-          <h1 className="mapa-panel__title">Mapa territorial</h1>
+          <h1 className="mapa-panel__title">
+            <MapPin size={15} aria-hidden="true" />
+            Municípios de SP
+          </h1>
+          <span className="mapa-panel__sub">Estado de São Paulo · 645 municípios</span>
         </div>
 
         {/* Busca */}
         <div className="mapa-search">
-          <Search size={15} className="mapa-search__icon" aria-hidden="true" />
+          <Search size={14} className="mapa-search__icon" aria-hidden="true" />
           <input
             className="mapa-search__input"
             type="search"
@@ -157,22 +216,26 @@ export default function MapaPage() {
             onChange={e => setBusca(e.target.value)}
             aria-label="Buscar município"
           />
-          {busca && (
-            <button className="mapa-search__clear" onClick={() => { setBusca(''); setResultados([]) }} aria-label="Limpar busca">
-              <X size={14} />
+          {(busca || buscando) && (
+            <button
+              className="mapa-search__clear"
+              onClick={() => { setBusca(''); setResultados([]) }}
+              aria-label="Limpar"
+            >
+              {buscando ? <Spinner size="sm" /> : <X size={13} />}
             </button>
           )}
         </div>
 
-        {/* Resultados da busca */}
+        {/* Dropdown de resultados */}
         <AnimatePresence>
           {resultados.length > 0 && (
             <motion.ul
               className="mapa-results"
-              initial={{ opacity: 0, y: -6 }}
+              initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.15 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.13 }}
             >
               {resultados.map(m => (
                 <li key={m.codigo_ibge}>
@@ -181,14 +244,15 @@ export default function MapaPage() {
                     onClick={() => {
                       setBusca('')
                       setResultados([])
-                      setSelecionado(m)
+                      selecionarMunicipio(m.codigo_ibge)
                     }}
                   >
-                    <MapPin size={13} aria-hidden="true" />
-                    <span>{m.nome}</span>
+                    <MapPin size={12} aria-hidden="true" />
+                    <span className="mapa-results__nome">{m.nome}</span>
                     {m.regiao_administrativa && (
                       <span className="mapa-results__region">{m.regiao_administrativa}</span>
                     )}
+                    <ChevronRight size={12} className="mapa-results__arrow" />
                   </button>
                 </li>
               ))}
@@ -196,95 +260,147 @@ export default function MapaPage() {
           )}
         </AnimatePresence>
 
-        {/* Info do município selecionado */}
-        <AnimatePresence mode="wait">
-          {selecionado ? (
-            <motion.div
-              key={selecionado.codigo_ibge}
-              className="mapa-info"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="mapa-info__header">
-                <div>
-                  <h2 className="mapa-info__nome">{selecionado.nome}</h2>
-                  {selecionado.mesorregiao && (
-                    <p className="mapa-info__region">{selecionado.mesorregiao}</p>
-                  )}
+        {/* Conteúdo principal do painel */}
+        <div className="mapa-panel__body">
+          <AnimatePresence mode="wait">
+            {!resumo ? (
+              /* Estado vazio */
+              <motion.div
+                key="vazio"
+                className="mapa-empty"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <div className="mapa-empty__icon">
+                  <MapPin size={22} />
                 </div>
-                <button className="mapa-info__close" onClick={() => setSelecionado(null)} aria-label="Fechar">
-                  <X size={14} />
-                </button>
-              </div>
-              <dl className="mapa-info__dl">
-                <dt>Código IBGE</dt><dd>{selecionado.codigo_ibge}</dd>
-                {selecionado.microrregiao && <><dt>Microrregião</dt><dd>{selecionado.microrregiao}</dd></>}
-                {selecionado.populacao_estimada && (
-                  <><dt>População estimada</dt><dd>{selecionado.populacao_estimada.toLocaleString('pt-BR')}</dd></>
+                <p className="mapa-empty__title">Selecione um município</p>
+                <p className="mapa-empty__desc">
+                  Clique diretamente no mapa ou use a busca acima para ver indicadores reais.
+                </p>
+              </motion.div>
+            ) : (
+              /* Município selecionado */
+              <motion.div
+                key={resumo.codigo_ibge}
+                className="mapa-info"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                {/* Header do município */}
+                <div className="mapa-info__header">
+                  <div className="mapa-info__header-text">
+                    <h2 className="mapa-info__nome">{resumo.nome}</h2>
+                    <p className="mapa-info__meta">
+                      {[resumo.mesorregiao, resumo.regiao_administrativa]
+                        .filter(Boolean)
+                        .filter((v, i, a) => a.indexOf(v) === i)
+                        .join(' · ')}
+                    </p>
+                  </div>
+                  <button className="mapa-info__close" onClick={fechar} aria-label="Fechar">
+                    <X size={13} />
+                  </button>
+                </div>
+
+                {/* Tabs mercado / social */}
+                <div className="mapa-tabs" role="tablist">
+                  <button
+                    role="tab"
+                    aria-selected={pilar === 'mercado'}
+                    className={`mapa-tab mapa-tab--market${pilar === 'mercado' ? ' mapa-tab--active' : ''}`}
+                    onClick={() => setPilar('mercado')}
+                  >
+                    <TrendingUp size={13} />
+                    Mercado
+                  </button>
+                  <button
+                    role="tab"
+                    aria-selected={pilar === 'social'}
+                    className={`mapa-tab mapa-tab--social${pilar === 'social' ? ' mapa-tab--active' : ''}`}
+                    onClick={() => setPilar('social')}
+                  >
+                    <Users size={13} />
+                    Social
+                  </button>
+                </div>
+
+                {/* Indicadores reais */}
+                {carregandoPerfil ? (
+                  <div className="mapa-info__loading">
+                    <Spinner size="sm" color="market" />
+                    <span>Carregando indicadores…</span>
+                  </div>
+                ) : erroPerfil ? (
+                  <div className="mapa-info__error">
+                    <AlertCircle size={14} />
+                    {erroPerfil}
+                  </div>
+                ) : (
+                  <div className="mapa-indicadores">
+                    {indicadores.map(ind => (
+                      <div key={ind.chave} className="mapa-ind">
+                        <span className="mapa-ind__nome">{ind.nome}</span>
+                        <div className="mapa-ind__valor-row">
+                          <span className={`mapa-ind__valor mapa-ind__valor--${pilar}`}>
+                            {formatarValor(ind)}
+                          </span>
+                          {ind.unidade && (
+                            <span className="mapa-ind__unidade">{ind.unidade}</span>
+                          )}
+                        </div>
+                        <span className="mapa-ind__fonte">{ind.fonte} · {ind.periodo}</span>
+                      </div>
+                    ))}
+                  </div>
                 )}
-              </dl>
-              <div className="mapa-info__actions">
-                <button
-                  className="mapa-info__btn mapa-info__btn--primary"
-                  onClick={() => navigate(`/perfil/${selecionado.codigo_ibge}`)}
-                >
-                  <Layers size={14} aria-hidden="true" />
-                  Ver perfil
-                </button>
-                <button
-                  className="mapa-info__btn mapa-info__btn--ghost"
-                  onClick={() => navigate(`/investigar?municipio=${selecionado.codigo_ibge}&nome=${encodeURIComponent(selecionado.nome)}`)}
-                >
-                  <ExternalLink size={14} aria-hidden="true" />
-                  Investigar
-                </button>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="hint"
-              className="mapa-hint"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <img src="/nexora-icon.svg" alt="" className="mapa-hint__logo" />
-              <p>Clique em um município no mapa ou use a busca acima para ver suas informações.</p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+
+                {/* Ações */}
+                <div className="mapa-info__actions">
+                  <button
+                    className="mapa-info__btn mapa-info__btn--primary"
+                    onClick={() => navigate(`/perfil/${resumo.codigo_ibge}`)}
+                  >
+                    <BarChart2 size={13} />
+                    Perfil completo
+                  </button>
+                  <button
+                    className="mapa-info__btn mapa-info__btn--ghost"
+                    onClick={() => navigate(`/investigar?municipio=${resumo.codigo_ibge}&nome=${encodeURIComponent(resumo.nome)}`)}
+                  >
+                    Investigar com IA
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         {/* Legenda */}
         <div className="mapa-legend">
-          <div className="mapa-legend__title">Legenda</div>
-          <div className="mapa-legend__items">
-            <div className="mapa-legend__item">
-              <span className="mapa-legend__dot mapa-legend__dot--default" />
-              <span>Município</span>
-            </div>
-            <div className="mapa-legend__item">
-              <span className="mapa-legend__dot mapa-legend__dot--selected" />
-              <span>Selecionado</span>
-            </div>
-          </div>
+          <span className="mapa-legend__item">
+            <span className="mapa-legend__dot mapa-legend__dot--default" /> Município
+          </span>
+          <span className="mapa-legend__item">
+            <span className="mapa-legend__dot mapa-legend__dot--selected" /> Selecionado
+          </span>
         </div>
       </aside>
 
-      {/* Mapa */}
+      {/* ── Área do mapa ───────────────────────────────────────────────────── */}
       <div className="mapa-container">
-        <div ref={mapElRef} className="mapa-leaflet" aria-label="Mapa interativo dos municípios do Estado de São Paulo" />
-        {buscando && (
-          <div className="mapa-loading">
-            <Spinner size="sm" />
-          </div>
-        )}
+        <div
+          ref={mapElRef}
+          className="mapa-leaflet"
+          aria-label="Mapa interativo dos municípios do Estado de São Paulo"
+        />
         {tooltip && (
           <div className="mapa-tooltip">{tooltip}</div>
         )}
       </div>
-
     </motion.div>
   )
 }
