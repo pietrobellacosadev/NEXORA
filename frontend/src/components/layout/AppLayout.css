@@ -6,21 +6,21 @@
 
 .app-layout__main {
   flex: 1;
-  padding: var(--sp-5) 0 var(--sp-10);
+  padding: var(--sp-6) 0 var(--sp-12);
 }
 
 .app-layout__container {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 0 var(--sp-5);
+  padding: 0 var(--sp-6);
 }
 
-@media (max-width: 720px) {
+/* Mobile: espaço para bottom nav */
+@media (max-width: 768px) {
   .app-layout__main {
     padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   }
-
   .app-layout__container {
-    padding: 0 var(--sp-3);
+    padding: 0 var(--sp-4);
   }
 }

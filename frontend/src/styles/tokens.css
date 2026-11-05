@@ -1,65 +1,73 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   NEXORA — Design Tokens v3
-   Paleta: Azul profundo #101827 · Azul petróleo #172C43
-           Verde tecnológico #20B8A5 · Azul conexão #63A7F2
-           Cinza claro #F1F5F9
+   NEXORA — Design Tokens v3  |  Paleta: azul profundo · verde tecnológico
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {
   /* ── Cores neutras ──────────────────────────────────────────────────────── */
-  --color-ink:        #101827;
-  --color-paper:      #F1F5F9;
+  --color-ink:        #101827;   /* azul profundo */
+  --color-paper:      #F1F5F9;   /* cinza claro   */
   --color-card:       #ffffff;
-  --color-line:       #e2e8f0;
-  --color-muted:      #64748b;
-  --color-highlight:  #eef2f7;
+  --color-line:       #dde3ed;
+  --color-muted:      #5a6a82;
+  --color-highlight:  #eaf0f8;
+  --color-surface:    #f7fafc;
 
-  /* ── Pilar Mercado (azul conexão #63A7F2) ─────────────────────────────── */
-  --color-market:      #63A7F2;
-  --color-market-lt:   #eaf3fe;
-  --color-market-dk:   #3b82f6;
-  --color-market-mid:  #7dbaf5;
+  /* ── Pilar Mercado (azul conexão) ─────────────────────────────────────── */
+  --color-market:      #2d7dd2;
+  --color-market-lt:   #eaf3ff;
+  --color-market-dk:   #1a5fa8;
+  --color-market-mid:  #63A7F2;
 
-  /* ── Pilar Social (verde tecnológico #20B8A5) ─────────────────────────── */
+  /* ── Pilar Social (verde tecnológico) ────────────────────────────────── */
   --color-social:      #20B8A5;
-  --color-social-lt:   #e6f9f7;
-  --color-social-dk:   #178a7a;
-  --color-social-mid:  #3dd5c4;
+  --color-social-lt:   #e6faf8;
+  --color-social-dk:   #178f80;
+  --color-social-mid:  #34d4bf;
 
-  /* ── IA / Consolidador (violeta harmonizado) ──────────────────────────── */
+  /* ── IA / Consolidador (violeta) ──────────────────────────────────────── */
   --color-ai:          #7c3aed;
-  --color-ai-lt:       #f0ebff;
-  --color-ai-dk:       #6d28d9;
+  --color-ai-lt:       #f3efff;
+  --color-ai-dk:       #6025c4;
+
+  /* ── Accent / destaque principal ─────────────────────────────────────── */
+  --color-accent:      #20B8A5;
+  --color-accent-lt:   #e6faf8;
+  --color-link:        #63A7F2;
 
   /* ── Alerta / dado ausente ────────────────────────────────────────────── */
   --color-warn:        #d97706;
-  --color-warn-lt:     #fffbeb;
+  --color-warn-lt:     #fff8ed;
   --color-warn-dk:     #b45309;
 
   /* ── Erro ─────────────────────────────────────────────────────────────── */
   --color-error:       #dc2626;
   --color-error-lt:    #fef2f2;
 
+  /* ── Sucesso ──────────────────────────────────────────────────────────── */
+  --color-ok:          #16a34a;
+  --color-ok-lt:       #f0fdf4;
+
   /* ── Gradientes ───────────────────────────────────────────────────────── */
-  --gradient-hero:    linear-gradient(135deg, #101827 0%, #172C43 60%, #0d3d36 100%);
-  --gradient-market:  linear-gradient(135deg, #63A7F2, #3b82f6);
-  --gradient-social:  linear-gradient(135deg, #20B8A5, #178a7a);
-  --gradient-ai:      linear-gradient(135deg, #7c3aed, #6d28d9);
-  --gradient-card:    linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  --gradient-hero:    linear-gradient(135deg, #101827 0%, #172C43 45%, #0d3d36 100%);
+  --gradient-market:  linear-gradient(135deg, #2d7dd2, #1a5fa8);
+  --gradient-social:  linear-gradient(135deg, #20B8A5, #178f80);
+  --gradient-ai:      linear-gradient(135deg, #7c3aed, #6025c4);
+  --gradient-accent:  linear-gradient(135deg, #20B8A5, #63A7F2);
+  --gradient-card:    linear-gradient(145deg, #ffffff 0%, #f7fafc 100%);
 
   /* ── Tipografia ───────────────────────────────────────────────────────── */
-  --font-sans:        "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
-  --font-mono:        "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+  --font-sans:  "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono:  "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
 
-  --text-xs:    0.70rem;   /* 11.2px */
-  --text-sm:    0.82rem;   /* 13.1px */
-  --text-base:  0.94rem;   /* 15px   */
-  --text-md:    1.05rem;   /* 16.8px */
-  --text-lg:    1.18rem;   /* 18.9px */
-  --text-xl:    1.35rem;   /* 21.6px */
-  --text-2xl:   1.6rem;    /* 25.6px */
-  --text-3xl:   2rem;      /* 32px   */
-  --text-4xl:   2.5rem;    /* 40px   */
+  --text-xs:    0.70rem;
+  --text-sm:    0.82rem;
+  --text-base:  0.94rem;
+  --text-md:    1.05rem;
+  --text-lg:    1.18rem;
+  --text-xl:    1.35rem;
+  --text-2xl:   1.6rem;
+  --text-3xl:   2rem;
+  --text-4xl:   2.5rem;
 
   --leading-tight:  1.2;
   --leading-snug:   1.4;
@@ -80,31 +88,32 @@
   /* ── Raios de borda ───────────────────────────────────────────────────── */
   --r-sm:   6px;
   --r-md:   10px;
-  --r-lg:   16px;
+  --r-lg:   14px;
   --r-xl:   20px;
   --r-2xl:  28px;
   --r-full: 9999px;
 
   /* ── Sombras ──────────────────────────────────────────────────────────── */
-  --shadow-xs:    0 1px 2px rgba(16,24,39,.05);
-  --shadow-sm:    0 1px 3px rgba(16,24,39,.08), 0 1px 2px rgba(16,24,39,.04);
-  --shadow-md:    0 4px 6px rgba(16,24,39,.07), 0 2px 4px rgba(16,24,39,.04);
-  --shadow-lg:    0 10px 15px rgba(16,24,39,.09), 0 4px 6px rgba(16,24,39,.04);
-  --shadow-xl:    0 20px 25px rgba(16,24,39,.12), 0 8px 10px rgba(16,24,39,.05);
-  --shadow-inset: inset 0 1px 2px rgba(16,24,39,.06);
+  --shadow-xs:  0 1px 2px rgba(16,24,39,.06);
+  --shadow-sm:  0 1px 4px rgba(16,24,39,.08), 0 1px 2px rgba(16,24,39,.04);
+  --shadow-md:  0 4px 12px rgba(16,24,39,.10), 0 2px 4px rgba(16,24,39,.05);
+  --shadow-lg:  0 8px 24px rgba(16,24,39,.12), 0 4px 8px rgba(16,24,39,.06);
+  --shadow-xl:  0 16px 40px rgba(16,24,39,.14), 0 8px 16px rgba(16,24,39,.06);
+  --shadow-glow-teal: 0 0 20px rgba(32,184,165,.25);
+  --shadow-glow-blue: 0 0 20px rgba(99,167,242,.25);
 
   /* ── Transições ───────────────────────────────────────────────────────── */
   --ease-out:   cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in:    cubic-bezier(0.4, 0, 1, 1);
   --ease-inout: cubic-bezier(0.4, 0, 0.2, 1);
   --t-fast:   120ms;
-  --t-normal: 200ms;
-  --t-slow:   350ms;
+  --t-normal: 220ms;
+  --t-slow:   380ms;
 
   /* ── Layout ───────────────────────────────────────────────────────────── */
   --max-width:     1280px;
-  --sidebar-width: 280px;
-  --nav-height:    60px;
+  --sidebar-width: 300px;
+  --nav-height:    64px;
 
   /* ── Z-index ──────────────────────────────────────────────────────────── */
   --z-base:    0;
@@ -117,42 +126,68 @@
 /* ── Tema escuro ─────────────────────────────────────────────────────────── */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --color-ink:        #F1F5F9;
+    --color-ink:        #edf2f7;
     --color-paper:      #101827;
     --color-card:       #172C43;
-    --color-line:       #1e3a5f;
-    --color-muted:      #94a3b8;
-    --color-highlight:  #172C43;
-    --color-market:     #7dbaf5;
-    --color-market-lt:  #0f2744;
-    --color-social:     #3dd5c4;
-    --color-social-lt:  #062e2a;
+    --color-line:       #223350;
+    --color-muted:      #8ba3c0;
+    --color-highlight:  #1a2f4a;
+    --color-surface:    #141e2d;
+    --color-market:     #63A7F2;
+    --color-market-lt:  #172340;
+    --color-market-dk:  #93c5fd;
+    --color-market-mid: #7bb8f7;
+    --color-social:     #34d4bf;
+    --color-social-lt:  #0d2e2b;
+    --color-social-dk:  #5fe0cf;
+    --color-social-mid: #4ddec9;
     --color-ai:         #a78bfa;
-    --color-ai-lt:      #2e1065;
+    --color-ai-lt:      #2a1854;
+    --color-ai-dk:      #c4b5fd;
+    --color-accent:     #34d4bf;
+    --color-accent-lt:  #0d2e2b;
+    --color-link:       #7bb8f7;
     --color-warn:       #fbbf24;
-    --color-warn-lt:    #451a03;
+    --color-warn-lt:    #2d1800;
     --color-error:      #f87171;
-    --color-error-lt:   #450a0a;
-    --gradient-card:    linear-gradient(145deg, #172C43 0%, #0f1e30 100%);
+    --color-error-lt:   #2d0808;
+    --gradient-hero:    linear-gradient(135deg, #0a1120 0%, #101827 45%, #0b2420 100%);
+    --gradient-card:    linear-gradient(145deg, #172C43 0%, #1a3050 100%);
+    --shadow-sm:  0 1px 4px rgba(0,0,0,.3);
+    --shadow-md:  0 4px 12px rgba(0,0,0,.35);
+    --shadow-lg:  0 8px 24px rgba(0,0,0,.4);
   }
 }
 
 :root[data-theme="dark"] {
-  --color-ink:        #F1F5F9;
+  --color-ink:        #edf2f7;
   --color-paper:      #101827;
   --color-card:       #172C43;
-  --color-line:       #1e3a5f;
-  --color-muted:      #94a3b8;
-  --color-highlight:  #172C43;
-  --color-market:     #7dbaf5;
-  --color-market-lt:  #0f2744;
-  --color-social:     #3dd5c4;
-  --color-social-lt:  #062e2a;
+  --color-line:       #223350;
+  --color-muted:      #8ba3c0;
+  --color-highlight:  #1a2f4a;
+  --color-surface:    #141e2d;
+  --color-market:     #63A7F2;
+  --color-market-lt:  #172340;
+  --color-market-dk:  #93c5fd;
+  --color-market-mid: #7bb8f7;
+  --color-social:     #34d4bf;
+  --color-social-lt:  #0d2e2b;
+  --color-social-dk:  #5fe0cf;
+  --color-social-mid: #4ddec9;
   --color-ai:         #a78bfa;
-  --color-ai-lt:      #2e1065;
+  --color-ai-lt:      #2a1854;
+  --color-ai-dk:      #c4b5fd;
+  --color-accent:     #34d4bf;
+  --color-accent-lt:  #0d2e2b;
+  --color-link:       #7bb8f7;
   --color-warn:       #fbbf24;
-  --color-warn-lt:    #451a03;
+  --color-warn-lt:    #2d1800;
   --color-error:      #f87171;
-  --color-error-lt:   #450a0a;
-  --gradient-card:    linear-gradient(145deg, #172C43 0%, #0f1e30 100%);
+  --color-error-lt:   #2d0808;
+  --gradient-hero:    linear-gradient(135deg, #0a1120 0%, #101827 45%, #0b2420 100%);
+  --gradient-card:    linear-gradient(145deg, #172C43 0%, #1a3050 100%);
+  --shadow-sm:  0 1px 4px rgba(0,0,0,.3);
+  --shadow-md:  0 4px 12px rgba(0,0,0,.35);
+  --shadow-lg:  0 8px 24px rgba(0,0,0,.4);
 }

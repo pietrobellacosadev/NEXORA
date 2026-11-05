@@ -12,9 +12,9 @@ interface TopBarProps {
 }
 
 const NAV_ITEMS = [
-  { to: '/mapa',       label: 'Mapa',        icon: Map           },
-  { to: '/perfil',     label: 'Perfil',      icon: BarChart2     },
-  { to: '/comparar',   label: 'Comparação',  icon: GitCompare    },
+  { to: '/mapa',       label: 'Mapa',        icon: Map         },
+  { to: '/perfil',     label: 'Perfil',      icon: BarChart2   },
+  { to: '/comparar',   label: 'Comparação',  icon: GitCompare  },
   { to: '/investigar', label: 'Investigar',  icon: MessageSquare },
 ]
 
@@ -31,8 +31,8 @@ export default function TopBar({ theme, onToggleTheme }: TopBarProps) {
               src="/nexora-icon.svg"
               alt="NEXORA"
               className="topbar__logo-img"
-              width={28}
-              height={28}
+              width="28"
+              height="28"
             />
             <div className="topbar__brand-text">
               <span className="topbar__name">NEXORA</span>
@@ -40,7 +40,10 @@ export default function TopBar({ theme, onToggleTheme }: TopBarProps) {
             </div>
           </NavLink>
 
-          {/* Navegação desktop */}
+          {/* Separador */}
+          <div className="topbar__divider" aria-hidden="true" />
+
+          {/* Navegação */}
           <nav className="topbar__nav" aria-label="Navegação principal">
             {NAV_ITEMS.map(({ to, label, icon: Icon }) => {
               const active = location.pathname.startsWith(to)
@@ -56,7 +59,7 @@ export default function TopBar({ theme, onToggleTheme }: TopBarProps) {
                     <motion.span
                       className="topbar__link-indicator"
                       layoutId="nav-indicator"
-                      transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 34 }}
                     />
                   )}
                 </NavLink>
@@ -70,7 +73,7 @@ export default function TopBar({ theme, onToggleTheme }: TopBarProps) {
               className="topbar__action-btn"
               onClick={onToggleTheme}
               aria-label={theme === 'dark' ? 'Tema claro' : 'Tema escuro'}
-              whileTap={{ scale: 0.9 }}
+              whileTap={{ scale: 0.90 }}
               whileHover={{ scale: 1.06 }}
             >
               {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
@@ -80,14 +83,14 @@ export default function TopBar({ theme, onToggleTheme }: TopBarProps) {
       </header>
 
       {/* Bottom navigation — mobile only */}
-      <nav className="bottomnav" aria-label="Navegação mobile">
+      <nav className="bottom-nav" aria-label="Navegação mobile">
         {NAV_ITEMS.map(({ to, label, icon: Icon }) => {
           const active = location.pathname.startsWith(to)
           return (
             <NavLink
               key={to}
               to={to}
-              className={`bottomnav__item${active ? ' bottomnav__item--active' : ''}`}
+              className={`bottom-nav__item${active ? ' bottom-nav__item--active' : ''}`}
             >
               <Icon size={20} aria-hidden="true" />
               <span>{label}</span>
