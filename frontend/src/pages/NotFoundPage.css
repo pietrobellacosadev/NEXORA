@@ -1,0 +1,100 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   NotFoundPage — 404
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.nf {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: var(--sp-16) var(--sp-6) var(--sp-12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--sp-5);
+}
+
+/* ── Glyph / logo + código ─────────────────────────────────────────────── */
+.nf__glyph {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin-bottom: var(--sp-2);
+}
+
+.nf__logo {
+  width: 120px;
+  height: 120px;
+  opacity: 0.08;
+  display: block;
+}
+
+.nf__code {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3.2rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  color: var(--color-ink);
+  line-height: 1;
+}
+
+/* ── Texto ─────────────────────────────────────────────────────────────── */
+.nf__title {
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  color: var(--color-ink);
+  margin: 0;
+  line-height: var(--leading-tight);
+}
+
+.nf__desc {
+  font-size: var(--text-base);
+  color: var(--color-muted);
+  line-height: var(--leading-normal);
+  margin: 0;
+  max-width: 38ch;
+}
+
+/* ── Atalhos ───────────────────────────────────────────────────────────── */
+.nf__atalhos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-3);
+  margin-top: var(--sp-2);
+}
+
+.nf__atalho {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-5);
+  border: 1.5px solid var(--color-line);
+  border-radius: var(--r-full);
+  background: var(--color-card);
+  color: var(--color-ink);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color var(--t-fast), color var(--t-fast),
+              background var(--t-fast), box-shadow var(--t-fast);
+  text-decoration: none;
+}
+
+.nf__atalho:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: var(--color-accent-lt);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 12%, transparent);
+}
+
+/* ── Responsivo ─────────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .nf { padding: var(--sp-12) var(--sp-4) var(--sp-16); }
+  .nf__glyph { width: 96px; height: 96px; }
+  .nf__logo  { width: 96px; height: 96px; }
+  .nf__code  { font-size: 2.6rem; }
+}
