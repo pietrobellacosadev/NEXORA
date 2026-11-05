@@ -1,13 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
 import {
   Brain, TrendingUp, Users, Search, Send,
   CheckCircle, AlertCircle, Loader, ChevronDown, ChevronUp,
-  ShieldCheck, BookOpen,
+  ShieldCheck, BookOpen, MapPin, X,
 } from 'lucide-react'
 import api from '../lib/api'
-import type { ResultadoConsolidado } from '../types'
+import type { MunicipioResumo, ResultadoConsolidado } from '../types'
 import { salvarAnalise } from './AnalisesPage'
 import './InvestigarPage.css'
 
@@ -26,13 +26,69 @@ const ESTADO_INICIAL: EstadoInvestigacao = {
 
 export default function InvestigarPage() {
   const [params] = useSearchParams()
-  const [codigoIBGE, setCodigoIBGE] = useState(params.get('municipio') ?? '')
-  const [nomeMunicipio] = useState(params.get('nome') ?? '')
+
+  // Município pode vir por URL como código ou nome
+  const codigoParam = params.get('municipio') ?? ''
+  const nomeParam   = params.get('nome') ?? ''
+
+  const [codigoIBGE, setCodigoIBGE] = useState(codigoParam)
+  const [nomeBusca, setNomeBusca]   = useState(nomeParam || codigoParam)
+  // municipioResolvido: quando o usuário já selecionou um município válido
+  const [municipioResolvido, setMunicipioResolvido] = useState<MunicipioResumo | null>(
+    codigoParam && nomeParam ? { codigo_ibge: codigoParam, nome: nomeParam } : null
+  )
+  const [sugestoes, setSugestoes]   = useState<MunicipioResumo[]>([])
+  const [buscandoMuni, setBuscandoMuni] = useState(false)
+  const dropdownRef = useRef<HTMLUListElement>(null)
+
   const [pergunta, setPergunta] = useState('')
   const [estado, setEstado] = useState<EstadoInvestigacao>(ESTADO_INICIAL)
   const [resultado, setResultado] = useState<ResultadoConsolidado | null>(null)
   const [erro, setErro] = useState('')
   const [expanded, setExpanded] = useState<string | null>(null)
+
+  // Busca reativa por nome
+  useEffect(() => {
+    if (municipioResolvido) return   // já resolvido, não busca mais
+    if (nomeBusca.trim().length < 2) { setSugestoes([]); return }
+    const t = setTimeout(async () => {
+      setBuscandoMuni(true)
+      try {
+        const { data } = await api.get<{ municipios: MunicipioResumo[] }>(
+          `/municipios?q=${encodeURIComponent(nomeBusca.trim())}&limite=8`
+        )
+        setSugestoes(data.municipios)
+      } finally {
+        setBuscandoMuni(false)
+      }
+    }, 280)
+    return () => clearTimeout(t)
+  }, [nomeBusca, municipioResolvido])
+
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (!dropdownRef.current?.contains(e.target as Node)) {
+        setSugestoes([])
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  function selecionarMunicipio(m: MunicipioResumo) {
+    setCodigoIBGE(m.codigo_ibge)
+    setNomeBusca(m.nome)
+    setMunicipioResolvido(m)
+    setSugestoes([])
+  }
+
+  function limparMunicipio() {
+    setCodigoIBGE('')
+    setNomeBusca('')
+    setMunicipioResolvido(null)
+    setSugestoes([])
+  }
 
   const podeInvestigar = codigoIBGE.trim().length >= 7 && pergunta.trim().length >= 10
 
@@ -43,7 +99,6 @@ export default function InvestigarPage() {
     setEstado({ geral: 'loading', market: 'running', social: 'running', consolidator: 'idle' })
 
     try {
-      // Simula progresso visual enquanto a API processa
       const timer = setTimeout(() => {
         setEstado(s => ({ ...s, market: 'done', social: 'done', consolidator: 'running' }))
       }, 2000)
@@ -92,19 +147,69 @@ export default function InvestigarPage() {
       {/* Formulário */}
       <div className="inv__form">
         <div className="inv__fields">
+
+          {/* Campo do município — busca por nome ou código */}
           <div className="inv__field">
-            <label className="inv__label" htmlFor="inv-ibge">Código IBGE do município</label>
-            <input
-              id="inv-ibge"
-              className="inv__input"
-              type="text"
-              placeholder="Ex: 3550308"
-              value={codigoIBGE}
-              onChange={e => setCodigoIBGE(e.target.value)}
-              maxLength={7}
-            />
-            {nomeMunicipio && <span className="inv__field-hint">{nomeMunicipio}</span>}
+            <label className="inv__label" htmlFor="inv-municipio">Município</label>
+
+            {municipioResolvido ? (
+              /* Município confirmado — mostra pill */
+              <div className="inv__muni-resolved">
+                <MapPin size={13} />
+                <span style={{ flex: 1 }}>{municipioResolvido.nome}</span>
+                <span style={{ fontSize: '0.7rem', opacity: 0.7 }}>{municipioResolvido.codigo_ibge}</span>
+                <button onClick={limparMunicipio} aria-label="Remover município">
+                  <X size={13} />
+                </button>
+              </div>
+            ) : (
+              /* Campo de busca */
+              <div className="inv__muni-wrap">
+                <input
+                  id="inv-municipio"
+                  className="inv__input"
+                  type="search"
+                  placeholder="Nome ou código IBGE…"
+                  value={nomeBusca}
+                  onChange={e => { setNomeBusca(e.target.value); setCodigoIBGE('') }}
+                  autoComplete="off"
+                />
+                <AnimatePresence>
+                  {(sugestoes.length > 0 || buscandoMuni) && (
+                    <motion.ul
+                      ref={dropdownRef}
+                      className="inv__muni-dropdown"
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
+                      transition={{ duration: 0.12 }}
+                    >
+                      {buscandoMuni && (
+                        <li style={{ padding: '8px 12px', color: 'var(--color-muted)', fontSize: 'var(--text-xs)' }}>
+                          <Loader size={12} style={{ display: 'inline', marginRight: 6, animation: 'spin 0.9s linear infinite' }} />
+                          Buscando…
+                        </li>
+                      )}
+                      {sugestoes.map(m => (
+                        <li key={m.codigo_ibge}>
+                          <button
+                            className="inv__muni-item"
+                            onMouseDown={() => selecionarMunicipio(m)}
+                          >
+                            <MapPin size={12} style={{ color: 'var(--color-muted)', flexShrink: 0 }} />
+                            <span className="inv__muni-nome">{m.nome}</span>
+                            <span className="inv__muni-codigo">{m.codigo_ibge}</span>
+                          </button>
+                        </li>
+                      ))}
+                    </motion.ul>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
           </div>
+
+          {/* Campo da pergunta */}
           <div className="inv__field inv__field--grow">
             <label className="inv__label" htmlFor="inv-pergunta">Pergunta de investigação</label>
             <input
@@ -118,6 +223,7 @@ export default function InvestigarPage() {
             />
           </div>
         </div>
+
         <motion.button
           className="inv__btn"
           onClick={investigar}

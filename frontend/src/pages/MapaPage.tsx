@@ -66,15 +66,14 @@ export default function MapaPage() {
       maxZoom: 14,
       zoomControl: false,
       attributionControl: true,
+      // Bounds suaves — serão substituídos pelo extent real após o GeoJSON carregar
       maxBounds: SP_BOUNDS,
-      maxBoundsViscosity: 1.0,
+      maxBoundsViscosity: 0.85,
     })
 
-    // Tile layer com bounds restritos ao SP
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 18,
       attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors',
-      bounds: SP_BOUNDS,
     }).addTo(map)
 
     L.control.zoom({ position: 'bottomright' }).addTo(map)
@@ -132,6 +131,18 @@ export default function MapaPage() {
           },
         }).addTo(map)
         geoLayerRef.current = layer
+
+        // Ajusta view e bounds ao extent REAL do GeoJSON carregado
+        const geoBounds = layer.getBounds()
+        if (geoBounds.isValid()) {
+          const pad = L.point(8, 8)
+          map.fitBounds(geoBounds, { padding: pad })
+          // Calcula minZoom baseado no tamanho real do container
+          const fitZoom = map.getBoundsZoom(geoBounds, false, pad)
+          map.setMinZoom(Math.max(5, fitZoom - 1))
+          // Trava: não pode sair dos limites reais do GeoJSON
+          map.setMaxBounds(geoBounds.pad(0.05))
+        }
       })
 
     return () => { map.remove(); mapRef.current = null }
