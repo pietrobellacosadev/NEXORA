@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import { motion } from 'motion/react'
 import {
-  LayoutDashboard, Map, BarChart2, GitCompare, MessageSquare,
+  LayoutDashboard, Map, BarChart2, Brain, MessageSquare,
   Sun, Moon,
 } from 'lucide-react'
 import './TopBar.css'
@@ -12,11 +12,11 @@ interface TopBarProps {
 }
 
 const NAV_ITEMS = [
-  { to: '/',           label: 'Dashboard',   icon: LayoutDashboard, exact: true },
-  { to: '/mapa',       label: 'Mapa',        icon: Map,             exact: false },
-  { to: '/perfil',     label: 'Perfil',      icon: BarChart2,       exact: false },
-  { to: '/comparar',   label: 'Comparação',  icon: GitCompare,      exact: false },
-  { to: '/investigar', label: 'Investigar',  icon: MessageSquare,   exact: false },
+  { to: '/',           label: 'Dashboard',  icon: LayoutDashboard, exact: true },
+  { to: '/mapa',       label: 'Mapa',       icon: Map,             exact: false },
+  { to: '/perfil',     label: 'Perfil',     icon: BarChart2,       exact: false },
+  { to: '/analises',   label: 'Análises',   icon: Brain,           exact: false },
+  { to: '/investigar', label: 'Investigar', icon: MessageSquare,   exact: false },
 ]
 
 export default function TopBar({ theme, onToggleTheme }: TopBarProps) {
@@ -29,12 +29,12 @@ export default function TopBar({ theme, onToggleTheme }: TopBarProps) {
           {/* Marca */}
           <NavLink to="/" className="topbar__brand" aria-label="NEXORA — Início">
             <img
-              src="/nexora-icon.svg"
-              alt="NEXORA"
-              className="topbar__logo-img"
-              width="28"
-              height="28"
-            />
+                src="/nexora-icon.svg"
+                alt="NEXORA"
+                className="topbar__logo-img"
+                width="38"
+                height="38"
+              />
             <div className="topbar__brand-text">
               <span className="topbar__name">NEXORA</span>
               <span className="topbar__tagline">Inteligência territorial</span>

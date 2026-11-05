@@ -38,15 +38,15 @@
 .topbar__brand:hover { background: var(--color-highlight); text-decoration: none; }
 
 .topbar__logo-img {
-  width: 28px;
-  height: 28px;
+  width: 38px;
+  height: 38px;
   flex-shrink: 0;
   display: block;
 }
 
 .topbar__name {
   display: block;
-  font-size: var(--text-md);
+  font-size: var(--text-lg);
   font-weight: 800;
   letter-spacing: 0.14em;
   color: var(--color-ink);

@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import api from '../lib/api'
 import type { ResultadoConsolidado } from '../types'
+import { salvarAnalise } from './AnalisesPage'
 import './InvestigarPage.css'
 
 type EstadoAgente = 'idle' | 'running' | 'done' | 'error'
@@ -55,6 +56,7 @@ export default function InvestigarPage() {
       clearTimeout(timer)
       setEstado({ geral: 'done', market: 'done', social: 'done', consolidator: 'done' })
       setResultado(data)
+      salvarAnalise(data)
     } catch (e: unknown) {
       const msg = (e as { response?: { data?: { detail?: string } }; message?: string })
         ?.response?.data?.detail ?? (e as { message?: string })?.message ?? 'Erro desconhecido'
