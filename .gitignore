@@ -60,3 +60,5 @@ coverage/
 
 # ─── Build artifacts ──────────────────────────────────────────────────────────
 *.map
+
+backend_log.txt
