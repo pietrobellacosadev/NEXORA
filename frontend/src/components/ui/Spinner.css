@@ -1,10 +1,18 @@
 .spinner {
   display: inline-flex;
-  color: var(--color-market);
+  flex-shrink: 0;
 }
 
-.spinner svg { animation: spin 0.9s linear infinite; }
+.spinner svg { animation: spinner-spin 0.9s linear infinite; }
+
+@keyframes spinner-spin { to { transform: rotate(360deg); } }
 
 .spinner--sm svg { width: 16px; height: 16px; }
 .spinner--md svg { width: 24px; height: 24px; }
 .spinner--lg svg { width: 40px; height: 40px; }
+
+/* Colors */
+.spinner--market { color: var(--color-market); }
+.spinner--social  { color: var(--color-social);  }
+.spinner--ai     { color: var(--color-ai);      }
+.spinner--white  { color: #ffffff;              }

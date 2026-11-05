@@ -12,7 +12,9 @@ export default function ErrorState({
 }: ErrorStateProps) {
   return (
     <div className="error-state" role="alert">
-      <AlertTriangle size={32} className="error-state__icon" aria-hidden="true" />
+      <div className="error-state__icon-wrap" aria-hidden="true">
+        <AlertTriangle size={26} />
+      </div>
       <p className="error-state__message">{message}</p>
       {onRetry && (
         <button className="error-state__retry" onClick={onRetry}>
