@@ -5,12 +5,16 @@ import {
   TrendingUp, Users, Wifi, Brain, ArrowRight,
   ShieldCheck,
 } from 'lucide-react'
+import {
+  RadarChart, Radar, PolarGrid, PolarAngleAxis,
+  ResponsiveContainer, Tooltip,
+} from 'recharts'
 import './DashboardPage.css'
 
 const STATS = [
-  { label: 'Municípios analisados', value: '645', icon: Map,      color: 'market' },
-  { label: 'Pilares de análise',    value: '2',   icon: BarChart2, color: 'social'  },
-  { label: 'Agentes de IA',         value: '3',   icon: Brain,    color: 'ai'     },
+  { label: 'Municípios analisados', value: '645', icon: Map,       color: 'market' },
+  { label: 'Pilares de análise',    value: '2',   icon: BarChart2, color: 'social' },
+  { label: 'Agentes de IA',         value: '3',   icon: Brain,     color: 'ai'     },
   { label: 'Fontes oficiais',       value: '4+',  icon: ShieldCheck, color: 'market' },
 ]
 
@@ -47,6 +51,16 @@ const FEATURES = [
     color: 'ai',
     badge: 'IA',
   },
+]
+
+// Dados ilustrativos — distribuição por região administrativa (exemplo)
+const RADAR_DATA = [
+  { regiao: 'Capital',       mercado: 92, social: 74 },
+  { regiao: 'Campinas',      mercado: 78, social: 65 },
+  { regiao: 'Santos',        mercado: 71, social: 58 },
+  { regiao: 'Sorocaba',      mercado: 64, social: 70 },
+  { regiao: 'Ribeirão Preto',mercado: 68, social: 55 },
+  { regiao: 'São José',      mercado: 60, social: 62 },
 ]
 
 const container = {
@@ -144,18 +158,84 @@ export default function DashboardPage() {
         ))}
       </motion.div>
 
+      {/* ── Visão geral — Radar por região (dados ilustrativos) ──────────── */}
+      <motion.section
+        className="dash__overview"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.45 }}
+        aria-labelledby="overview-title"
+      >
+        <div className="dash__overview-header">
+          <span className="dash__section-title-bar" aria-hidden="true" />
+          <h2 id="overview-title" className="dash__section-title-text">Visão geral por região</h2>
+          <span className="dash__overview-badge">Dados ilustrativos</span>
+        </div>
+        <div className="dash__overview-body">
+          <div className="dash__radar-wrap">
+            <ResponsiveContainer width="100%" height={260}>
+              <RadarChart data={RADAR_DATA} margin={{ top: 10, right: 30, bottom: 10, left: 30 }}>
+                <PolarGrid stroke="rgba(255,255,255,.08)" />
+                <PolarAngleAxis
+                  dataKey="regiao"
+                  tick={{ fill: 'rgba(241,245,249,.55)', fontSize: 11 }}
+                />
+                <Radar
+                  name="Mercado"
+                  dataKey="mercado"
+                  stroke="#63A7F2"
+                  fill="#63A7F2"
+                  fillOpacity={0.18}
+                  strokeWidth={2}
+                />
+                <Radar
+                  name="Social"
+                  dataKey="social"
+                  stroke="#20B8A5"
+                  fill="#20B8A5"
+                  fillOpacity={0.15}
+                  strokeWidth={2}
+                />
+                <Tooltip
+                  contentStyle={{
+                    background: '#172C43',
+                    border: '1px solid rgba(99,167,242,.2)',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    color: '#F1F5F9',
+                  }}
+                />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="dash__radar-legend">
+            <div className="dash__radar-legend-item">
+              <span className="dash__radar-dot dash__radar-dot--market" />
+              <span>Potencial de Mercado</span>
+            </div>
+            <div className="dash__radar-legend-item">
+              <span className="dash__radar-dot dash__radar-dot--social" />
+              <span>Potencial Social</span>
+            </div>
+            <p className="dash__radar-note">
+              Valores representam índices compostos (0–100) por região administrativa.
+              Os dados são ilustrativos e não substituem a análise por município.
+            </p>
+          </div>
+        </div>
+      </motion.section>
+
       {/* ── Funcionalidades ──────────────────────────────────────────────── */}
       <section aria-labelledby="features-title">
-        <motion.h2
-          id="features-title"
-          className="dash__section-title"
+        <motion.div
+          className="dash__section-hd"
           initial={{ opacity: 0, x: -12 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.25, duration: 0.4 }}
         >
           <span className="dash__section-title-bar" aria-hidden="true" />
-          Funcionalidades
-        </motion.h2>
+          <h2 id="features-title" className="dash__section-title-text">Funcionalidades</h2>
+        </motion.div>
 
         <motion.div
           className="dash__grid"
