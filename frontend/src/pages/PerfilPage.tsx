@@ -4,8 +4,12 @@ import { motion, AnimatePresence } from 'motion/react'
 import {
   BarChart2, Search, X, TrendingUp, Users, MapPin,
   Brain, AlertCircle, Info, ShieldCheck, ExternalLink,
-  CheckCircle, HelpCircle,
+  CheckCircle, HelpCircle, LayoutGrid, BarChart,
 } from 'lucide-react'
+import {
+  BarChart as ReBarChart, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, Cell,
+} from 'recharts'
 import api from '../lib/api'
 import type { MunicipioResumo, PerfilMunicipio, IndicadorItem } from '../types'
 import Spinner from '../components/ui/Spinner'
@@ -24,6 +28,7 @@ export default function PerfilPage() {
   const [erro, setErro] = useState('')
 
   const [pilarAtivo, setPilarAtivo] = useState<'mercado' | 'social'>('mercado')
+  const [viewMode, setViewMode] = useState<'cards' | 'chart'>('cards')
 
   const carregarPerfil = useCallback(async (codigo: string) => {
     setCarregando(true)
@@ -219,28 +224,48 @@ export default function PerfilPage() {
               </button>
             </div>
 
-            {/* Tabs de pilar */}
-            <div className="perfil__tabs" role="tablist">
-              <button
-                role="tab"
-                aria-selected={pilarAtivo === 'mercado'}
-                className={`perfil__tab perfil__tab--market ${pilarAtivo === 'mercado' ? 'perfil__tab--active' : ''}`}
-                onClick={() => setPilarAtivo('mercado')}
-              >
-                <TrendingUp size={15} aria-hidden="true" />
-                Potencial de Mercado
-                <span className="perfil__tab-count">{perfil.mercado.length}</span>
-              </button>
-              <button
-                role="tab"
-                aria-selected={pilarAtivo === 'social'}
-                className={`perfil__tab perfil__tab--social ${pilarAtivo === 'social' ? 'perfil__tab--active' : ''}`}
-                onClick={() => setPilarAtivo('social')}
-              >
-                <Users size={15} aria-hidden="true" />
-                Potencial Social
-                <span className="perfil__tab-count">{perfil.social.length}</span>
-              </button>
+            {/* Tabs de pilar + toggle de visualização */}
+            <div className="perfil__tabs-row">
+              <div className="perfil__tabs" role="tablist">
+                <button
+                  role="tab"
+                  aria-selected={pilarAtivo === 'mercado'}
+                  className={`perfil__tab perfil__tab--market ${pilarAtivo === 'mercado' ? 'perfil__tab--active' : ''}`}
+                  onClick={() => setPilarAtivo('mercado')}
+                >
+                  <TrendingUp size={15} aria-hidden="true" />
+                  Potencial de Mercado
+                  <span className="perfil__tab-count">{perfil.mercado.length}</span>
+                </button>
+                <button
+                  role="tab"
+                  aria-selected={pilarAtivo === 'social'}
+                  className={`perfil__tab perfil__tab--social ${pilarAtivo === 'social' ? 'perfil__tab--active' : ''}`}
+                  onClick={() => setPilarAtivo('social')}
+                >
+                  <Users size={15} aria-hidden="true" />
+                  Potencial Social
+                  <span className="perfil__tab-count">{perfil.social.length}</span>
+                </button>
+              </div>
+              <div className="perfil__view-toggle" role="group" aria-label="Modo de visualização">
+                <button
+                  className={`perfil__view-btn${viewMode === 'cards' ? ' perfil__view-btn--active' : ''}`}
+                  onClick={() => setViewMode('cards')}
+                  title="Visualização em cards"
+                >
+                  <LayoutGrid size={14} />
+                  <span>Cards</span>
+                </button>
+                <button
+                  className={`perfil__view-btn${viewMode === 'chart' ? ' perfil__view-btn--active' : ''}`}
+                  onClick={() => setViewMode('chart')}
+                  title="Visualização em gráfico"
+                >
+                  <BarChart size={14} />
+                  <span>Gráfico</span>
+                </button>
+              </div>
             </div>
 
             {/* Indicadores */}
@@ -254,17 +279,19 @@ export default function PerfilPage() {
                 transition={{ duration: 0.2 }}
               >
                 {indicadoresAtivos.length === 0 ? (
-                  <div className="perfil__sem-dados">
-                    <Info size={16} />
-                    Nenhum indicador disponível para este pilar.
-                  </div>
-                ) : (
-                  <div className="perfil__grid">
-                    {indicadoresAtivos.map((ind) => (
-                      <IndicadorCard key={ind.chave} indicador={ind} pilar={pilarAtivo} />
-                    ))}
-                  </div>
-                )}
+                    <div className="perfil__sem-dados">
+                      <Info size={16} />
+                      Nenhum indicador disponível para este pilar.
+                    </div>
+                  ) : viewMode === 'chart' ? (
+                    <IndicadoresChart indicadores={indicadoresAtivos} pilar={pilarAtivo} />
+                  ) : (
+                    <div className="perfil__grid">
+                      {indicadoresAtivos.map((ind) => (
+                        <IndicadorCard key={ind.chave} indicador={ind} pilar={pilarAtivo} />
+                      ))}
+                    </div>
+                  )}
               </motion.div>
             </AnimatePresence>
 
@@ -353,4 +380,84 @@ function TipoBadge({ tipo }: { tipo: IndicadorItem['tipo'] }) {
 function BadgeInline({ tipo }: { tipo: IndicadorItem['tipo'] }) {
   const cfg = TIPO_CONFIG[tipo] ?? TIPO_CONFIG.indisponivel
   return <span className={`tipo-badge tipo-badge--${cfg.cls}`}>{cfg.label}</span>
+}
+
+/* ── Gráfico de indicadores ─────────────────────────────────────────────── */
+function IndicadoresChart({ indicadores, pilar }: { indicadores: IndicadorItem[]; pilar: 'mercado' | 'social' }) {
+  const cor = pilar === 'mercado' ? '#2d7dd2' : '#20B8A5'
+  const corLt = pilar === 'mercado' ? '#eaf3ff' : '#e6faf8'
+
+  const dados = indicadores
+    .filter(i => i.valor_num !== null && i.valor_num !== undefined && i.tipo !== 'indisponivel')
+    .map(i => ({
+      nome: i.nome.length > 28 ? i.nome.slice(0, 26) + '…' : i.nome,
+      valor: i.valor_num as number,
+      unidade: i.unidade ?? '',
+      fonte: i.fonte,
+    }))
+    .sort((a, b) => b.valor - a.valor)
+    .slice(0, 12)
+
+  const semDados = indicadores.filter(i => i.tipo === 'indisponivel' || i.valor_num === null)
+
+  if (dados.length === 0) {
+    return (
+      <div className="perfil__chart-empty">
+        <Info size={16} />
+        Nenhum indicador com valor numérico disponível para gráfico.
+      </div>
+    )
+  }
+
+  const chartHeight = Math.max(220, dados.length * 38)
+
+  return (
+    <div className="perfil__chart-wrap">
+      <ResponsiveContainer width="100%" height={chartHeight}>
+        <ReBarChart
+          data={dados}
+          layout="vertical"
+          margin={{ top: 4, right: 60, bottom: 4, left: 8 }}
+          barCategoryGap="28%"
+        >
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--color-line)" horizontal={false} />
+          <XAxis
+            type="number"
+            tick={{ fontSize: 10, fill: 'var(--color-muted)', fontFamily: 'Inter' }}
+            domain={[0, 'auto']}
+          />
+          <YAxis
+            type="category"
+            dataKey="nome"
+            width={200}
+            tick={{ fontSize: 11, fill: 'var(--color-ink)', fontFamily: 'Inter' }}
+          />
+          <Tooltip
+            contentStyle={{
+              background: 'var(--color-card)',
+              border: '1px solid var(--color-line)',
+              borderRadius: '10px',
+              fontSize: '12px',
+              boxShadow: 'var(--shadow-lg)',
+            }}
+            formatter={(value: number, _: string, props: { payload?: { unidade?: string } }) =>
+              [`${value.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ${props?.payload?.unidade ?? ''}`, 'Valor']
+            }
+          />
+          <Bar dataKey="valor" radius={[0, 4, 4, 0]} maxBarSize={24}>
+            {dados.map((_, i) => (
+              <Cell key={i} fill={i % 2 === 0 ? cor : `color-mix(in srgb, ${cor} 75%, ${corLt})`} />
+            ))}
+          </Bar>
+        </ReBarChart>
+      </ResponsiveContainer>
+
+      {semDados.length > 0 && (
+        <div className="perfil__chart-nd">
+          <Info size={12} />
+          <span>{semDados.length} indicador{semDados.length !== 1 ? 'es' : ''} sem valor numérico não exibido{semDados.length !== 1 ? 's' : ''} no gráfico</span>
+        </div>
+      )}
+    </div>
+  )
 }
