@@ -32,8 +32,8 @@ export default function TopBar({ theme, onToggleTheme }: TopBarProps) {
                 src="/nexora-icon.svg"
                 alt="NEXORA"
                 className="topbar__logo-img"
-                width="38"
-                height="38"
+                width="46"
+                height="46"
               />
             <div className="topbar__brand-text">
               <span className="topbar__name">NEXORA</span>
