@@ -131,7 +131,13 @@ export default function MapaPage() {
   }, [busca])
 
   return (
-    <div className="mapa-page">
+    <motion.div
+      className="mapa-page"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.22 }}
+    >
 
       {/* Painel lateral */}
       <aside className="mapa-panel">
@@ -279,6 +285,6 @@ export default function MapaPage() {
         )}
       </div>
 
-    </div>
+    </motion.div>
   )
 }

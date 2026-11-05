@@ -66,7 +66,13 @@ export default function InvestigarPage() {
   const toggle = (key: string) => setExpanded(e => e === key ? null : key)
 
   return (
-    <div className="inv">
+    <motion.div
+      className="inv"
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+    >
 
       {/* Cabeçalho */}
       <div className="inv__header">
@@ -272,7 +278,7 @@ export default function InvestigarPage() {
         )}
       </AnimatePresence>
 
-    </div>
+    </motion.div>
   )
 }
 
