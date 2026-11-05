@@ -2,20 +2,21 @@ import { motion } from 'motion/react'
 import { Link } from 'react-router-dom'
 import {
   Map, BarChart2, GitCompare, MessageSquare,
-  TrendingUp, Users, Wifi, Brain, ArrowRight,
-  ShieldCheck,
+  TrendingUp, Users, Brain, ArrowRight,
+  ShieldCheck, Wifi, Activity,
 } from 'lucide-react'
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis,
   ResponsiveContainer, Tooltip,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid,
 } from 'recharts'
 import './DashboardPage.css'
 
 const STATS = [
-  { label: 'Municípios analisados', value: '645', icon: Map,       color: 'market' },
-  { label: 'Pilares de análise',    value: '2',   icon: BarChart2, color: 'social' },
-  { label: 'Agentes de IA',         value: '3',   icon: Brain,     color: 'ai'     },
-  { label: 'Fontes oficiais',       value: '4+',  icon: ShieldCheck, color: 'market' },
+  { label: 'Municípios',       value: '645', icon: Map,       color: 'market', sub: 'Estado de São Paulo' },
+  { label: 'Pilares',          value: '2',   icon: Activity,  color: 'social',  sub: 'Mercado e Social' },
+  { label: 'Agentes de IA',    value: '3',   icon: Brain,     color: 'ai',      sub: 'Especializados' },
+  { label: 'Fontes oficiais',  value: '4+',  icon: ShieldCheck, color: 'market', sub: 'IBGE, ANATEL, INEP, DATASUS' },
 ]
 
 const FEATURES = [
@@ -23,7 +24,7 @@ const FEATURES = [
     to: '/mapa',
     icon: Map,
     title: 'Mapa Territorial',
-    desc: 'Explore todos os 645 municípios paulistas. Filtre por indicadores de mercado ou sociais e identifique regiões de oportunidade.',
+    desc: 'Explore os 645 municípios paulistas. Filtre por indicadores e identifique regiões de oportunidade.',
     color: 'market',
     badge: 'Novo',
   },
@@ -31,7 +32,7 @@ const FEATURES = [
     to: '/perfil',
     icon: BarChart2,
     title: 'Perfil Municipal',
-    desc: 'Indicadores detalhados de cada município, com fontes oficiais, períodos de referência e limitações metodológicas sempre visíveis.',
+    desc: 'Indicadores detalhados com fontes oficiais, períodos e limitações metodológicas sempre visíveis.',
     color: 'social',
     badge: null,
   },
@@ -39,7 +40,7 @@ const FEATURES = [
     to: '/comparar',
     icon: GitCompare,
     title: 'Comparação',
-    desc: 'Compare até 4 municípios lado a lado. Mercado e social analisados em paralelo para uma decisão mais fundamentada.',
+    desc: 'Compare até 4 municípios lado a lado. Mercado e Social em paralelo para decisões fundamentadas.',
     color: 'market',
     badge: null,
   },
@@ -47,32 +48,38 @@ const FEATURES = [
     to: '/investigar',
     icon: MessageSquare,
     title: 'Investigação por IA',
-    desc: 'Três agentes especializados investigam em paralelo e o Consolidador sintetiza uma análise equilibrada e rastreável.',
+    desc: 'Três agentes especializados investigam em paralelo e o Consolidador sintetiza análise equilibrada.',
     color: 'ai',
     badge: 'IA',
   },
 ]
 
-// Dados ilustrativos — distribuição por região administrativa (exemplo)
+/* ── Dados ilustrativos para os gráficos ─────────────────────────────────── */
 const RADAR_DATA = [
-  { regiao: 'Capital',       mercado: 92, social: 74 },
-  { regiao: 'Campinas',      mercado: 78, social: 65 },
-  { regiao: 'Santos',        mercado: 71, social: 58 },
-  { regiao: 'Sorocaba',      mercado: 64, social: 70 },
-  { regiao: 'Ribeirão Preto',mercado: 68, social: 55 },
-  { regiao: 'São José',      mercado: 60, social: 62 },
+  { indicador: 'Conectividade', mercado: 72, social: 58 },
+  { indicador: 'Demanda',       mercado: 85, social: 74 },
+  { indicador: 'Infraestrutura',mercado: 61, social: 52 },
+  { indicador: 'Acesso Digital',mercado: 55, social: 80 },
+  { indicador: 'Cobertura 4G',  mercado: 78, social: 65 },
+  { indicador: 'IDEB',          mercado: 48, social: 83 },
 ]
 
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.07 } },
-}
+const BAR_DATA = [
+  { regiao: 'Grande SP',    mercado: 88, social: 71 },
+  { regiao: 'Campinas',     mercado: 79, social: 68 },
+  { regiao: 'Vale do Paraíba', mercado: 65, social: 62 },
+  { regiao: 'Sorocaba',     mercado: 61, social: 58 },
+  { regiao: 'Bauru',        mercado: 54, social: 55 },
+  { regiao: 'Ribeirão Preto', mercado: 71, social: 64 },
+  { regiao: 'São José',     mercado: 58, social: 60 },
+]
 
 const EASE = [0.16, 1, 0.3, 1] as [number, number, number, number]
 
+const container = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } }
 const item = {
-  hidden: { opacity: 0, y: 16 },
-  show:   { opacity: 1, y: 0, transition: { duration: 0.4, ease: EASE } },
+  hidden: { opacity: 0, y: 18 },
+  show:   { opacity: 1, y: 0, transition: { duration: 0.45, ease: EASE } },
 }
 
 export default function DashboardPage() {
@@ -82,36 +89,36 @@ export default function DashboardPage() {
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <motion.header
         className="dash__hero"
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.55, ease: EASE }}
       >
         <div className="dash__hero-body">
-          <div className="dash__hero-label">
-            <Wifi size={13} aria-hidden="true" />
-            Plataforma de Inteligência Territorial — São Paulo
+          <div className="dash__hero-eyebrow">
+            <Wifi size={12} aria-hidden="true" />
+            <span>Plataforma de Inteligência Territorial — São Paulo</span>
           </div>
           <h1 className="dash__hero-title">
             Conectividade orientada<br />
             por <span className="dash__hero-accent">dados reais</span>
           </h1>
           <p className="dash__hero-lead">
-            Analise, com igual importância, o potencial de mercado e o potencial social
-            de expansão da conectividade nos 645 municípios paulistas — com evidências,
-            fontes e limitações sempre à vista.
+            Analise o potencial de mercado e o potencial social de expansão da
+            conectividade nos 645 municípios paulistas — com evidências, fontes
+            e limitações sempre à vista.
           </p>
           <div className="dash__hero-pills">
             <span className="dash__pill dash__pill--market">
-              <TrendingUp size={12} aria-hidden="true" />
+              <TrendingUp size={11} aria-hidden="true" />
               Potencial de Mercado
             </span>
             <span className="dash__pill dash__pill--social">
-              <Users size={12} aria-hidden="true" />
+              <Users size={11} aria-hidden="true" />
               Potencial Social
             </span>
             <span className="dash__pill dash__pill--ai">
-              <Brain size={12} aria-hidden="true" />
-              3 Agentes IA
+              <Brain size={11} aria-hidden="true" />
+              3 Agentes de IA
             </span>
           </div>
           <div className="dash__hero-actions">
@@ -126,15 +133,12 @@ export default function DashboardPage() {
             </Link>
           </div>
         </div>
+
+        {/* Visual decorativo */}
         <div className="dash__hero-visual" aria-hidden="true">
-          <div className="dash__orb dash__orb--a" />
-          <div className="dash__orb dash__orb--b" />
-          <div className="dash__orb dash__orb--c" />
-          <div className="dash__hero-grid">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="dash__hero-grid-cell" style={{ '--i': i } as React.CSSProperties} />
-            ))}
-          </div>
+          <img src="/nexora-icon.svg" alt="" className="dash__hero-icon" />
+          <div className="dash__hero-glow dash__hero-glow--a" />
+          <div className="dash__hero-glow dash__hero-glow--b" />
         </div>
       </motion.header>
 
@@ -145,46 +149,56 @@ export default function DashboardPage() {
         initial="hidden"
         animate="show"
       >
-        {STATS.map(({ label, value, icon: Icon, color }) => (
+        {STATS.map(({ label, value, icon: Icon, color, sub }) => (
           <motion.div key={label} className={`dash__stat dash__stat--${color}`} variants={item}>
-            <div className="dash__stat-icon">
+            <div className="dash__stat-icon-wrap">
               <Icon size={18} aria-hidden="true" />
             </div>
-            <div>
+            <div className="dash__stat-body">
               <div className="dash__stat-value">{value}</div>
               <div className="dash__stat-label">{label}</div>
+              <div className="dash__stat-sub">{sub}</div>
             </div>
           </motion.div>
         ))}
       </motion.div>
 
-      {/* ── Visão geral — Radar por região (dados ilustrativos) ──────────── */}
+      {/* ── Visão geral dos pilares — gráficos ───────────────────────────── */}
       <motion.section
-        className="dash__overview"
-        initial={{ opacity: 0, y: 12 }}
+        className="dash__charts-section"
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, duration: 0.45 }}
-        aria-labelledby="overview-title"
+        transition={{ delay: 0.2, duration: 0.5, ease: EASE }}
+        aria-labelledby="charts-title"
       >
-        <div className="dash__overview-header">
-          <span className="dash__section-title-bar" aria-hidden="true" />
-          <h2 id="overview-title" className="dash__section-title-text">Visão geral por região</h2>
-          <span className="dash__overview-badge">Dados ilustrativos</span>
+        <div className="dash__section-header">
+          <div className="dash__section-bar" aria-hidden="true" />
+          <h2 id="charts-title" className="dash__section-title">Visão geral dos potenciais</h2>
+          <span className="dash__section-note">Dados ilustrativos — amostra das regiões</span>
         </div>
-        <div className="dash__overview-body">
-          <div className="dash__radar-wrap">
-            <ResponsiveContainer width="100%" height={260}>
-              <RadarChart data={RADAR_DATA} margin={{ top: 10, right: 30, bottom: 10, left: 30 }}>
-                <PolarGrid stroke="rgba(255,255,255,.08)" />
+
+        <div className="dash__charts-grid">
+          {/* Radar chart */}
+          <div className="dash__chart-card">
+            <div className="dash__chart-header">
+              <div className="dash__chart-title">Perfil comparativo dos pilares</div>
+              <div className="dash__chart-legend">
+                <span className="dash__chart-dot dash__chart-dot--market" />Mercado
+                <span className="dash__chart-dot dash__chart-dot--social" />Social
+              </div>
+            </div>
+            <ResponsiveContainer width="100%" height={240}>
+              <RadarChart data={RADAR_DATA} margin={{ top: 8, right: 16, bottom: 8, left: 16 }}>
+                <PolarGrid stroke="var(--color-line)" />
                 <PolarAngleAxis
-                  dataKey="regiao"
-                  tick={{ fill: 'rgba(241,245,249,.55)', fontSize: 11 }}
+                  dataKey="indicador"
+                  tick={{ fontSize: 11, fill: 'var(--color-muted)', fontFamily: 'Inter' }}
                 />
                 <Radar
                   name="Mercado"
                   dataKey="mercado"
-                  stroke="#63A7F2"
-                  fill="#63A7F2"
+                  stroke="#2d7dd2"
+                  fill="#2d7dd2"
                   fillOpacity={0.18}
                   strokeWidth={2}
                 />
@@ -193,49 +207,72 @@ export default function DashboardPage() {
                   dataKey="social"
                   stroke="#20B8A5"
                   fill="#20B8A5"
-                  fillOpacity={0.15}
+                  fillOpacity={0.18}
                   strokeWidth={2}
                 />
                 <Tooltip
                   contentStyle={{
-                    background: '#172C43',
-                    border: '1px solid rgba(99,167,242,.2)',
-                    borderRadius: '8px',
+                    background: 'var(--color-card)',
+                    border: '1px solid var(--color-line)',
+                    borderRadius: '10px',
                     fontSize: '12px',
-                    color: '#F1F5F9',
+                    boxShadow: 'var(--shadow-lg)',
                   }}
                 />
               </RadarChart>
             </ResponsiveContainer>
           </div>
-          <div className="dash__radar-legend">
-            <div className="dash__radar-legend-item">
-              <span className="dash__radar-dot dash__radar-dot--market" />
-              <span>Potencial de Mercado</span>
+
+          {/* Bar chart por região */}
+          <div className="dash__chart-card">
+            <div className="dash__chart-header">
+              <div className="dash__chart-title">Potencial por região administrativa</div>
+              <div className="dash__chart-legend">
+                <span className="dash__chart-dot dash__chart-dot--market" />Mercado
+                <span className="dash__chart-dot dash__chart-dot--social" />Social
+              </div>
             </div>
-            <div className="dash__radar-legend-item">
-              <span className="dash__radar-dot dash__radar-dot--social" />
-              <span>Potencial Social</span>
-            </div>
-            <p className="dash__radar-note">
-              Valores representam índices compostos (0–100) por região administrativa.
-              Os dados são ilustrativos e não substituem a análise por município.
-            </p>
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart
+                data={BAR_DATA}
+                margin={{ top: 8, right: 8, bottom: 24, left: -8 }}
+                barCategoryGap="30%"
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-line)" vertical={false} />
+                <XAxis
+                  dataKey="regiao"
+                  tick={{ fontSize: 10, fill: 'var(--color-muted)', fontFamily: 'Inter' }}
+                  angle={-30}
+                  textAnchor="end"
+                  interval={0}
+                />
+                <YAxis
+                  tick={{ fontSize: 10, fill: 'var(--color-muted)', fontFamily: 'Inter' }}
+                  domain={[0, 100]}
+                />
+                <Tooltip
+                  contentStyle={{
+                    background: 'var(--color-card)',
+                    border: '1px solid var(--color-line)',
+                    borderRadius: '10px',
+                    fontSize: '12px',
+                    boxShadow: 'var(--shadow-lg)',
+                  }}
+                />
+                <Bar dataKey="mercado" name="Mercado" fill="#2d7dd2" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="social"  name="Social"  fill="#20B8A5" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </motion.section>
 
       {/* ── Funcionalidades ──────────────────────────────────────────────── */}
       <section aria-labelledby="features-title">
-        <motion.div
-          className="dash__section-hd"
-          initial={{ opacity: 0, x: -12 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.25, duration: 0.4 }}
-        >
-          <span className="dash__section-title-bar" aria-hidden="true" />
-          <h2 id="features-title" className="dash__section-title-text">Funcionalidades</h2>
-        </motion.div>
+        <div className="dash__section-header">
+          <div className="dash__section-bar" aria-hidden="true" />
+          <h2 id="features-title" className="dash__section-title">Funcionalidades</h2>
+        </div>
 
         <motion.div
           className="dash__grid"
@@ -247,15 +284,18 @@ export default function DashboardPage() {
             <motion.div key={to} variants={item}>
               <Link to={to} className={`dash__card dash__card--${color}`}>
                 <div className="dash__card-top">
-                  <div className="dash__card-icon">
+                  <div className={`dash__card-icon dash__card-icon--${color}`}>
                     <Icon size={20} aria-hidden="true" />
                   </div>
                   {badge && <span className={`dash__badge dash__badge--${color}`}>{badge}</span>}
                 </div>
                 <h3 className="dash__card-title">{title}</h3>
                 <p className="dash__card-desc">{desc}</p>
-                <div className="dash__card-arrow">
-                  <ArrowRight size={15} aria-hidden="true" />
+                <div className="dash__card-footer">
+                  <span className={`dash__card-cta dash__card-cta--${color}`}>
+                    Acessar
+                    <ArrowRight size={13} aria-hidden="true" />
+                  </span>
                 </div>
               </Link>
             </motion.div>
@@ -268,14 +308,14 @@ export default function DashboardPage() {
         className="dash__integrity"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.5, duration: 0.4 }}
+        transition={{ delay: 0.4, duration: 0.5 }}
         role="note"
       >
-        <ShieldCheck size={16} className="dash__integrity-icon" aria-hidden="true" />
+        <ShieldCheck size={15} className="dash__integrity-icon" aria-hidden="true" />
         <p>
-          <strong>Integridade dos dados:</strong> o NEXORA distingue dados oficiais coletados,
-          indicadores calculados, estimativas metodológicas, interpretações da IA e dados
-          indisponíveis. A decisão final permanece sempre com o analista.
+          <strong>Integridade dos dados:</strong> o NEXORA distingue dados oficiais,
+          indicadores calculados, estimativas e interpretações da IA.
+          Os dados dos gráficos acima são ilustrativos. A decisão final permanece sempre com o analista.
         </p>
       </motion.div>
 
