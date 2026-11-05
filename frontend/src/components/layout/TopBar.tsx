@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import { motion } from 'motion/react'
 import {
-  Map, BarChart2, GitCompare, MessageSquare,
+  LayoutDashboard, Map, BarChart2, GitCompare, MessageSquare,
   Sun, Moon,
 } from 'lucide-react'
 import './TopBar.css'
@@ -12,10 +12,11 @@ interface TopBarProps {
 }
 
 const NAV_ITEMS = [
-  { to: '/mapa',       label: 'Mapa',        icon: Map         },
-  { to: '/perfil',     label: 'Perfil',      icon: BarChart2   },
-  { to: '/comparar',   label: 'Comparação',  icon: GitCompare  },
-  { to: '/investigar', label: 'Investigar',  icon: MessageSquare },
+  { to: '/',           label: 'Dashboard',   icon: LayoutDashboard, exact: true },
+  { to: '/mapa',       label: 'Mapa',        icon: Map,             exact: false },
+  { to: '/perfil',     label: 'Perfil',      icon: BarChart2,       exact: false },
+  { to: '/comparar',   label: 'Comparação',  icon: GitCompare,      exact: false },
+  { to: '/investigar', label: 'Investigar',  icon: MessageSquare,   exact: false },
 ]
 
 export default function TopBar({ theme, onToggleTheme }: TopBarProps) {
@@ -45,8 +46,10 @@ export default function TopBar({ theme, onToggleTheme }: TopBarProps) {
 
           {/* Navegação */}
           <nav className="topbar__nav" aria-label="Navegação principal">
-            {NAV_ITEMS.map(({ to, label, icon: Icon }) => {
-              const active = location.pathname.startsWith(to)
+            {NAV_ITEMS.map(({ to, label, icon: Icon, exact }) => {
+              const active = exact
+                ? location.pathname === to
+                : location.pathname.startsWith(to)
               return (
                 <NavLink
                   key={to}
@@ -84,8 +87,10 @@ export default function TopBar({ theme, onToggleTheme }: TopBarProps) {
 
       {/* Bottom navigation — mobile only */}
       <nav className="bottom-nav" aria-label="Navegação mobile">
-        {NAV_ITEMS.map(({ to, label, icon: Icon }) => {
-          const active = location.pathname.startsWith(to)
+        {NAV_ITEMS.map(({ to, label, icon: Icon, exact }) => {
+          const active = exact
+            ? location.pathname === to
+            : location.pathname.startsWith(to)
           return (
             <NavLink
               key={to}
