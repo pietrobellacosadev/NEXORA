@@ -244,7 +244,7 @@ export default function MapaPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <Info size={18} className="mapa-hint__icon" aria-hidden="true" />
+              <img src="/nexora-icon.svg" alt="" className="mapa-hint__logo" />
               <p>Clique em um município no mapa ou use a busca acima para ver suas informações.</p>
             </motion.div>
           )}
@@ -252,13 +252,16 @@ export default function MapaPage() {
 
         {/* Legenda */}
         <div className="mapa-legend">
-          <div className="mapa-legend__item">
-            <span className="mapa-legend__dot mapa-legend__dot--default" />
-            <span>Município</span>
-          </div>
-          <div className="mapa-legend__item">
-            <span className="mapa-legend__dot mapa-legend__dot--selected" />
-            <span>Selecionado</span>
+          <div className="mapa-legend__title">Legenda</div>
+          <div className="mapa-legend__items">
+            <div className="mapa-legend__item">
+              <span className="mapa-legend__dot mapa-legend__dot--default" />
+              <span>Município</span>
+            </div>
+            <div className="mapa-legend__item">
+              <span className="mapa-legend__dot mapa-legend__dot--selected" />
+              <span>Selecionado</span>
+            </div>
           </div>
         </div>
       </aside>
