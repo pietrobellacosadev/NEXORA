@@ -1,31 +1,34 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   NEXORA — Design Tokens v2
+   NEXORA — Design Tokens v3
+   Paleta: Azul profundo #101827 · Azul petróleo #172C43
+           Verde tecnológico #20B8A5 · Azul conexão #63A7F2
+           Cinza claro #F1F5F9
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {
   /* ── Cores neutras ──────────────────────────────────────────────────────── */
-  --color-ink:        #1a2332;
-  --color-paper:      #f4f6f8;
+  --color-ink:        #101827;
+  --color-paper:      #F1F5F9;
   --color-card:       #ffffff;
   --color-line:       #e2e8f0;
   --color-muted:      #64748b;
   --color-highlight:  #eef2f7;
 
-  /* ── Pilar Mercado (azul) ──────────────────────────────────────────────── */
-  --color-market:      #2563eb;
-  --color-market-lt:   #eff6ff;
-  --color-market-dk:   #1d4ed8;
-  --color-market-mid:  #3b82f6;
+  /* ── Pilar Mercado (azul conexão #63A7F2) ─────────────────────────────── */
+  --color-market:      #63A7F2;
+  --color-market-lt:   #eaf3fe;
+  --color-market-dk:   #3b82f6;
+  --color-market-mid:  #7dbaf5;
 
-  /* ── Pilar Social (verde-esmeralda) ───────────────────────────────────── */
-  --color-social:      #059669;
-  --color-social-lt:   #ecfdf5;
-  --color-social-dk:   #047857;
-  --color-social-mid:  #10b981;
+  /* ── Pilar Social (verde tecnológico #20B8A5) ─────────────────────────── */
+  --color-social:      #20B8A5;
+  --color-social-lt:   #e6f9f7;
+  --color-social-dk:   #178a7a;
+  --color-social-mid:  #3dd5c4;
 
-  /* ── IA / Consolidador (violeta) ──────────────────────────────────────── */
+  /* ── IA / Consolidador (violeta harmonizado) ──────────────────────────── */
   --color-ai:          #7c3aed;
-  --color-ai-lt:       #f5f3ff;
+  --color-ai-lt:       #f0ebff;
   --color-ai-dk:       #6d28d9;
 
   /* ── Alerta / dado ausente ────────────────────────────────────────────── */
@@ -38,9 +41,9 @@
   --color-error-lt:    #fef2f2;
 
   /* ── Gradientes ───────────────────────────────────────────────────────── */
-  --gradient-hero:    linear-gradient(135deg, #1e3a5f 0%, #1a5276 40%, #0e6655 100%);
-  --gradient-market:  linear-gradient(135deg, #2563eb, #1d4ed8);
-  --gradient-social:  linear-gradient(135deg, #059669, #047857);
+  --gradient-hero:    linear-gradient(135deg, #101827 0%, #172C43 60%, #0d3d36 100%);
+  --gradient-market:  linear-gradient(135deg, #63A7F2, #3b82f6);
+  --gradient-social:  linear-gradient(135deg, #20B8A5, #178a7a);
   --gradient-ai:      linear-gradient(135deg, #7c3aed, #6d28d9);
   --gradient-card:    linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
 
@@ -83,12 +86,12 @@
   --r-full: 9999px;
 
   /* ── Sombras ──────────────────────────────────────────────────────────── */
-  --shadow-xs:  0 1px 2px rgba(15,23,42,.05);
-  --shadow-sm:  0 1px 3px rgba(15,23,42,.08), 0 1px 2px rgba(15,23,42,.04);
-  --shadow-md:  0 4px 6px rgba(15,23,42,.06), 0 2px 4px rgba(15,23,42,.04);
-  --shadow-lg:  0 10px 15px rgba(15,23,42,.08), 0 4px 6px rgba(15,23,42,.04);
-  --shadow-xl:  0 20px 25px rgba(15,23,42,.10), 0 8px 10px rgba(15,23,42,.04);
-  --shadow-inset: inset 0 1px 2px rgba(15,23,42,.06);
+  --shadow-xs:    0 1px 2px rgba(16,24,39,.05);
+  --shadow-sm:    0 1px 3px rgba(16,24,39,.08), 0 1px 2px rgba(16,24,39,.04);
+  --shadow-md:    0 4px 6px rgba(16,24,39,.07), 0 2px 4px rgba(16,24,39,.04);
+  --shadow-lg:    0 10px 15px rgba(16,24,39,.09), 0 4px 6px rgba(16,24,39,.04);
+  --shadow-xl:    0 20px 25px rgba(16,24,39,.12), 0 8px 10px rgba(16,24,39,.05);
+  --shadow-inset: inset 0 1px 2px rgba(16,24,39,.06);
 
   /* ── Transições ───────────────────────────────────────────────────────── */
   --ease-out:   cubic-bezier(0.16, 1, 0.3, 1);
@@ -100,7 +103,7 @@
 
   /* ── Layout ───────────────────────────────────────────────────────────── */
   --max-width:     1280px;
-  --sidebar-width: 360px;
+  --sidebar-width: 280px;
   --nav-height:    60px;
 
   /* ── Z-index ──────────────────────────────────────────────────────────── */
@@ -114,42 +117,42 @@
 /* ── Tema escuro ─────────────────────────────────────────────────────────── */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --color-ink:        #e2e8f0;
-    --color-paper:      #0f172a;
-    --color-card:       #1e293b;
-    --color-line:       #334155;
+    --color-ink:        #F1F5F9;
+    --color-paper:      #101827;
+    --color-card:       #172C43;
+    --color-line:       #1e3a5f;
     --color-muted:      #94a3b8;
-    --color-highlight:  #1e293b;
-    --color-market:     #60a5fa;
-    --color-market-lt:  #1e3a5f;
-    --color-social:     #34d399;
-    --color-social-lt:  #064e3b;
+    --color-highlight:  #172C43;
+    --color-market:     #7dbaf5;
+    --color-market-lt:  #0f2744;
+    --color-social:     #3dd5c4;
+    --color-social-lt:  #062e2a;
     --color-ai:         #a78bfa;
     --color-ai-lt:      #2e1065;
     --color-warn:       #fbbf24;
     --color-warn-lt:    #451a03;
     --color-error:      #f87171;
     --color-error-lt:   #450a0a;
-    --gradient-card:    linear-gradient(145deg, #1e293b 0%, #162032 100%);
+    --gradient-card:    linear-gradient(145deg, #172C43 0%, #0f1e30 100%);
   }
 }
 
 :root[data-theme="dark"] {
-  --color-ink:        #e2e8f0;
-  --color-paper:      #0f172a;
-  --color-card:       #1e293b;
-  --color-line:       #334155;
+  --color-ink:        #F1F5F9;
+  --color-paper:      #101827;
+  --color-card:       #172C43;
+  --color-line:       #1e3a5f;
   --color-muted:      #94a3b8;
-  --color-highlight:  #1e293b;
-  --color-market:     #60a5fa;
-  --color-market-lt:  #1e3a5f;
-  --color-social:     #34d399;
-  --color-social-lt:  #064e3b;
+  --color-highlight:  #172C43;
+  --color-market:     #7dbaf5;
+  --color-market-lt:  #0f2744;
+  --color-social:     #3dd5c4;
+  --color-social-lt:  #062e2a;
   --color-ai:         #a78bfa;
   --color-ai-lt:      #2e1065;
   --color-warn:       #fbbf24;
   --color-warn-lt:    #451a03;
   --color-error:      #f87171;
   --color-error-lt:   #450a0a;
-  --gradient-card:    linear-gradient(145deg, #1e293b 0%, #162032 100%);
+  --gradient-card:    linear-gradient(145deg, #172C43 0%, #0f1e30 100%);
 }

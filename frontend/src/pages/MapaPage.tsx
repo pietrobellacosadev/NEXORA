@@ -31,15 +31,16 @@ export default function MapaPage() {
       center: [-22.5, -48.5],
       zoom: 7,
       zoomControl: false,
-      attributionControl: false,
+      attributionControl: true,
     })
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+    // Dark "no-labels" tile — matches NEXORA's #101827 palette
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
       maxZoom: 13,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/" target="_blank">CARTO</a>',
     }).addTo(map)
 
     L.control.zoom({ position: 'bottomright' }).addTo(map)
-    L.control.attribution({ position: 'bottomleft', prefix: '© OpenStreetMap | © CartoDB' }).addTo(map)
 
     mapRef.current = map
 
@@ -56,11 +57,11 @@ export default function MapaPage() {
       .then(data => {
         const layer = L.geoJSON(data, {
           style: {
-            fillColor: '#2563eb',
-            fillOpacity: 0.08,
-            color: '#2563eb',
-            weight: 0.8,
-            opacity: 0.5,
+            fillColor: '#63A7F2',
+            fillOpacity: 0.12,
+            color: '#63A7F2',
+            weight: 0.9,
+            opacity: 0.7,
           },
           onEachFeature(feature, featureLayer) {
             const codigo = feature.properties?.codarea
@@ -84,10 +85,10 @@ export default function MapaPage() {
                 }
                 selectedLayerRef.current = featureLayer
                 ;(featureLayer as L.Path).setStyle({
-                  fillColor: '#f59e0b',
-                  fillOpacity: 0.35,
-                  color: '#d97706',
-                  weight: 2,
+                  fillColor: '#20B8A5',
+                  fillOpacity: 0.40,
+                  color: '#20B8A5',
+                  weight: 2.5,
                 })
                 buscarMunicipio(codigo)
               },
