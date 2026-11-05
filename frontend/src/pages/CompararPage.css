@@ -180,6 +180,66 @@
 /* ── Conteúdo ────────────────────────────────────────────────────────────── */
 .comp__content { display: flex; flex-direction: column; gap: var(--sp-4); }
 
+/* ── Tabs row + view toggle ──────────────────────────────────────────────── */
+.comp__tabs-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  border-bottom: 2px solid var(--color-line);
+}
+.comp__tabs-row .comp__tabs { border-bottom: none; }
+
+.comp__view-toggle {
+  display: flex;
+  gap: 2px;
+  padding-bottom: 2px;
+  flex-shrink: 0;
+}
+
+.comp__view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: 1.5px solid var(--color-line);
+  border-radius: var(--r-md);
+  background: none;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast);
+}
+.comp__view-btn:hover { background: var(--color-highlight); color: var(--color-ink); }
+.comp__view-btn--active {
+  background: var(--color-highlight);
+  color: var(--color-ink);
+  border-color: var(--color-market);
+}
+
+/* ── Gráfico ──────────────────────────────────────────────────────────────── */
+.comp__chart-wrap {
+  background: var(--color-card);
+  border: 1px solid var(--color-line);
+  border-radius: var(--r-xl);
+  padding: var(--sp-5);
+  box-shadow: var(--shadow-sm);
+}
+
+.comp__chart-empty {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-8);
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+  font-style: italic;
+}
+
+
+
 /* ── Tabs ────────────────────────────────────────────────────────────────── */
 .comp__tabs {
   display: flex; gap: var(--sp-2);

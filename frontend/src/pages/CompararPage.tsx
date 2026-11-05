@@ -3,7 +3,12 @@ import { motion, AnimatePresence } from 'motion/react'
 import {
   GitCompare, Search, X, TrendingUp, Users, MapPin,
   Plus, AlertCircle, Info, ShieldCheck, ChevronDown, ChevronUp,
+  TableProperties, BarChart3,
 } from 'lucide-react'
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, Legend,
+} from 'recharts'
 import api from '../lib/api'
 import type { MunicipioResumo, PerfilMunicipio, IndicadorItem } from '../types'
 import Spinner from '../components/ui/Spinner'
@@ -21,6 +26,7 @@ export default function CompararPage() {
   const [buscando, setBuscando] = useState(false)
 
   const [pilarAtivo, setPilarAtivo] = useState<'mercado' | 'social'>('mercado')
+  const [viewMode, setViewMode] = useState<'table' | 'chart'>('table')
   const [erro, setErro] = useState('')
 
   // Debounce busca
@@ -207,44 +213,70 @@ export default function CompararPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          {/* Tabs de pilar */}
-          <div className="comp__tabs" role="tablist">
-            <button
-              role="tab"
-              aria-selected={pilarAtivo === 'mercado'}
-              className={`comp__tab comp__tab--market ${pilarAtivo === 'mercado' ? 'comp__tab--active' : ''}`}
-              onClick={() => setPilarAtivo('mercado')}
-            >
-              <TrendingUp size={15} />
-              Potencial de Mercado
-              <span className="comp__tab-count">{selecionados[0]?.mercado.length ?? 0}</span>
-            </button>
-            <button
-              role="tab"
-              aria-selected={pilarAtivo === 'social'}
-              className={`comp__tab comp__tab--social ${pilarAtivo === 'social' ? 'comp__tab--active' : ''}`}
-              onClick={() => setPilarAtivo('social')}
-            >
-              <Users size={15} />
-              Potencial Social
-              <span className="comp__tab-count">{selecionados[0]?.social.length ?? 0}</span>
-            </button>
+          {/* Tabs de pilar + toggle */}
+          <div className="comp__tabs-row">
+            <div className="comp__tabs" role="tablist">
+              <button
+                role="tab"
+                aria-selected={pilarAtivo === 'mercado'}
+                className={`comp__tab comp__tab--market ${pilarAtivo === 'mercado' ? 'comp__tab--active' : ''}`}
+                onClick={() => setPilarAtivo('mercado')}
+              >
+                <TrendingUp size={15} />
+                Potencial de Mercado
+                <span className="comp__tab-count">{selecionados[0]?.mercado.length ?? 0}</span>
+              </button>
+              <button
+                role="tab"
+                aria-selected={pilarAtivo === 'social'}
+                className={`comp__tab comp__tab--social ${pilarAtivo === 'social' ? 'comp__tab--active' : ''}`}
+                onClick={() => setPilarAtivo('social')}
+              >
+                <Users size={15} />
+                Potencial Social
+                <span className="comp__tab-count">{selecionados[0]?.social.length ?? 0}</span>
+              </button>
+            </div>
+            <div className="comp__view-toggle">
+              <button
+                className={`comp__view-btn${viewMode === 'table' ? ' comp__view-btn--active' : ''}`}
+                onClick={() => setViewMode('table')}
+              >
+                <TableProperties size={14} />
+                <span>Tabela</span>
+              </button>
+              <button
+                className={`comp__view-btn${viewMode === 'chart' ? ' comp__view-btn--active' : ''}`}
+                onClick={() => setViewMode('chart')}
+              >
+                <BarChart3 size={14} />
+                <span>Gráfico</span>
+              </button>
+            </div>
           </div>
 
-          {/* Tabela */}
+          {/* Tabela / Gráfico */}
           <AnimatePresence mode="wait">
             <motion.div
-              key={pilarAtivo}
+              key={`${pilarAtivo}-${viewMode}`}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.18 }}
             >
-              <TabelaComparacao
-                selecionados={selecionados}
-                indicadoresBase={indicadores}
-                pilar={pilarAtivo}
-              />
+              {viewMode === 'chart' ? (
+                <GraficoComparacao
+                  selecionados={selecionados}
+                  indicadoresBase={indicadores}
+                  pilar={pilarAtivo}
+                />
+              ) : (
+                <TabelaComparacao
+                  selecionados={selecionados}
+                  indicadoresBase={indicadores}
+                  pilar={pilarAtivo}
+                />
+              )}
             </motion.div>
           </AnimatePresence>
 
@@ -392,5 +424,108 @@ function CelulaValor({ valor, isBest }: { valor: IndicadorItem | null; isBest: b
       {isBest && <span className="comp-cell__star" aria-label="Melhor valor">✦</span>}
       {num}
     </span>
+  )
+}
+
+/* ── Gráfico comparativo ─────────────────────────────────────────────────── */
+const MUNI_COLORS = ['#2d7dd2', '#20B8A5', '#7c3aed', '#d97706']
+
+function GraficoComparacao({
+  selecionados,
+  indicadoresBase,
+  pilar,
+}: {
+  selecionados: PerfilMunicipio[]
+  indicadoresBase: IndicadorItem[]
+  pilar: 'mercado' | 'social'
+}) {
+  // Build chart data: each row = one indicator, each key = one municipality
+  const dados = indicadoresBase
+    .filter(ind => {
+      // at least one municipality has a numeric value for this indicator
+      return selecionados.some(p => {
+        const inds = pilar === 'mercado' ? p.mercado : p.social
+        const found = inds.find(i => i.chave === ind.chave)
+        return found?.valor_num !== null && found?.valor_num !== undefined && found?.tipo !== 'indisponivel'
+      })
+    })
+    .map(ind => {
+      const row: Record<string, string | number | null> = {
+        indicador: ind.nome.length > 22 ? ind.nome.slice(0, 20) + '…' : ind.nome,
+      }
+      selecionados.forEach((p, i) => {
+        const inds = pilar === 'mercado' ? p.mercado : p.social
+        const found = inds.find(item => item.chave === ind.chave)
+        row[`muni_${i}`] = found?.valor_num ?? null
+      })
+      return row
+    })
+    .slice(0, 10)
+
+  if (dados.length === 0) {
+    return (
+      <div className="comp__chart-empty">
+        <Info size={16} />
+        Nenhum indicador com valor numérico para comparar em gráfico.
+      </div>
+    )
+  }
+
+  const chartHeight = Math.max(240, dados.length * 44)
+
+  return (
+    <div className="comp__chart-wrap">
+      <ResponsiveContainer width="100%" height={chartHeight}>
+        <BarChart
+          data={dados}
+          layout="vertical"
+          margin={{ top: 4, right: 20, bottom: 4, left: 8 }}
+          barCategoryGap="28%"
+          barGap={3}
+        >
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--color-line)" horizontal={false} />
+          <XAxis
+            type="number"
+            tick={{ fontSize: 10, fill: 'var(--color-muted)', fontFamily: 'Inter' }}
+            domain={[0, 'auto']}
+          />
+          <YAxis
+            type="category"
+            dataKey="indicador"
+            width={180}
+            tick={{ fontSize: 11, fill: 'var(--color-ink)', fontFamily: 'Inter' }}
+          />
+          <Tooltip
+            contentStyle={{
+              background: 'var(--color-card)',
+              border: '1px solid var(--color-line)',
+              borderRadius: '10px',
+              fontSize: '12px',
+              boxShadow: 'var(--shadow-lg)',
+            }}
+            formatter={(value: number) =>
+              value !== null ? value.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) : 'N/D'
+            }
+          />
+          <Legend
+            formatter={(value: string) => {
+              const idx = parseInt(value.replace('muni_', ''))
+              return selecionados[idx]?.municipio.nome ?? value
+            }}
+            wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }}
+          />
+          {selecionados.map((p, i) => (
+            <Bar
+              key={`muni_${i}`}
+              dataKey={`muni_${i}`}
+              name={`muni_${i}`}
+              fill={MUNI_COLORS[i % MUNI_COLORS.length]}
+              radius={[0, 4, 4, 0]}
+              maxBarSize={18}
+            />
+          ))}
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   )
 }
