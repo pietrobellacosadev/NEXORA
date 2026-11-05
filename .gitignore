@@ -1,4 +1,4 @@
-﻿# ─── Segredos — NUNCA commitar ────────────────────────────────────────────────
+# ─── Segredos — NUNCA commitar ────────────────────────────────────────────────
 .env
 .env.*
 !.env.example
@@ -51,8 +51,11 @@ yarn-error.log*
 
 # ─── Testes / relatórios ──────────────────────────────────────────────────────
 /test-results/
+test-results/
 /playwright-report/
+playwright-report/
 /playwright/.cache/
+playwright/.cache/
 coverage/
 
 # ─── Build artifacts ──────────────────────────────────────────────────────────

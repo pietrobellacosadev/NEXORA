@@ -26,6 +26,7 @@ from app.agents.schemas import (
 from app.agents.market_agent import AgenteMarket
 from app.agents.social_agent import AgenteSocial
 from app.services.groq_client import GroqClient, GroqError, make_client
+from app.services.agent_cache import get_cache, set_cache
 
 logger = logging.getLogger(__name__)
 
@@ -76,22 +77,31 @@ class AgenteConsolidador:
     ) -> ResultadoConsolidado:
         """
         Orquestra a investigação completa:
-        1. Aciona Mercado e Social em paralelo
-        2. Consolida os resultados
+        1. Verifica cache — retorna imediatamente se houver hit válido
+        2. Aciona Mercado e Social em paralelo
+        3. Consolida os resultados e persiste no cache
         """
+        # ── 1. Verifica cache ─────────────────────────────────────────────
+        cached = await get_cache(codigo_ibge, pergunta)
+        if cached is not None:
+            return cached
+
+        # ── 2. Execução paralela dos agentes especialistas ────────────────
         tarefa = TarefaAgente(
             codigo_ibge=codigo_ibge,
             nome_municipio=nome_municipio,
             pergunta=pergunta,
         )
 
-        # Execução paralela dos agentes especialistas
         resultado_market, resultado_social = await asyncio.gather(
             self._market.investigar(tarefa),
             self._social.investigar(tarefa),
         )
 
-        return await self._consolidar(pergunta, resultado_market, resultado_social)
+        # ── 3. Consolidação e persistência no cache ───────────────────────
+        resultado = await self._consolidar(pergunta, resultado_market, resultado_social)
+        await set_cache(codigo_ibge, pergunta, resultado)
+        return resultado
 
     async def _consolidar(
         self,

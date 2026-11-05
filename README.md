@@ -76,8 +76,11 @@ pip install -r requirements.txt
 copy .env.example .env
 # Editar .env com sua chave GROQ_API_KEY
 
-# Popular o banco de dados
+# Popular o banco de dados (municípios)
 python -m app.db.seed
+
+# Popular indicadores (Mercado + Social para os 645 municípios)
+python -m app.db.seed_indicadores
 
 # Iniciar o servidor
 python run.py

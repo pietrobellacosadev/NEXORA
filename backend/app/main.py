@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.db.database import init_db
-from app.api.routes import health, municipios, groq
+from app.api.routes import health, municipios, groq, investigar
 
 
 @asynccontextmanager
@@ -34,3 +34,4 @@ app.add_middleware(
 app.include_router(health.router, prefix="/api")
 app.include_router(municipios.router, prefix="/api")
 app.include_router(groq.router, prefix="/api")
+app.include_router(investigar.router, prefix="/api")

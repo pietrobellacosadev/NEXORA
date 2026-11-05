@@ -4,6 +4,10 @@ export interface MunicipioResumo {
   codigo_ibge: string
   nome: string
   regiao_administrativa?: string
+  mesorregiao?: string
+  microrregiao?: string
+  populacao_estimada?: number
+  // alias legado — mantido para compatibilidade
   populacao?: number
 }
 
@@ -12,39 +16,44 @@ export interface MunicipioLista {
   municipios: MunicipioResumo[]
 }
 
-export interface IndicadorValor {
+export interface IndicadorItem {
+  chave: string
   nome: string
-  valor: number | null
-  unidade: string
+  valor_num: number | null
+  valor_txt: string | null
+  unidade: string | null
   fonte: string
-  ano: number
-  limitacoes?: string
-  tipo: 'oficial' | 'calculado' | 'estimado' | 'indisponivel'
+  periodo: string
+  tipo: 'oficial' | 'calculado' | 'estimado' | 'interpretado' | 'indisponivel'
+  limitacoes: string | null
 }
 
 export interface PerfilMunicipio {
   municipio: MunicipioResumo
-  mercado: IndicadorValor[]
-  social: IndicadorValor[]
+  mercado: IndicadorItem[]
+  social: IndicadorItem[]
 }
 
 // ─── Agentes ─────────────────────────────────────────────────────────────────
 
 export type PilarTipo = 'mercado' | 'social'
-export type ContextoConectividade = 'movel' | 'fixa'
 
 export interface ResultadoAgente {
-  pilar: PilarTipo
+  pilar?: PilarTipo
+  agente?: string
+  municipio?: string
+  codigo_ibge?: string
   constatacoes: string[]
-  indicadores_utilizados: string[]
+  indicadores_utilizados?: string[]
   fontes: string[]
-  periodos: string[]
+  periodos?: string[]
   limitacoes: string[]
   dados_ausentes: string[]
 }
 
-export interface ResultadoConsolidador {
+export interface ResultadoConsolidado {
   municipio: string
+  codigo_ibge: string
   pergunta: string
   sintese: string
   mercado: ResultadoAgente
@@ -53,6 +62,9 @@ export interface ResultadoConsolidador {
   divergencias: string[]
   dados_insuficientes: string[]
   conclusao: string
+  fontes_consultadas: string[]
+  periodos_referencia?: string[]
+  limitacoes_gerais?: string[]
   is_ia: true
 }
 
