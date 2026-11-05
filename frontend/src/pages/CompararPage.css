@@ -15,16 +15,17 @@
 }
 
 .comp__header-icon {
-  width: 48px; height: 48px;
+  width: 52px; height: 52px;
   border-radius: var(--r-lg);
-  background: var(--color-market-lt);
-  color: var(--color-market);
+  background: var(--gradient-market);
+  color: #fff;
   display: grid; place-items: center;
   flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(99,167,242,.3);
 }
 
-.comp__title   { font-size: var(--text-2xl); font-weight: 800; }
-.comp__subtitle { font-size: var(--text-sm); color: var(--color-muted); margin-top: 4px; }
+.comp__title   { font-size: var(--text-2xl); font-weight: 800; margin: 0; }
+.comp__subtitle { font-size: var(--text-sm); color: var(--color-muted); margin-top: 4px; margin-bottom: 0; }
 
 /* ── Seleção ─────────────────────────────────────────────────────────────── */
 .comp__selecao {
@@ -170,11 +171,11 @@
 /* ── Vazio ───────────────────────────────────────────────────────────────── */
 .comp__empty {
   display: flex; flex-direction: column; align-items: center;
-  gap: var(--sp-3); padding: var(--sp-16) var(--sp-8); text-align: center;
+  gap: var(--sp-4); padding: var(--sp-16) var(--sp-8); text-align: center;
 }
-.comp__empty-icon  { color: var(--color-muted); opacity: 0.4; }
-.comp__empty-title { font-size: var(--text-xl); font-weight: 700; }
-.comp__empty-desc  { font-size: var(--text-sm); color: var(--color-muted); max-width: 44ch; }
+.comp__empty-icon  { color: var(--color-market); opacity: 0.5; }
+.comp__empty-title { font-size: var(--text-xl); font-weight: 700; margin: 0; }
+.comp__empty-desc  { font-size: var(--text-sm); color: var(--color-muted); max-width: 44ch; margin: 0; }
 
 /* ── Conteúdo ────────────────────────────────────────────────────────────── */
 .comp__content { display: flex; flex-direction: column; gap: var(--sp-4); }
