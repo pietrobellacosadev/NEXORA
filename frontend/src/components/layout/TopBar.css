@@ -112,6 +112,19 @@
   border-radius: var(--r-full);
 }
 
+/* Destaque especial para o link Investigar (IA) */
+.topbar__link--ai {
+  color: var(--color-ai);
+  font-weight: 600;
+}
+.topbar__link--ai:hover {
+  background: var(--color-ai-lt);
+  color: var(--color-ai);
+}
+.topbar__link--ai .topbar__link-indicator {
+  background: var(--color-ai);
+}
+
 .topbar__nav-badge {
   display: inline-flex;
   align-items: center;
