@@ -4,10 +4,11 @@ import { motion, AnimatePresence } from 'motion/react'
 import {
   Brain, TrendingUp, Users, Search, Send,
   CheckCircle, AlertCircle, Loader, ChevronDown, ChevronUp,
-  ShieldCheck, BookOpen, MapPin, X,
+  ShieldCheck, BookOpen, MapPin, X, MessageCircle, Bot,
+  DollarSign, Zap,
 } from 'lucide-react'
 import api from '../lib/api'
-import type { MunicipioResumo, ResultadoConsolidado } from '../types'
+import type { MunicipioResumo, ResultadoConsolidado, ViabilidadeFinanceira, CustoEstimado } from '../types'
 import { salvarAnalise } from './AnalisesPage'
 import './InvestigarPage.css'
 
@@ -46,6 +47,9 @@ export default function InvestigarPage() {
   const [resultado, setResultado] = useState<ResultadoConsolidado | null>(null)
   const [erro, setErro] = useState('')
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
+
+  // Chat flutuante
+  const [chatAberto, setChatAberto] = useState(false)
 
   // Busca reativa por nome
   useEffect(() => {
@@ -130,6 +134,7 @@ export default function InvestigarPage() {
   })
 
   return (
+    <>
     <motion.div
       className="inv"
       initial={{ opacity: 0, y: 14 }}
@@ -336,6 +341,29 @@ export default function InvestigarPage() {
               <p className="inv__conclusao">{resultado.conclusao}</p>
             </div>
 
+            {/* Viabilidade Financeira */}
+            {resultado.viabilidade_financeira && (
+              <ViabilidadeCard vf={resultado.viabilidade_financeira} />
+            )}
+
+            {/* Custos detalhados do agente de mercado */}
+            {resultado.mercado?.custo_estimado && (
+              <CustoCard custo={resultado.mercado.custo_estimado} />
+            )}
+
+            {/* Programas elegíveis (agente social) */}
+            {(resultado.social?.programas_elegiveis?.length ?? 0) > 0 && (
+              <div className="inv__programas">
+                <div className="inv__programas-header">
+                  <MapPin size={14} />
+                  <strong>Programas públicos de financiamento aplicáveis</strong>
+                </div>
+                <ul className="inv__programas-list">
+                  {resultado.social!.programas_elegiveis!.map((p, i) => <li key={i}>{p}</li>)}
+                </ul>
+              </div>
+            )}
+
             {/* Pilares */}
             <div className="inv__pilares">
               <ResultSection
@@ -411,6 +439,153 @@ export default function InvestigarPage() {
         )}
       </AnimatePresence>
 
+    </motion.div>
+
+    {/* ── FAB de chat flutuante ────────────────────────────────────────────── */}
+    <button
+      className={`inv__fab${chatAberto ? ' inv__fab--active' : ''}`}
+      onClick={() => setChatAberto(o => !o)}
+      aria-label={chatAberto ? 'Fechar chat IA' : 'Abrir chat com IA'}
+      title={chatAberto ? 'Fechar' : 'Conversar com a IA'}
+    >
+      <AnimatePresence mode="wait" initial={false}>
+        {chatAberto
+          ? <motion.span key="x" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.15 }}><X size={20} /></motion.span>
+          : <motion.span key="msg" initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.7, opacity: 0 }} transition={{ duration: 0.15 }}><MessageCircle size={20} /></motion.span>
+        }
+      </AnimatePresence>
+    </button>
+
+    <AnimatePresence>
+      {chatAberto && (
+        <ChatOverlay
+          municipio={municipioResolvido}
+          contextoAnalise={resultado}
+          onClose={() => setChatAberto(false)}
+        />
+      )}
+    </AnimatePresence>
+  </>
+  )
+}
+
+/* ── Chat overlay flutuante ─────────────────────────────────────────────── */
+
+interface ChatMsg { role: 'user' | 'assistant'; text: string }
+
+function ChatOverlay({
+  municipio,
+  contextoAnalise,
+  onClose,
+}: {
+  municipio: MunicipioResumo | null
+  contextoAnalise: ResultadoConsolidado | null
+  onClose: () => void
+}) {
+  const [msgs, setMsgs] = useState<ChatMsg[]>([{
+    role: 'assistant',
+    text: municipio
+      ? `Olá! Sou a IA do NEXORA. Você está analisando **${municipio.nome}**. Faça qualquer pergunta sobre conectividade, custos, viabilidade ou impacto social neste município.`
+      : 'Olá! Sou a IA do NEXORA. Selecione um município e faça uma pergunta para começar a análise.',
+  }])
+  const [input, setInput] = useState('')
+  const [enviando, setEnviando] = useState(false)
+  const bottomRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [msgs])
+
+  useEffect(() => {
+    inputRef.current?.focus()
+  }, [])
+
+  const enviar = async () => {
+    const txt = input.trim()
+    if (!txt || enviando || !municipio) return
+    setInput('')
+    setMsgs(prev => [...prev, { role: 'user', text: txt }])
+    setEnviando(true)
+    try {
+      const { data } = await api.post<ResultadoConsolidado>('/investigar', {
+        codigo_ibge: municipio.codigo_ibge,
+        pergunta: txt,
+      })
+      const resposta = data.sintese + (data.conclusao ? `\n\n**Conclusão:** ${data.conclusao}` : '')
+      setMsgs(prev => [...prev, { role: 'assistant', text: resposta }])
+    } catch {
+      setMsgs(prev => [...prev, { role: 'assistant', text: 'Erro ao consultar a IA. Tente novamente.' }])
+    } finally {
+      setEnviando(false)
+    }
+  }
+
+  const onKey = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviar() }
+  }
+
+  return (
+    <motion.div
+      className="inv__chat"
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 20, scale: 0.95 }}
+      transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <div className="inv__chat-header">
+        <div className="inv__chat-header-icon"><Bot size={15} /></div>
+        <div className="inv__chat-header-text">
+          <span className="inv__chat-header-title">NEXORA IA</span>
+          <span className="inv__chat-header-sub">
+            {municipio ? municipio.nome : 'Selecione um município'}
+          </span>
+        </div>
+        <button className="inv__chat-close" onClick={onClose} aria-label="Fechar"><X size={14} /></button>
+      </div>
+
+      <div className="inv__chat-body">
+        {msgs.map((m, i) => (
+          <div key={i} className={`inv__chat-msg inv__chat-msg--${m.role}`}>
+            {m.role === 'assistant' && <div className="inv__chat-avatar"><Bot size={12} /></div>}
+            <div className="inv__chat-bubble">
+              {m.text.split('\n').map((line, j) => (
+                <span key={j}>{line}{j < m.text.split('\n').length - 1 && <br />}</span>
+              ))}
+            </div>
+          </div>
+        ))}
+        {enviando && (
+          <div className="inv__chat-msg inv__chat-msg--assistant">
+            <div className="inv__chat-avatar"><Bot size={12} /></div>
+            <div className="inv__chat-bubble inv__chat-bubble--typing">
+              <span /><span /><span />
+            </div>
+          </div>
+        )}
+        <div ref={bottomRef} />
+      </div>
+
+      <div className="inv__chat-footer">
+        <input
+          ref={inputRef}
+          type="text"
+          className="inv__chat-input"
+          placeholder={municipio ? 'Pergunte sobre o município…' : 'Selecione um município primeiro'}
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={onKey}
+          disabled={!municipio || enviando}
+        />
+        <button
+          className="inv__chat-send"
+          onClick={enviar}
+          disabled={!input.trim() || !municipio || enviando}
+          aria-label="Enviar"
+        >
+          {enviando ? <Loader size={14} className="inv__btn-spin" /> : <Send size={14} />}
+        </button>
+      </div>
     </motion.div>
   )
 }
@@ -491,6 +666,102 @@ function ResultSection({ title, icon, color, items, fontes, limitacoes, ausentes
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  )
+}
+
+/* ── Viabilidade Financeira Card ─────────────────────────────────────────── */
+function ViabilidadeCard({ vf }: { vf: ViabilidadeFinanceira }) {
+  const cor = vf.classificacao === 'ALTO' ? 'var(--color-ok)' :
+    vf.classificacao === 'MÉDIO' ? 'var(--color-warn)' : 'var(--color-error)'
+
+  return (
+    <div className="inv__viabilidade">
+      <div className="inv__viabilidade-header">
+        <Zap size={15} className="inv__viabilidade-icon" />
+        <strong>Viabilidade Financeira Consolidada</strong>
+        {vf.classificacao && (
+          <span className="inv__viabilidade-badge" style={{ color: cor, borderColor: cor }}>
+            {vf.classificacao}
+          </span>
+        )}
+      </div>
+      <div className="inv__viabilidade-grid">
+        {vf.tipo_rede_recomendado && (
+          <div className="inv__viabilidade-item">
+            <span className="inv__viabilidade-label">Rede recomendada</span>
+            <span className="inv__viabilidade-value">{vf.tipo_rede_recomendado}</span>
+          </div>
+        )}
+        {vf.investimento_estimado_range && (
+          <div className="inv__viabilidade-item">
+            <span className="inv__viabilidade-label">Investimento estimado</span>
+            <span className="inv__viabilidade-value">{vf.investimento_estimado_range}</span>
+          </div>
+        )}
+        {vf.payback_anos && (
+          <div className="inv__viabilidade-item">
+            <span className="inv__viabilidade-label">Payback estimado</span>
+            <span className="inv__viabilidade-value">{vf.payback_anos}</span>
+          </div>
+        )}
+        {vf.financiamentos_disponiveis && (
+          <div className="inv__viabilidade-item inv__viabilidade-item--full">
+            <span className="inv__viabilidade-label">Financiamentos públicos</span>
+            <span className="inv__viabilidade-value">{vf.financiamentos_disponiveis}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/* ── Custo Detalhado Card ─────────────────────────────────────────────────── */
+function CustoCard({ custo }: { custo: CustoEstimado }) {
+  const formatBRL = (v?: number) =>
+    v != null ? 'R$ ' + v.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) : null
+
+  return (
+    <div className="inv__custo">
+      <div className="inv__custo-header">
+        <DollarSign size={15} className="inv__custo-icon" />
+        <strong>Estimativa de Custos de Implantação</strong>
+        {custo.tipo_rede && <span className="inv__badge inv__badge--market">{custo.tipo_rede}</span>}
+      </div>
+      <div className="inv__custo-grid">
+        {(custo.custo_total_min_reais || custo.custo_total_max_reais) && (
+          <div className="inv__custo-item">
+            <span className="inv__custo-label">Investimento total</span>
+            <span className="inv__custo-value">
+              {formatBRL(custo.custo_total_min_reais)} — {formatBRL(custo.custo_total_max_reais)}
+            </span>
+          </div>
+        )}
+        {custo.custo_por_domicilio && (
+          <div className="inv__custo-item">
+            <span className="inv__custo-label">Custo por domicílio</span>
+            <span className="inv__custo-value">{custo.custo_por_domicilio}</span>
+          </div>
+        )}
+        {custo.payback_estimado_anos && (
+          <div className="inv__custo-item">
+            <span className="inv__custo-label">Payback estimado</span>
+            <span className="inv__custo-value">{custo.payback_estimado_anos}</span>
+          </div>
+        )}
+        {custo.classificacao_retorno && (
+          <div className="inv__custo-item">
+            <span className="inv__custo-label">Classificação</span>
+            <span className="inv__custo-value">{custo.classificacao_retorno}</span>
+          </div>
+        )}
+        {custo.premissas && (
+          <div className="inv__custo-item inv__custo-item--full">
+            <span className="inv__custo-label">Premissas</span>
+            <span className="inv__custo-value inv__custo-muted">{custo.premissas}</span>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
