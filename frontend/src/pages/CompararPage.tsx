@@ -5,10 +5,7 @@ import {
   Plus, AlertCircle, Info, ShieldCheck, ChevronDown, ChevronUp,
   TableProperties, BarChart3,
 } from 'lucide-react'
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Legend,
-} from 'recharts'
+import ReactECharts from 'echarts-for-react'
 import api from '../lib/api'
 import type { MunicipioResumo, PerfilMunicipio, IndicadorItem } from '../types'
 import Spinner from '../components/ui/Spinner'
@@ -445,30 +442,18 @@ function GraficoComparacao({
   indicadoresBase: IndicadorItem[]
   pilar: 'mercado' | 'social'
 }) {
-  // Build chart data: each row = one indicator, each key = one municipality
-  const dados = indicadoresBase
-    .filter(ind => {
-      // at least one municipality has a numeric value for this indicator
-      return selecionados.some(p => {
+  const indicadoresFiltrados = indicadoresBase
+    .filter(ind =>
+      selecionados.some(p => {
         const inds = pilar === 'mercado' ? p.mercado : p.social
         const found = inds.find(i => i.chave === ind.chave)
-        return found?.valor_num !== null && found?.valor_num !== undefined && found?.tipo !== 'indisponivel'
+        return found?.valor_num !== null && found?.valor_num !== undefined &&
+               (found?.valor_num as number) > 0 && found?.tipo !== 'indisponivel'
       })
-    })
-    .map(ind => {
-      const row: Record<string, string | number | null> = {
-        indicador: ind.nome.length > 22 ? ind.nome.slice(0, 20) + '…' : ind.nome,
-      }
-      selecionados.forEach((p, i) => {
-        const inds = pilar === 'mercado' ? p.mercado : p.social
-        const found = inds.find(item => item.chave === ind.chave)
-        row[`muni_${i}`] = found?.valor_num ?? null
-      })
-      return row
-    })
+    )
     .slice(0, 10)
 
-  if (dados.length === 0) {
+  if (indicadoresFiltrados.length === 0) {
     return (
       <div className="comp__chart-empty">
         <Info size={16} />
@@ -477,62 +462,90 @@ function GraficoComparacao({
     )
   }
 
-  const chartHeight = Math.max(240, dados.length * 44)
+  // Normalização por indicador: cada município recebe % do máximo entre eles
+  // Resolve incompatibilidade de escala entre indicadores (ex: pop. vs IDHM)
+  // Tooltip sempre mostra o valor real
+  const valoresReais: Record<string, Record<string, number | null>> = {}
+  for (const ind of indicadoresFiltrados) {
+    valoresReais[ind.chave] = {}
+    for (const p of selecionados) {
+      const inds = pilar === 'mercado' ? p.mercado : p.social
+      const found = inds.find(item => item.chave === ind.chave)
+      valoresReais[ind.chave][p.municipio.codigo_ibge] = found?.valor_num ?? null
+    }
+  }
+
+  const categorias = indicadoresFiltrados.map(ind =>
+    ind.nome.length > 24 ? ind.nome.slice(0, 22) + '…' : ind.nome
+  )
+
+  // Grid left dinâmico
+  const maxNomeLen = Math.max(...categorias.map(c => c.length))
+  const gridLeft = Math.min(240, Math.max(140, maxNomeLen * 7))
+
+  const series = selecionados.map((p, i) => ({
+    name: p.municipio.nome,
+    type: 'bar' as const,
+    data: indicadoresFiltrados.map(ind => {
+      const valorReal = valoresReais[ind.chave][p.municipio.codigo_ibge]
+      if (valorReal === null || valorReal === undefined || valorReal <= 0) return null
+      // Normaliza pelo máximo entre todos os municípios nesse indicador
+      const todosValores = selecionados
+        .map(s => valoresReais[ind.chave][s.municipio.codigo_ibge])
+        .filter((v): v is number => v !== null && v !== undefined && v > 0)
+      const maxV = todosValores.length ? Math.max(...todosValores) : valorReal
+      return maxV > 0 ? (valorReal / maxV) * 100 : 0
+    }),
+    itemStyle: { color: MUNI_COLORS[i % MUNI_COLORS.length], borderRadius: [0, 3, 3, 0] },
+    barMaxWidth: 18,
+  }))
+
+  const chartHeight = Math.max(260, indicadoresFiltrados.length * 52)
+
+  const option = {
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+      formatter: (params: Array<{ seriesName: string; value: number | null; dataIndex: number; marker: string }>) => {
+        const indIndex = params[0]?.dataIndex ?? 0
+        const ind = indicadoresFiltrados[indIndex]
+        const unidade = ind?.unidade ? ` ${ind.unidade}` : ''
+        const linhas = params.map(p => {
+          const muni = selecionados.find(s => s.municipio.nome === p.seriesName)
+          const vReal = muni ? valoresReais[ind.chave]?.[muni.municipio.codigo_ibge] : null
+          const vStr = vReal !== null && vReal !== undefined
+            ? vReal.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) + unidade
+            : 'N/D'
+          return `${p.marker} ${p.seriesName}: <b>${vStr}</b>`
+        })
+        return `<b>${ind?.nome ?? ''}</b><br/>${linhas.join('<br/>')}`
+      },
+    },
+    legend: {
+      bottom: 0,
+      textStyle: { fontSize: 11 },
+    },
+    grid: { left: gridLeft, right: 20, top: 10, bottom: 36, containLabel: false },
+    xAxis: {
+      type: 'value' as const,
+      max: 100,
+      axisLabel: { show: false },
+      splitLine: { lineStyle: { type: 'dashed' as const, color: '#e5e7eb' } },
+    },
+    yAxis: {
+      type: 'category' as const,
+      data: categorias,
+      axisLabel: { fontSize: 11, width: gridLeft - 8, overflow: 'truncate' as const },
+    },
+    series,
+  }
 
   return (
     <div className="comp__chart-wrap">
-      <ResponsiveContainer width="100%" height={chartHeight}>
-        <BarChart
-          data={dados}
-          layout="vertical"
-          margin={{ top: 4, right: 20, bottom: 4, left: 8 }}
-          barCategoryGap="28%"
-          barGap={3}
-        >
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--color-line)" horizontal={false} />
-          <XAxis
-            type="number"
-            tick={{ fontSize: 10, fill: 'var(--color-muted)', fontFamily: 'Inter' }}
-            domain={[0, 'auto']}
-          />
-          <YAxis
-            type="category"
-            dataKey="indicador"
-            width={180}
-            tick={{ fontSize: 11, fill: 'var(--color-ink)', fontFamily: 'Inter' }}
-          />
-          <Tooltip
-            contentStyle={{
-              background: 'var(--color-card)',
-              border: '1px solid var(--color-line)',
-              borderRadius: '10px',
-              fontSize: '12px',
-              boxShadow: 'var(--shadow-lg)',
-            }}
-            formatter={(value) => {
-              const v = value as number | null
-              return v !== null && v !== undefined ? v.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) : 'N/D'
-            }}
-          />
-          <Legend
-            formatter={(value: string) => {
-              const idx = parseInt(value.replace('muni_', ''))
-              return selecionados[idx]?.municipio.nome ?? value
-            }}
-            wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }}
-          />
-          {selecionados.map((_p, i) => (
-            <Bar
-              key={`muni_${i}`}
-              dataKey={`muni_${i}`}
-              name={`muni_${i}`}
-              fill={MUNI_COLORS[i % MUNI_COLORS.length]}
-              radius={[0, 4, 4, 0]}
-              maxBarSize={18}
-            />
-          ))}
-        </BarChart>
-      </ResponsiveContainer>
+      <p className="comp__chart-note">
+        Barras normalizadas por indicador (% do maior valor entre municípios). Passe o cursor para ver o valor real.
+      </p>
+      <ReactECharts option={option} style={{ height: chartHeight }} notMerge={true} />
     </div>
   )
 }

@@ -239,6 +239,18 @@
 }
 
 
+.comp__chart-note {
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  font-style: italic;
+  margin: 0 0 var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--color-highlight);
+  border-radius: var(--r-sm);
+}
+
+
+
 
 /* ── Tabs ────────────────────────────────────────────────────────────────── */
 .comp__tabs {
@@ -406,12 +418,28 @@
 
 /* ── Responsivo ─────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .comp__chips { gap: var(--sp-1); }
+  .comp                { gap: var(--sp-4); }
+  .comp__header        { gap: var(--sp-3); }
+  .comp__header-icon   { width: 42px; height: 42px; }
+  .comp__title         { font-size: var(--text-xl); }
+  .comp__chips         { gap: var(--sp-1); }
+  .comp__tabs-row      { flex-direction: column; gap: var(--sp-2); }
+  .comp__view-toggle   { width: 100%; justify-content: flex-start; }
+  .comp-tabela__scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .comp-tabela__th-ind,
-  .comp-tabela__td-ind { min-width: 140px; }
-  .comp-tabela__th-muni { min-width: 120px; }
+  .comp-tabela__td-ind { min-width: 130px; font-size: var(--text-xs); }
+  .comp-tabela__th-muni { min-width: 110px; }
+  .comp-cell__val      { font-size: var(--text-sm); }
 }
 
 @media (max-width: 480px) {
-  .comp__tabs { overflow-x: auto; }
+  .comp__header-icon   { display: none; }
+  .comp__tabs          { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .comp__tab           { font-size: var(--text-xs); padding: var(--sp-2) var(--sp-2); white-space: nowrap; }
+  .comp-tabela__th-ind,
+  .comp-tabela__td-ind { min-width: 110px; padding: var(--sp-2); }
+  .comp-tabela__th-muni { min-width: 90px; padding: var(--sp-2); }
+  .comp-tabela__toggle { padding: var(--sp-2) var(--sp-3); }
+  .comp__integrity     { font-size: var(--text-xs); }
+  .comp__selecao       { padding: var(--sp-3); }
 }
