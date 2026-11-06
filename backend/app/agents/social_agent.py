@@ -21,12 +21,23 @@ from app.services.groq_client import GroqClient, GroqError, make_client
 
 logger = logging.getLogger(__name__)
 
-SYSTEM_PROMPT = """Agente Social NEXORA — necessidade e impacto social de internet em municípios paulistas.
-Analise os indicadores sociais fornecidos e responda à pergunta do usuário.
-Regras: baseie-se EXCLUSIVAMENTE nos indicadores fornecidos; nunca invente dados; se indisponível, diga explicitamente.
-Responda APENAS em JSON válido sem markdown."""
+SYSTEM_PROMPT = """Agente Social NEXORA — necessidade social, impacto e elegibilidade a programas de conectividade em municípios paulistas.
 
-SCHEMA_INSTRUCAO = 'Retorne JSON com chaves: "constatacoes" (array de strings), "evidencias" (array de {nome,valor,unidade,fonte,periodo,tipo,limitacoes}), "fontes" (array), "periodos" (array), "limitacoes" (array), "dados_ausentes" (array).'
+Sua função: analisar indicadores sociais reais e determinar a urgência e o impacto social da expansão de internet no município.
+
+REGRAS OBRIGATÓRIAS:
+1. Baseie-se EXCLUSIVAMENTE nos indicadores fornecidos — nunca invente valores.
+2. Se um indicador estiver indisponível, diga explicitamente.
+3. Avalie elegibilidade a programas públicos de conectividade com base nos dados:
+   - PNBL / Programa Internet para Todos (MCom): municípios com < 30% acesso domiciliar
+   - Conta de Internet (ANEEL/Anatel): municípios com vulnerabilidade social e baixo IDH
+   - GESAC / EduConecta: escolas públicas sem internet ou com acesso precário
+   - Emenda parlamentar e FUST: municípios com população < 30 mil hab em geral elegíveis
+4. Quantifique o impacto esperado: nº de domicílios beneficiados, escolas, unidades de saúde.
+5. Cite as fontes dos indicadores (IBGE PNAD, IBGE Censo, INEP, DATASUS, IPEA).
+6. Responda APENAS em JSON válido sem markdown."""
+
+SCHEMA_INSTRUCAO = 'Retorne JSON com chaves: "constatacoes" (array de strings com análise social E elegibilidade a programas), "programas_elegiveis" (array de strings com nomes de programas e justificativa), "impacto_estimado" (objeto com {domicilios_beneficiados,escolas_beneficiadas,reducao_exclusao_digital_pct,observacoes}), "evidencias" (array de {nome,valor,unidade,fonte,periodo,tipo,limitacoes}), "fontes" (array), "periodos" (array), "limitacoes" (array), "dados_ausentes" (array).'
 
 
 def _extrair_json(raw: str) -> str:
@@ -72,7 +83,7 @@ class AgenteSocial:
 
         try:
             resposta_raw = await self._client.chat(
-                messages, max_tokens=800, temperature=0.1, json_mode=True
+                messages, max_tokens=1200, temperature=0.1, json_mode=True
             )
             return self._parsear(resposta_raw, tarefa)
         except GroqError as exc:
@@ -125,6 +136,8 @@ class AgenteSocial:
                 periodos=data.get("periodos", []),
                 limitacoes=data.get("limitacoes", []),
                 dados_ausentes=data.get("dados_ausentes", []),
+                programas_elegiveis=data.get("programas_elegiveis", []),
+                impacto_estimado=data.get("impacto_estimado"),
                 modelo_usado=self._client.model,
             )
 
