@@ -31,11 +31,19 @@ from app.services.agent_cache import get_cache, set_cache
 
 logger = logging.getLogger(__name__)
 
-SYSTEM_PROMPT = """Agente Consolidador NEXORA — integra análises de Mercado e Social sobre instalação de internet em municípios paulistas.
-Compare os dois pilares, responda à pergunta do usuário e nunca invente dados.
-Responda APENAS em JSON válido sem markdown."""
+SYSTEM_PROMPT = """Agente Consolidador NEXORA — integra análises de Mercado e Social sobre instalação de internet em municípios paulistas, incluindo viabilidade financeira.
 
-SCHEMA_INSTRUCAO = 'Retorne JSON com: "sintese" (string), "convergencias" (array), "divergencias" (array), "dados_insuficientes" (array), "conclusao" (string), "fontes_consolidadas" (array), "periodos_referencia" (array), "limitacoes_gerais" (array).'
+Sua função: sintetizar as análises dos dois pilares e produzir uma visão integrada de viabilidade.
+
+REGRAS OBRIGATÓRIAS:
+1. Compare os dois pilares (mercado e social) de forma equilibrada.
+2. Inclua na síntese: viabilidade técnica, custo estimado de implantação e retorno esperado.
+3. Indique claramente o tipo de rede mais adequado para o município (FTTH, WISP, LTE, misto).
+4. Mencione programas de financiamento público aplicáveis (FUST, BNDES, PNBL, editais ANATEL).
+5. Nunca invente dados — use apenas o que foi fornecido pelos agentes especialistas.
+6. Responda APENAS em JSON válido sem markdown."""
+
+SCHEMA_INSTRUCAO = 'Retorne JSON com: "sintese" (string descrevendo viabilidade geral, tipo de rede recomendado E custo consolidado), "viabilidade_financeira" (objeto com {tipo_rede_recomendado,investimento_estimado_range,payback_anos,classificacao,financiamentos_disponiveis}), "convergencias" (array), "divergencias" (array), "dados_insuficientes" (array), "conclusao" (string com recomendação final objetiva), "fontes_consolidadas" (array), "periodos_referencia" (array), "limitacoes_gerais" (array).'
 
 
 class AgenteConsolidador:
@@ -201,6 +209,7 @@ class AgenteConsolidador:
                 mercado=market,
                 social=social,
                 sintese=data.get("sintese", ""),
+                viabilidade_financeira=data.get("viabilidade_financeira"),
                 convergencias=data.get("convergencias", []),
                 divergencias=data.get("divergencias", []),
                 dados_insuficientes=data.get("dados_insuficientes", []),
