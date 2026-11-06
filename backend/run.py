@@ -6,5 +6,5 @@ if __name__ == "__main__":
         "app.main:app",
         host=settings.app_host,
         port=settings.app_port,
-        reload=settings.app_reload,
+        reload=False,  # Reload desabilitado — mata o processo no Windows ao detectar mudanças
     )

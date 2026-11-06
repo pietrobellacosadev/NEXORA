@@ -31,38 +31,11 @@ from app.services.agent_cache import get_cache, set_cache
 
 logger = logging.getLogger(__name__)
 
-SYSTEM_PROMPT = """Você é o Agente Consolidador do NEXORA, responsável por integrar as análises dos Agentes de Mercado e Social e responder objetivamente à pergunta do usuário sobre instalação ou expansão de internet em municípios paulistas.
+SYSTEM_PROMPT = """Agente Consolidador NEXORA — integra análises de Mercado e Social sobre instalação de internet em municípios paulistas.
+Compare os dois pilares, responda à pergunta do usuário e nunca invente dados.
+Responda APENAS em JSON válido sem markdown."""
 
-Contexto do projeto: O NEXORA apoia provedores de internet (ISPs) e operadoras na decisão estratégica de onde instalar infraestrutura de conectividade (fibra óptica, 4G/5G, banda larga fixa) em municípios do Estado de São Paulo. Sua análise deve sempre ser orientada a esse contexto.
-
-Suas responsabilidades:
-- Responder diretamente à pergunta original do usuário com foco em viabilidade de instalação de internet
-- Comparar explicitamente o que o pilar de MERCADO e o pilar SOCIAL dizem sobre a pergunta
-- Identificar convergências: onde mercado e social chegam à mesma conclusão sobre a viabilidade
-- Identificar divergências: onde os pilares apontam em direções opostas (ex.: mercado favorável mas barreira social alta)
-- Sinalizar dados insuficientes que impediram uma resposta mais completa
-- Formular conclusão orientada à decisão de instalação de internet, sem prescrição definitiva
-
-Regras obrigatórias:
-- NUNCA invente dados, fontes ou conclusões sem evidências suficientes
-- A síntese deve RESPONDER À PERGUNTA no contexto de instalação de internet
-- Compare os pilares explicitamente: "O pilar de mercado indica X, enquanto o pilar social indica Y"
-- Quando não houver informação suficiente, informe explicitamente
-- Não substitua lacunas com suposições ou estimativas não fundamentadas
-- A decisão final é do usuário (ISP/operadora) — não faça recomendações definitivas
-
-Responda APENAS em JSON válido, sem texto fora do JSON, seguindo exatamente o schema fornecido."""
-
-SCHEMA_RESPOSTA = {
-    "sintese": "parágrafo que responde à pergunta comparando explicitamente os pilares de mercado e social",
-    "convergencias": ["pontos em que mercado e social chegam à mesma conclusão sobre a pergunta"],
-    "divergencias": ["pontos em que mercado e social divergem ou se contradizem em relação à pergunta"],
-    "dados_insuficientes": ["dados que seriam necessários para responder à pergunta com mais precisão"],
-    "conclusao": "resposta direta e equilibrada à pergunta, fundamentada nas evidências dos dois pilares",
-    "fontes_consolidadas": ["fontes referenciadas na síntese"],
-    "periodos_referencia": ["períodos cobertos pela análise"],
-    "limitacoes_gerais": ["limitações que afetam a confiabilidade da resposta à pergunta"]
-}
+SCHEMA_INSTRUCAO = 'Retorne JSON com: "sintese" (string), "convergencias" (array), "divergencias" (array), "dados_insuficientes" (array), "conclusao" (string), "fontes_consolidadas" (array), "periodos_referencia" (array), "limitacoes_gerais" (array).'
 
 
 class AgenteConsolidador:
@@ -105,10 +78,11 @@ class AgenteConsolidador:
             contexto_extra=contexto_social or None,
         )
 
-        resultado_market, resultado_social = await asyncio.gather(
-            self._market.investigar(tarefa_market),
-            self._social.investigar(tarefa_social),
-        )
+        # Market e social executam em sequência.
+        # Delay de 30s antes do consolidador para aguardar reset parcial do TPM (janela 60s).
+        resultado_market = await self._market.investigar(tarefa_market)
+        resultado_social = await self._social.investigar(tarefa_social)
+        await asyncio.sleep(30)
 
         # ── 3. Consolidação e persistência no cache ───────────────────────
         resultado = await self._consolidar(pergunta, resultado_market, resultado_social)
@@ -146,15 +120,11 @@ class AgenteConsolidador:
             {
                 "role": "user",
                 "content": (
-                    f"Município: {market.municipio} (código IBGE: {market.codigo_ibge})\n"
-                    f"Pergunta do usuário: {pergunta}\n\n"
-                    f"=== RESULTADO DO AGENTE DE MERCADO ===\n"
-                    f"{json.dumps(resumo_market, ensure_ascii=False, indent=2)}\n\n"
-                    f"=== RESULTADO DO AGENTE SOCIAL ===\n"
-                    f"{json.dumps(resumo_social, ensure_ascii=False, indent=2)}\n\n"
-                    f"Responda à pergunta \"{pergunta}\" comparando explicitamente os dois pilares. "
-                    f"Produza o JSON conforme este schema:\n"
-                    f"{json.dumps(SCHEMA_RESPOSTA, ensure_ascii=False, indent=2)}"
+                    f"Município: {market.municipio} ({market.codigo_ibge}) — SP\n"
+                    f"Pergunta: {pergunta}\n\n"
+                    f"MERCADO: {json.dumps(resumo_market, ensure_ascii=False, separators=(',',':'))}\n\n"
+                    f"SOCIAL: {json.dumps(resumo_social, ensure_ascii=False, separators=(',',':'))}\n\n"
+                    f"{SCHEMA_INSTRUCAO}"
                 ),
             },
         ]
@@ -164,7 +134,7 @@ class AgenteConsolidador:
 
         try:
             resposta_raw, tokens_consolidador = await self._client.chat(
-                messages, max_tokens=4096, temperature=0.1, json_mode=True,
+                messages, max_tokens=1000, temperature=0.1, json_mode=True,
                 return_usage=True,
             )
             return self._parsear(

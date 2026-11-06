@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     app_env: str = Field(default="development")
     app_host: str = Field(default="127.0.0.1")
     app_port: int = Field(default=8000)
-    app_reload: bool = Field(default=True)
+    app_reload: bool = Field(default=False)
 
     # ── Banco de dados ────────────────────────────────────────────────────────
     db_path: str = Field(default="./nexora.db")
@@ -31,15 +31,17 @@ class Settings(BaseSettings):
     groq_api_key_consolidator: SecretStr = Field(default=SecretStr(""))
 
     # ── GroqCloud — modelos por agente ────────────────────────────────────────
-    # Modelos confirmados disponíveis na conta GroqCloud (verificado em 2026-11)
-    groq_model_market: str = Field(default="llama-3.1-8b-instant")
-    groq_model_social: str = Field(default="llama-3.1-8b-instant")
-    groq_model_consolidator: str = Field(default="llama-3.3-70b-versatile")
+    # Modelos confirmados disponíveis nas chaves desta conta (verificado 2026-11)
+    # llama-3.x retorna 404 — não disponível nestas chaves.
+    # Modelos de chat disponíveis: qwen/qwen3.8-27b · openai/gpt-oss-20b · openai/gpt-oss-120b
+    groq_model_market: str = Field(default="qwen/qwen3.8-27b")
+    groq_model_social: str = Field(default="qwen/qwen3.8-27b")
+    groq_model_consolidator: str = Field(default="qwen/qwen3.8-27b")
 
     # ── GroqCloud — limites de consumo ────────────────────────────────────────
     groq_max_tokens: int = Field(default=4096)
     groq_timeout_seconds: int = Field(default=60)
-    groq_max_retries: int = Field(default=2)
+    groq_max_retries: int = Field(default=1)
 
     def groq_key_for(self, agent: str) -> str:
         """

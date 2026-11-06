@@ -4,9 +4,9 @@ import { Home, Map, BarChart2, MessageSquare, Clock } from 'lucide-react'
 import './NotFoundPage.css'
 
 const ATALHOS = [
-  { to: '/',           label: 'Dashboard',  icon: Home          },
+  { to: '/',           label: 'Início',     icon: Home          },
   { to: '/mapa',       label: 'Mapa',       icon: Map           },
-  { to: '/perfil',     label: 'Perfil',     icon: BarChart2     },
+  { to: '/dashboard',  label: 'Dashboard',  icon: BarChart2     },
   { to: '/analises',   label: 'Análises',   icon: Clock         },
   { to: '/investigar', label: 'Investigar', icon: MessageSquare },
 ]

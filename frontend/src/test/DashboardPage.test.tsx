@@ -1,24 +1,24 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import DashboardPage from '../pages/DashboardPage'
+import InicioPage from '../pages/InicioPage'
 
-describe('DashboardPage', () => {
+describe('InicioPage', () => {
   it('renderiza o título principal', () => {
-    render(<MemoryRouter><DashboardPage /></MemoryRouter>)
+    render(<MemoryRouter><InicioPage /></MemoryRouter>)
     expect(screen.getByText(/dados reais/i)).toBeTruthy()
   })
 
   it('exibe os cards de funcionalidades', () => {
-    render(<MemoryRouter><DashboardPage /></MemoryRouter>)
+    render(<MemoryRouter><InicioPage /></MemoryRouter>)
     expect(screen.getByText('Mapa Territorial')).toBeTruthy()
-    expect(screen.getByText('Perfil Municipal')).toBeTruthy()
+    expect(screen.getByText('Dashboard')).toBeTruthy()
     expect(screen.getByText('Análises Recentes')).toBeTruthy()
     expect(screen.getByText('Investigação por IA')).toBeTruthy()
   })
 
   it('exibe os stats', () => {
-    render(<MemoryRouter><DashboardPage /></MemoryRouter>)
+    render(<MemoryRouter><InicioPage /></MemoryRouter>)
     expect(screen.getByText('645')).toBeTruthy()
     expect(screen.getByText('3')).toBeTruthy()
   })

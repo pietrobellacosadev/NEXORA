@@ -37,28 +37,39 @@ class PedidoInvestigacao(BaseModel):
 _CATEGORIA_LABEL = {"mercado": "mercado", "social": "sociais"}
 
 
+# Indicadores prioritários por categoria (limitamos a estes para economizar tokens)
+_CHAVES_MERCADO = {
+    "penetracao_internet_fixa", "cobertura_4g", "pib_per_capita",
+    "densidade_movel", "populacao_estimada", "emprego_formal_pct",
+}
+_CHAVES_SOCIAL = {
+    "acesso_internet_domiciliar", "indice_inclusao_digital", "idhm",
+    "pobreza_extrema_pct", "taxa_alfabetizacao", "escolas_publicas",
+}
+
+
 def _formatar_indicadores(rows: list, categoria: str) -> str:
-    """Formata indicadores do banco em texto estruturado para o agente."""
-    items = [r for r in rows if r["categoria"] == categoria]
+    """Formata indicadores do banco em texto compacto para o agente."""
+    chaves_ok = _CHAVES_MERCADO if categoria == "mercado" else _CHAVES_SOCIAL
+    items = [r for r in rows if r["categoria"] == categoria and r["chave"] in chaves_ok]
     if not items:
-        label = _CATEGORIA_LABEL.get(categoria, categoria)
-        return f"Nenhum indicador {label} disponível para este município."
+        # fallback: qualquer indicador da categoria (máx 6)
+        items = [r for r in rows if r["categoria"] == categoria][:6]
+    if not items:
+        return f"Nenhum indicador de {categoria} disponível."
 
     linhas = []
     for r in items:
         valor = r["valor_num"] if r["valor_num"] is not None else r["valor_txt"]
         if valor is None:
-            valor_str = "indisponível"
+            valor_str = "N/D"
         elif isinstance(valor, float) and valor == int(valor):
             valor_str = str(int(valor))
         else:
             valor_str = str(valor)
-
         unidade = f" {r['unidade']}" if r["unidade"] else ""
-        lim = f" | Limitação: {r['limitacoes']}" if r["limitacoes"] else ""
         linhas.append(
-            f"- {r['nome']}: {valor_str}{unidade} "
-            f"[Fonte: {r['fonte']}, Período: {r['periodo']}, Tipo: {r['tipo']}]{lim}"
+            f"{r['nome']}: {valor_str}{unidade} ({r['fonte']}, {r['periodo']}, {r['tipo']})"
         )
     return "\n".join(linhas)
 

@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'motion/react'
 import AppLayout from './components/layout/AppLayout'
-import DashboardPage from './pages/DashboardPage'
+import InicioPage from './pages/InicioPage'
 import MapaPage from './pages/MapaPage'
-import PerfilPage from './pages/PerfilPage'
+import DashboardPage from './pages/DashboardPage'
+import CompararPage from './pages/CompararPage'
 import AnalisesPage from './pages/AnalisesPage'
 import InvestigarPage from './pages/InvestigarPage'
 import NotFoundPage from './pages/NotFoundPage'
@@ -24,10 +25,10 @@ function AnimatedRoutes() {
   return (
     <AnimatePresence mode="wait" initial={false}>
       <Routes location={location} key={location.pathname}>
-        <Route path="/"            element={<DashboardPage />} />
+        <Route path="/"            element={<InicioPage />} />
         <Route path="/mapa"        element={<MapaPage />} />
-        <Route path="/perfil"      element={<PerfilPage />} />
-        <Route path="/perfil/:id"  element={<PerfilPage />} />
+        <Route path="/dashboard"   element={<DashboardPage />} />
+        <Route path="/comparar"    element={<CompararPage />} />
         <Route path="/analises"    element={<AnalisesPage />} />
         <Route path="/investigar"  element={<InvestigarPage />} />
         <Route path="*"            element={<NotFoundPage />} />

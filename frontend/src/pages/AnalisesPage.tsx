@@ -260,10 +260,10 @@ export default function AnalisesPage() {
                   <div className="analises__det-actions">
                     <button
                       className="analises__det-btn"
-                      onClick={() => navigate(`/perfil/${aberta.codigo_ibge}`)}
-                      title="Ver perfil completo"
+                      onClick={() => navigate(`/comparar?comparar=${aberta.codigo_ibge}`)}
+                      title="Ver indicadores do município"
                     >
-                      <BarChart2 size={13} /> Perfil
+                      <BarChart2 size={13} /> Indicadores
                     </button>
                     <button
                       className="analises__det-btn analises__det-btn--ghost"

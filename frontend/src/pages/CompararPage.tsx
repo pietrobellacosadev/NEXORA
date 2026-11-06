@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
 import {
   GitCompare, Search, X, TrendingUp, Users, MapPin,
@@ -14,6 +15,7 @@ import './CompararPage.css'
 const MAX_MUNICIPIOS = 4
 
 export default function CompararPage() {
+  const [searchParams] = useSearchParams()
   const [selecionados, setSelecionados] = useState<PerfilMunicipio[]>([])
   const [carregando, setCarregando] = useState<Record<string, boolean>>({})
 
@@ -25,6 +27,30 @@ export default function CompararPage() {
   const [pilarAtivo, setPilarAtivo] = useState<'mercado' | 'social'>('mercado')
   const [viewMode, setViewMode] = useState<'table' | 'chart'>('table')
   const [erro, setErro] = useState('')
+
+  // Carrega municípios passados via ?comparar=cod1,cod2 na URL
+  useEffect(() => {
+    const param = searchParams.get('comparar')
+    if (!param) return
+    const codigos = param.split(',').filter(Boolean).slice(0, MAX_MUNICIPIOS)
+    if (codigos.length === 0) return
+
+    codigos.forEach(async (codigo) => {
+      setCarregando(c => ({ ...c, [codigo]: true }))
+      try {
+        const { data } = await api.get<PerfilMunicipio>(`/municipios/${codigo}/perfil`)
+        setSelecionados(prev => {
+          if (prev.some(p => p.municipio.codigo_ibge === codigo)) return prev
+          return [...prev, data]
+        })
+      } catch {
+        setErro(`Não foi possível carregar o município ${codigo}.`)
+      } finally {
+        setCarregando(c => { const n = { ...c }; delete n[codigo]; return n })
+      }
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Debounce busca
   useEffect(() => {

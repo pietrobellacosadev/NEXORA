@@ -19,8 +19,9 @@ GROQ_BASE_URL = "https://api.groq.com/openai/v1"
 
 # Mensagens de erro públicas — sem revelar chaves ou detalhes internos
 _ERROS = {
-    401: "Credencial GroqCloud inválida ou expirada para o agente '{agent}'.",
+    401: "Credencial GroqCloud inválida ou expirada para o agente '{agent}'. Gere uma nova chave em console.groq.com.",
     403: "Acesso negado pela GroqCloud para o agente '{agent}'.",
+    404: "Modelo GroqCloud não encontrado para o agente '{agent}'. Verifique GROQ_MODEL_MARKET/SOCIAL/CONSOLIDATOR no .env ou acesse GET /api/groq/validar para listar os modelos disponíveis.",
     429: "Limite de requisições GroqCloud atingido. Aguarde alguns instantes.",
     500: "Erro interno na GroqCloud. Tente novamente em instantes.",
     503: "GroqCloud indisponível temporariamente.",
@@ -78,8 +79,13 @@ class GroqClient:
                     resp = await client.post(url, json=payload, headers=headers)
 
                     if resp.status_code == 429:
-                        retry_after = int(resp.headers.get("retry-after", 10))
-                        if tentativa < self._max_retries:
+                        raw_ra = resp.headers.get("retry-after", "")
+                        try:
+                            retry_after = int(raw_ra)
+                        except (ValueError, TypeError):
+                            retry_after = 15
+                        # Só retenta se o wait for curto (≤15s) e ainda há tentativas
+                        if tentativa < self._max_retries and retry_after <= 15:
                             logger.warning(
                                 "GroqCloud rate-limit (agente=%s). Aguardando %ds.",
                                 self._agent, retry_after,
