@@ -19,8 +19,9 @@
   border-right: 1px solid var(--color-line);
   display: flex;
   flex-direction: column;
-  overflow: visible;
+  overflow: hidden;
   z-index: 2;
+  min-width: 0;
 }
 
 /* ── Cabeçalho ───────────────────────────────────────────────────────────── */
@@ -427,55 +428,59 @@
 .mapa-indicadores {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 4px;
+  gap: var(--sp-2);
 }
 
 .mapa-ind {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: var(--sp-1);
   padding: var(--sp-3);
   border-radius: var(--r-md);
   border: 1px solid var(--color-line);
   background: var(--color-surface);
   transition: background var(--t-fast);
+  overflow: hidden;
 }
 .mapa-ind:hover { background: var(--color-highlight); }
 
 .mapa-ind__nome {
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   color: var(--color-muted);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .mapa-ind__valor-row {
   display: flex;
   align-items: baseline;
-  gap: 4px;
-  flex-wrap: wrap;
+  gap: 3px;
+  flex-wrap: nowrap;
 }
 
 .mapa-ind__valor {
-  font-size: var(--text-md);
+  font-size: 1.2rem;
   font-weight: 800;
   line-height: 1;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 .mapa-ind__valor--mercado { color: var(--color-market); }
 .mapa-ind__valor--social  { color: var(--color-social); }
 
 .mapa-ind__unidade {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   color: var(--color-muted);
-  line-height: 1;
+  line-height: 1.2;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 .mapa-ind__fonte {
-  font-size: 0.62rem;
-  color: var(--color-muted);
-  opacity: 0.65;
-  line-height: 1.3;
+  display: none;
 }
 
 /* ── Botões de ação ──────────────────────────────────────────────────────── */
@@ -617,28 +622,97 @@
   .mapa-page { grid-template-columns: 290px 1fr; }
 }
 
+/* ─── Tablet / Mobile ≤ 768px ──────────────────────────────────────────── */
 @media (max-width: 768px) {
+  /* Full-screen grid: painel no topo, mapa embaixo */
   .mapa-page {
     grid-template-columns: 1fr;
     grid-template-rows: auto 1fr;
-    height: calc(100dvh - var(--nav-height) - 60px);
+    /* ocupa tela menos nav E menos bottom-nav (60px) */
+    height: calc(100dvh - var(--nav-height) - 60px - env(safe-area-inset-bottom, 0px));
     margin: calc(-1 * var(--sp-6)) calc(-1 * var(--sp-4)) 0;
     border-radius: 0;
     border: none;
     box-shadow: none;
   }
+
+  /* Painel: altura máxima de 42dvh para deixar espaço ao mapa */
   .mapa-panel {
     border-right: none;
     border-bottom: 1px solid var(--color-line);
-    max-height: 48dvh;
+    max-height: 42dvh;
+    flex-shrink: 0;
+    overflow: hidden;
   }
-  .mapa-panel__body  { padding: var(--sp-3) var(--sp-4); }
+
+  .mapa-panel__header {
+    padding: var(--sp-2) var(--sp-3);
+  }
+
+  /* Oculta subtítulo no header para economizar espaço */
+  .mapa-panel__sub { display: none; }
+
+  .mapa-panel__body  { padding: var(--sp-2) var(--sp-3); }
+
   .mapa-search       { padding: var(--sp-2) var(--sp-3); }
   .mapa-search__icon { left: calc(var(--sp-3) + var(--sp-3)); }
   .mapa-results      { left: var(--sp-3); right: var(--sp-3); }
-  .mapa-panel__header { padding: var(--sp-3) var(--sp-4); }
-  .mapa-legend       { padding: var(--sp-2) var(--sp-4); }
-  .mapa-container    { min-height: 50dvh; }
-  .mapa-indicadores  { grid-template-columns: 1fr 1fr; }
-  .mapa-info__actions { grid-template-columns: 1fr 1fr; }
+
+  /* Legenda: esconde no mobile */
+  .mapa-legend       { display: none; }
+
+  /* Mapa: ocupa 100% da célula restante */
+  .mapa-container    { flex: 1; min-height: 0; }
+
+  /* Indicadores: 2 colunas lado a lado */
+  .mapa-indicadores  { grid-template-columns: 1fr 1fr; gap: var(--sp-1); }
+  .mapa-ind          { padding: var(--sp-2); }
+  .mapa-ind__nome    { font-size: 0.68rem; }
+  .mapa-ind__valor   { font-size: 1rem; }
+
+  /* Botões de ação: 2 colunas */
+  .mapa-info__actions { grid-template-columns: 1fr 1fr; gap: var(--sp-1); }
+  .mapa-info__btn     { font-size: 0.7rem; padding: var(--sp-2); }
+
+  /* Estado vazio: compacto */
+  .mapa-empty        { padding: var(--sp-3) var(--sp-3) var(--sp-2); gap: var(--sp-2); }
+  .mapa-empty__icon  { width: 36px; height: 36px; }
+  .mapa-empty__title { font-size: var(--text-sm); }
+  .mapa-empty__desc  { display: none; }
+  .mapa-empty__dica  { font-size: 0.68rem; }
+
+  /* Município selecionado: mais compacto */
+  .mapa-info         { gap: var(--sp-2); }
+  .mapa-info__nome   { font-size: var(--text-md); }
+  .mapa-info__meta   { font-size: 0.68rem; }
+  .mapa-info__region-pill { display: none; }
+
+  /* Comparar btn: menor */
+  .mapa-comparar-btn { padding: var(--sp-1) var(--sp-2); font-size: 0.68rem; }
+
+  /* Tabs: menores */
+  .mapa-tabs         { padding: 2px; }
+  .mapa-tab          { padding: 5px var(--sp-1); font-size: 0.68rem; }
+
+  /* Barra de comparação: mais compacta */
+  .mapa-comparar-bar { padding: var(--sp-2) var(--sp-3); gap: var(--sp-1); }
+}
+
+/* ─── Phones pequenos ≤ 480px ───────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .mapa-page {
+    height: calc(100dvh - var(--nav-height) - 60px - env(safe-area-inset-bottom, 0px));
+    margin: calc(-1 * var(--sp-6)) calc(-1 * var(--sp-3)) 0;
+  }
+
+  .mapa-panel         { max-height: 40dvh; }
+
+  /* Indicadores: 2 colunas muito compactas */
+  .mapa-indicadores   { gap: var(--sp-1); }
+  .mapa-ind           { padding: var(--sp-2) var(--sp-1); }
+  .mapa-ind__valor    { font-size: 0.95rem; }
+
+  /* Ações: empilha em 1 coluna */
+  .mapa-info__actions { grid-template-columns: 1fr; }
+  .mapa-info__btn     { justify-content: center; }
 }

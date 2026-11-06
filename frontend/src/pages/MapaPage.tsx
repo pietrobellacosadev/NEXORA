@@ -20,8 +20,8 @@ const SP_BOUNDS = L.latLngBounds(
 )
 
 /* ── Indicadores que queremos destacar no painel lateral ──────────────────── */
-const DESTAQUES_MERCADO = ['cobertura_4g', 'penetracao_internet_fixa', 'pib_per_capita', 'densidade_movel']
-const DESTAQUES_SOCIAL  = ['idhm', 'acesso_internet_domiciliar', 'taxa_alfabetizacao', 'pobreza_extrema_pct']
+const DESTAQUES_MERCADO = ['penetracao_internet_fixa', 'cobertura_4g', 'pib_per_capita', 'densidade_movel']
+const DESTAQUES_SOCIAL  = ['acesso_internet_domiciliar', 'indice_inclusao_digital', 'pobreza_extrema_pct', 'idhm']
 
 const MAX_COMPARAR = 3
 
@@ -364,7 +364,7 @@ export default function MapaPage() {
     ? [
         ...destaqueKeys.map(k => indicadoresRaw.find(i => i.chave === k)).filter(Boolean) as IndicadorItem[],
         ...indicadoresRaw.filter(i => !destaqueKeys.includes(i.chave)),
-      ].slice(0, 6)
+      ].slice(0, 4)
     : []
 
   const jaComparando = resumo ? comparar.some(m => m.codigo_ibge === resumo.codigo_ibge) : false
