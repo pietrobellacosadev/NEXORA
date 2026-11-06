@@ -133,6 +133,31 @@
   resize: none;
 }
 
+/* Chips de exemplo */
+.inv__exemplos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-1);
+}
+
+.inv__exemplo-chip {
+  padding: 4px 10px;
+  border-radius: var(--r-full);
+  border: 1.5px solid var(--color-line);
+  background: var(--color-surface);
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: border-color var(--t-fast), color var(--t-fast), background var(--t-fast);
+  white-space: nowrap;
+}
+.inv__exemplo-chip:hover {
+  border-color: var(--color-ai);
+  color: var(--color-ai);
+  background: var(--color-ai-lt);
+}
+
 /* Indicador de município resolvido */
 .inv__muni-resolved {
   display: flex;
@@ -416,11 +441,47 @@
 
 /* ── Responsivo ─────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .inv__fields  { flex-direction: column; }
-  .inv__pilares { grid-template-columns: 1fr; }
-  .inv__cvd     { grid-template-columns: 1fr; }
-  .inv__flow    { flex-direction: column; align-items: stretch; }
-  .inv__flow-arrow { transform: rotate(90deg); align-self: center; }
-  .inv__form    { padding: var(--sp-5); }
-  .inv__btn     { align-self: stretch; justify-content: center; }
+  .inv              { gap: var(--sp-4); }
+  .inv__header      { gap: var(--sp-3); }
+  .inv__header-icon { width: 42px; height: 42px; }
+  .inv__title       { font-size: var(--text-xl); }
+  .inv__subtitle    { font-size: var(--text-xs); }
+
+  .inv__fields       { flex-direction: column; }
+  .inv__field        { min-width: 0; }
+  .inv__form         { padding: var(--sp-4); border-radius: var(--r-xl); }
+
+  .inv__pilares      { grid-template-columns: 1fr; }
+  .inv__cvd          { grid-template-columns: 1fr; }
+
+  .inv__flow         { flex-direction: column; align-items: stretch; }
+  .inv__flow-arrow   { display: none; }
+  .inv__agent        { min-width: 0; padding: var(--sp-3); }
+  .inv__agent-icon   { width: 34px; height: 34px; }
+
+  .inv__btn          { align-self: stretch; justify-content: center; }
+
+  .inv__exemplos     { gap: var(--sp-1); }
+  .inv__exemplo-chip { font-size: 0.68rem; padding: 3px 8px; }
+
+  .inv__sintese      { padding: var(--sp-4); }
+  .inv__sintese-text { font-size: var(--text-sm); }
+
+  .inv__pilar-body   { padding: 0 var(--sp-3) var(--sp-3); }
+}
+
+@media (max-width: 480px) {
+  .inv              { gap: var(--sp-3); padding-bottom: var(--sp-8); }
+  .inv__header-icon { display: none; }
+  .inv__title       { font-size: var(--text-lg); }
+  .inv__form        { padding: var(--sp-3); }
+  .inv__input       { padding: var(--sp-2) var(--sp-3); font-size: var(--text-sm); }
+  .inv__label       { font-size: 0.65rem; }
+  .inv__exemplos    { gap: 4px; }
+  .inv__exemplo-chip { font-size: 0.62rem; padding: 2px 6px; }
+  .inv__cvd-block   { padding: var(--sp-3); }
+  .inv__sintese-header { flex-wrap: wrap; }
+  .inv__ia-flag     { margin-left: 0; }
+  .inv__ausentes,
+  .inv__fontes      { font-size: var(--text-xs); }
 }

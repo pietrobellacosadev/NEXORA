@@ -90,7 +90,7 @@ export default function InvestigarPage() {
     setSugestoes([])
   }
 
-  const podeInvestigar = codigoIBGE.trim().length >= 7 && pergunta.trim().length >= 10
+  const podeInvestigar = codigoIBGE.trim().length >= 7 && pergunta.trim().length >= 5
 
   async function investigar() {
     if (!podeInvestigar) return
@@ -141,7 +141,7 @@ export default function InvestigarPage() {
         <div>
           <h1 className="inv__title">Investigação por IA</h1>
           <p className="inv__subtitle">
-            Três agentes especializados investigam em paralelo e o Consolidador sintetiza a análise.
+            Analise a viabilidade de instalação de internet em qualquer município paulista. Os agentes de Mercado e Social respondem em paralelo.
           </p>
         </div>
       </div>
@@ -218,11 +218,28 @@ export default function InvestigarPage() {
               id="inv-pergunta"
               className="inv__input"
               type="text"
-              placeholder="Ex: Quais são as oportunidades de expansão de conectividade neste município?"
+              placeholder="Ex: Vale instalar fibra óptica neste município?"
               value={pergunta}
               onChange={e => setPergunta(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && investigar()}
             />
+            <div className="inv__exemplos">
+              {[
+                'Vale instalar fibra óptica aqui?',
+                'Existe mercado para internet fixa?',
+                'Qual a exclusão digital neste município?',
+                'Há demanda por banda larga?',
+              ].map(ex => (
+                <button
+                  key={ex}
+                  className="inv__exemplo-chip"
+                  type="button"
+                  onClick={() => setPergunta(ex)}
+                >
+                  {ex}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -252,14 +269,14 @@ export default function InvestigarPage() {
             <AgentStep
               icon={<TrendingUp size={16} />}
               label="Agente de Mercado"
-              desc="Potencial comercial e indicadores ANATEL/IBGE"
+              desc="Viabilidade comercial: cobertura, renda, demanda"
               estado={estado.market}
               color="market"
             />
             <AgentStep
               icon={<Users size={16} />}
               label="Agente Social"
-              desc="Necessidades sociais e indicadores INEP/DATASUS"
+              desc="Necessidade social: inclusão digital, barreiras"
               estado={estado.social}
               color="social"
             />
@@ -267,7 +284,7 @@ export default function InvestigarPage() {
             <AgentStep
               icon={<Brain size={16} />}
               label="Agente Consolidador"
-              desc="Síntese equilibrada dos dois pilares"
+              desc="Síntese: viabilidade de instalação de internet"
               estado={estado.consolidator}
               color="ai"
             />
