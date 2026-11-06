@@ -65,14 +65,17 @@ describe('InvestigarPage', () => {
   it('renderiza título e formulário', () => {
     renderInvestigar()
     expect(screen.getByText('Investigação por IA')).toBeTruthy()
-    expect(screen.getByLabelText(/código ibge/i)).toBeTruthy()
+    // Campo município tem label "Município"
+    expect(screen.getByLabelText(/município/i)).toBeTruthy()
     expect(screen.getByLabelText(/pergunta de investigação/i)).toBeTruthy()
   })
 
-  it('pré-preenche código IBGE e nome a partir de query params', () => {
+  it('pré-preenche nome do município a partir de query params', () => {
     renderInvestigar('3550308', 'São Paulo')
-    expect(screen.getByDisplayValue('3550308')).toBeTruthy()
+    // Quando há params, o município é exibido como pill (não input)
     expect(screen.getByText('São Paulo')).toBeTruthy()
+    // O código IBGE aparece no pill
+    expect(screen.getByText('3550308')).toBeTruthy()
   })
 
   it('botão Investigar está desabilitado sem código e pergunta preenchidos', () => {
@@ -81,12 +84,10 @@ describe('InvestigarPage', () => {
     expect(btn).toBeDisabled()
   })
 
-  it('botão Investigar fica habilitado com código e pergunta válidos', async () => {
-    renderInvestigar()
+  it('botão Investigar fica habilitado com município e pergunta válidos', async () => {
+    // Fornece município via params — já começa com município resolvido
+    renderInvestigar('3550308', 'São Paulo')
 
-    fireEvent.change(screen.getByLabelText(/código ibge/i), {
-      target: { value: '3550308' },
-    })
     fireEvent.change(screen.getByLabelText(/pergunta de investigação/i), {
       target: { value: 'Quais são as oportunidades de conectividade?' },
     })
@@ -99,10 +100,7 @@ describe('InvestigarPage', () => {
     // Post nunca resolve — mantém estado loading
     mockPost.mockImplementation(() => new Promise(() => {}))
 
-    renderInvestigar()
-    fireEvent.change(screen.getByLabelText(/código ibge/i), {
-      target: { value: '3550308' },
-    })
+    renderInvestigar('3550308', 'São Paulo')
     fireEvent.change(screen.getByLabelText(/pergunta de investigação/i), {
       target: { value: 'Quais são as oportunidades de conectividade?' },
     })

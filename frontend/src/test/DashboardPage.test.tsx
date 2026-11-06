@@ -13,7 +13,7 @@ describe('DashboardPage', () => {
     render(<MemoryRouter><DashboardPage /></MemoryRouter>)
     expect(screen.getByText('Mapa Territorial')).toBeTruthy()
     expect(screen.getByText('Perfil Municipal')).toBeTruthy()
-    expect(screen.getByText('Comparação')).toBeTruthy()
+    expect(screen.getByText('Análises Recentes')).toBeTruthy()
     expect(screen.getByText('Investigação por IA')).toBeTruthy()
   })
 
