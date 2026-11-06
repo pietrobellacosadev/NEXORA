@@ -146,8 +146,8 @@ async def test_investigar_passa_nome_correto_ao_consolidador():
         codigo_ibge="3509502",
         nome_municipio="Campinas",
         pergunta="oportunidades",
-        contexto_mercado="Nenhum indicador mercado disponível para este município.",
-        contexto_social="Nenhum indicador sociais disponível para este município.",
+        contexto_mercado="Nenhum indicador de mercado disponível.",
+        contexto_social="Nenhum indicador sociais disponível.",
     )
 
 

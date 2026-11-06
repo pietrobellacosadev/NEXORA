@@ -301,6 +301,7 @@ class TestFormatarIndicadores:
     def test_formata_indicador_numerico(self):
         row = self._make_row({
             "categoria": "mercado",
+            "chave": "cobertura_4g",
             "nome": "Acessos 4G",
             "valor_num": 12345.0,
             "valor_txt": None,
@@ -318,6 +319,7 @@ class TestFormatarIndicadores:
     def test_formata_indicador_indisponivel(self):
         row = self._make_row({
             "categoria": "social",
+            "chave": "idhm",
             "nome": "IDH",
             "valor_num": None,
             "valor_txt": None,
@@ -328,7 +330,8 @@ class TestFormatarIndicadores:
             "limitacoes": None,
         })
         resultado = _formatar_indicadores([row], "social")
-        assert "indisponível" in resultado
+        assert "N/D" in resultado
+        assert "PNUD" in resultado
 
 
 # ── Testes de validação de PedidoInvestigacao ─────────────────────────────────
