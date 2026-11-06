@@ -79,6 +79,166 @@
 @keyframes db-spin { to { transform: rotate(360deg); } }
 .db__spin { animation: db-spin 0.7s linear infinite; }
 
+/* ── Buscador de município ───────────────────────────────────────────────── */
+.db__search-wrap {
+  position: relative;
+}
+
+.db__search-field {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0 var(--sp-4);
+  background: var(--color-card);
+  border: 1.5px solid var(--color-line);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}
+.db__search-field:focus-within {
+  border-color: var(--color-market);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-market) 12%, transparent);
+}
+
+.db__search-icon { color: var(--color-muted); flex-shrink: 0; }
+
+.db__search-input {
+  flex: 1;
+  border: none;
+  background: none;
+  padding: var(--sp-3) 0;
+  font-size: var(--text-base);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  outline: none;
+}
+.db__search-input::placeholder { color: var(--color-muted); }
+.db__search-input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.db__search-clear {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: var(--color-surface);
+  border-radius: var(--r-full);
+  color: var(--color-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+.db__search-clear:hover { background: var(--color-error-lt); color: var(--color-error); }
+
+.db__search-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0; right: 0;
+  z-index: var(--z-overlay);
+  list-style: none;
+  margin: 0;
+  padding: var(--sp-1);
+  background: var(--color-card);
+  border: 1.5px solid var(--color-line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg);
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.db__search-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  padding: var(--sp-2) var(--sp-3);
+  border: none;
+  background: none;
+  border-radius: var(--r-sm);
+  font-size: var(--text-sm);
+  text-align: left;
+  color: var(--color-ink);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: background var(--t-fast);
+}
+.db__search-item:hover:not(:disabled) { background: var(--color-highlight); }
+.db__search-item:disabled { opacity: 0.5; cursor: not-allowed; }
+.db__search-item-icon { color: var(--color-market); flex-shrink: 0; }
+.db__search-item-nome { flex: 1; font-weight: 600; }
+.db__search-item-cod { font-size: var(--text-xs); color: var(--color-muted); font-variant-numeric: tabular-nums; }
+
+/* ── Chips dos municípios ────────────────────────────────────────────────── */
+.db__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.db__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 5px 10px 5px 8px;
+  background: var(--color-card);
+  border: 1.5px solid var(--color-line);
+  border-radius: var(--r-full);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-ink);
+  line-height: 1;
+  border-left-color: var(--chip-color, var(--color-market));
+}
+.db__chip--loading { color: var(--color-muted); font-weight: 500; }
+
+.db__chip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--r-full);
+  flex-shrink: 0;
+}
+
+.db__chip-remove {
+  display: grid;
+  place-items: center;
+  border: none;
+  background: none;
+  color: var(--color-muted);
+  cursor: pointer;
+  padding: 0;
+  margin-left: 2px;
+  border-radius: var(--r-full);
+  transition: color var(--t-fast);
+}
+.db__chip-remove:hover { color: var(--color-error); }
+
+/* ── Estado vazio ────────────────────────────────────────────────────────── */
+.db__empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-16) var(--sp-4);
+  text-align: center;
+  color: var(--color-muted);
+}
+.db__empty-state svg { opacity: 0.25; }
+
+.db__empty-state-title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-ink);
+  margin: 0;
+}
+
+.db__empty-state-desc {
+  font-size: var(--text-sm);
+  line-height: 1.7;
+  color: var(--color-muted);
+  max-width: 40ch;
+  margin: 0;
+}
+
 /* ── Controles ───────────────────────────────────────────────────────────── */
 .db__controls {
   display: grid;
@@ -352,6 +512,12 @@
   font-weight: 700;
   color: var(--color-ink);
   margin: 0;
+}
+
+.db__btn-ghost--sm {
+  margin-left: auto;
+  padding: 5px 10px;
+  font-size: var(--text-xs);
 }
 
 .db__muni-grid {

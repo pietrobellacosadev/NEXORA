@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
 import {
   BarChart3, TrendingUp, Users, Map, RefreshCw,
   AlertCircle, ArrowRight, GitCompare, Trophy,
+  Plus, Search, X,
 } from 'lucide-react'
 import ReactECharts from 'echarts-for-react'
 import api from '../lib/api'
@@ -25,26 +26,17 @@ const RELATORIOS_SOCIAL = [
   { chave: 'pobreza_extrema_pct',        label: 'Pobreza Extrema',              unidade: '%' },
 ]
 
-const MUNI_SAMPLE_CODES = [
-  '3550308', // São Paulo
-  '3509502', // Campinas
-  '3518800', // Guarulhos
-  '3543402', // Ribeirão Preto
-  '3548500', // Santos
-  '3529401', // Mogi das Cruzes
-  '3513801', // Diadema
-  '3547809', // São Bernardo do Campo
-  '3534401', // Osasco
-  '3545100', // Santo André
-]
-
 const MUNI_COLORS = [
   '#2d7dd2','#20B8A5','#7c3aed','#d97706','#dc2626',
   '#16a34a','#0891b2','#9333ea','#db2777','#65a30d',
 ]
 
+const MAX_MUNICIPIOS = 10
+
 type PilarKey = 'mercado' | 'social'
 type ViewType = 'bar' | 'radar' | 'ranking'
+
+interface MuniItem { codigo: string; nome: string }
 
 interface MuniPerfil {
   perfil: PerfilMunicipio
@@ -71,8 +63,16 @@ export default function DashboardPage() {
   const [view, setView] = useState<ViewType>('bar')
   const [perfis, setPerfis] = useState<MuniPerfil[]>([])
   const [carregando, setCarregando] = useState(false)
+  const [carregandoCod, setCarregandoCod] = useState<string | null>(null)
   const [erro, setErro] = useState('')
   const [relatorioIdx, setRelatorioIdx] = useState(0)
+
+  // Busca de municípios
+  const [busca, setBusca] = useState('')
+  const [sugestoes, setSugestoes] = useState<MuniItem[]>([])
+  const [buscando, setBuscando] = useState(false)
+  const buscaRef = useRef<HTMLInputElement>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const relatorios = pilar === 'mercado' ? RELATORIOS_MERCADO : RELATORIOS_SOCIAL
   const relatorio = relatorios[relatorioIdx]
@@ -82,30 +82,75 @@ export default function DashboardPage() {
     setRelatorioIdx(0)
   }, [pilar])
 
-  const carregar = useCallback(async () => {
-    setCarregando(true)
+  // Busca reativa de municípios
+  useEffect(() => {
+    if (busca.trim().length < 2) {
+      setSugestoes([])
+      return
+    }
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(async () => {
+      setBuscando(true)
+      try {
+        const res = await api.get<{ municipios: MuniItem[] }>('/municipios', { params: { q: busca, limit: 8 } })
+        const jáAdicionados = new Set(perfis.map(p => p.perfil.municipio.codigo_ibge))
+        setSugestoes((res.data.municipios ?? []).filter(m => !jáAdicionados.has(m.codigo)))
+      } catch {
+        setSugestoes([])
+      } finally {
+        setBuscando(false)
+      }
+    }, 280)
+  }, [busca, perfis])
+
+  const adicionarMunicipio = useCallback(async (muni: MuniItem) => {
+    if (perfis.length >= MAX_MUNICIPIOS) return
+    if (perfis.some(p => p.perfil.municipio.codigo_ibge === muni.codigo)) return
+    setBusca('')
+    setSugestoes([])
+    setCarregandoCod(muni.codigo)
     setErro('')
     try {
+      const res = await api.get<PerfilMunicipio>(`/municipios/${muni.codigo}/perfil`)
+      const cor = MUNI_COLORS[perfis.length % MUNI_COLORS.length]
+      setPerfis(prev => [...prev, { perfil: res.data, cor }])
+    } catch {
+      setErro(`Não foi possível carregar ${muni.nome}.`)
+    } finally {
+      setCarregandoCod(null)
+    }
+  }, [perfis])
+
+  const removerMunicipio = useCallback((codigo: string) => {
+    setPerfis(prev => {
+      const nova = prev.filter(p => p.perfil.municipio.codigo_ibge !== codigo)
+      // Reaplica cores em ordem
+      return nova.map((mp, i) => ({ ...mp, cor: MUNI_COLORS[i % MUNI_COLORS.length] }))
+    })
+  }, [])
+
+  const recarregarTodos = useCallback(async () => {
+    if (perfis.length === 0) return
+    setCarregando(true)
+    setErro('')
+    const codigos = perfis.map(p => p.perfil.municipio.codigo_ibge)
+    try {
       const resultados = await Promise.allSettled(
-        MUNI_SAMPLE_CODES.map(cod =>
-          api.get<PerfilMunicipio>(`/municipios/${cod}/perfil`)
-        )
+        codigos.map(cod => api.get<PerfilMunicipio>(`/municipios/${cod}/perfil`))
       )
-      const ok: MuniPerfil[] = []
+      const novas: MuniPerfil[] = []
       resultados.forEach((r, i) => {
         if (r.status === 'fulfilled') {
-          ok.push({ perfil: r.value.data, cor: MUNI_COLORS[i % MUNI_COLORS.length] })
+          novas.push({ perfil: r.value.data, cor: MUNI_COLORS[i % MUNI_COLORS.length] })
         }
       })
-      setPerfis(ok)
+      setPerfis(novas)
     } catch {
-      setErro('Erro ao carregar dados dos municípios.')
+      setErro('Erro ao recarregar dados.')
     } finally {
       setCarregando(false)
     }
-  }, [])
-
-  useEffect(() => { carregar() }, [carregar])
+  }, [perfis])
 
   // Dados do indicador atual para todos os municípios
   const dadosIndicador = perfis.map(({ perfil, cor }) => {
@@ -210,152 +255,265 @@ export default function DashboardPage() {
         <div className="db__header-icon"><BarChart3 size={20} /></div>
         <div className="db__header-text">
           <h1 className="db__title">Dashboard</h1>
-          <p className="db__subtitle">Relatórios dinâmicos dos 645 municípios paulistas</p>
+          <p className="db__subtitle">Selecione municípios para comparar indicadores</p>
         </div>
         <div className="db__header-actions">
-          <button className="db__btn-ghost" onClick={irParaComparar}>
-            <GitCompare size={14} />
-            Comparar municípios
-          </button>
-          <button className="db__btn-ghost db__btn-refresh" onClick={carregar} disabled={carregando} aria-label="Recarregar">
-            <RefreshCw size={14} className={carregando ? 'db__spin' : ''} />
-          </button>
-        </div>
-      </div>
-
-      {/* ── Controles ──────────────────────────────────────────────────────── */}
-      <div className="db__controls">
-        {/* Tabs pilar */}
-        <div className="db__pilar-tabs">
-          <button
-            className={`db__pilar-tab${pilar === 'mercado' ? ' db__pilar-tab--on db__pilar-tab--market' : ''}`}
-            onClick={() => setPilar('mercado')}
-          >
-            <TrendingUp size={14} /> Mercado
-          </button>
-          <button
-            className={`db__pilar-tab${pilar === 'social' ? ' db__pilar-tab--on db__pilar-tab--social' : ''}`}
-            onClick={() => setPilar('social')}
-          >
-            <Users size={14} /> Social
-          </button>
-        </div>
-
-        {/* Seletor de indicador */}
-        <div className="db__ind-tabs">
-          {relatorios.map((r, i) => (
-            <button
-              key={r.chave}
-              className={`db__ind-tab${relatorioIdx === i ? ' db__ind-tab--on' : ''}`}
-              onClick={() => setRelatorioIdx(i)}
-            >
-              {r.label}
+          {perfis.length >= 2 && (
+            <button className="db__btn-ghost" onClick={irParaComparar}>
+              <GitCompare size={14} />
+              Comparar municípios
             </button>
-          ))}
-        </div>
-
-        {/* Tipo de visualização */}
-        <div className="db__view-tabs">
-          <button className={`db__view-tab${view === 'bar' ? ' db__view-tab--on' : ''}`} onClick={() => setView('bar')}>
-            <BarChart3 size={13} /> Barras
-          </button>
-          <button className={`db__view-tab${view === 'radar' ? ' db__view-tab--on' : ''}`} onClick={() => setView('radar')}>
-            <Map size={13} /> Radar
-          </button>
-          <button className={`db__view-tab${view === 'ranking' ? ' db__view-tab--on' : ''}`} onClick={() => setView('ranking')}>
-            <Trophy size={13} /> Ranking
-          </button>
+          )}
+          {perfis.length > 0 && (
+            <button
+              className="db__btn-ghost db__btn-refresh"
+              onClick={recarregarTodos}
+              disabled={carregando}
+              aria-label="Recarregar"
+            >
+              <RefreshCw size={14} className={carregando ? 'db__spin' : ''} />
+            </button>
+          )}
         </div>
       </div>
 
-      {/* ── Conteúdo ───────────────────────────────────────────────────────── */}
+      {/* ── Buscador de municípios ──────────────────────────────────────────── */}
+      <div className="db__search-wrap">
+        <div className="db__search-field">
+          <Search size={15} className="db__search-icon" />
+          <input
+            ref={buscaRef}
+            type="text"
+            className="db__search-input"
+            placeholder={
+              perfis.length >= MAX_MUNICIPIOS
+                ? `Limite de ${MAX_MUNICIPIOS} municípios atingido`
+                : 'Buscar e adicionar município…'
+            }
+            value={busca}
+            onChange={e => setBusca(e.target.value)}
+            disabled={perfis.length >= MAX_MUNICIPIOS || carregandoCod !== null}
+            autoComplete="off"
+          />
+          {buscando && <Spinner size="sm" color="market" />}
+          {busca && (
+            <button className="db__search-clear" onClick={() => { setBusca(''); setSugestoes([]) }} aria-label="Limpar">
+              <X size={13} />
+            </button>
+          )}
+        </div>
+
+        {sugestoes.length > 0 && (
+          <ul className="db__search-dropdown">
+            {sugestoes.map(m => (
+              <li key={m.codigo}>
+                <button
+                  className="db__search-item"
+                  onClick={() => adicionarMunicipio(m)}
+                  disabled={carregandoCod !== null}
+                >
+                  <Plus size={13} className="db__search-item-icon" />
+                  <span className="db__search-item-nome">{m.nome}</span>
+                  <span className="db__search-item-cod">{m.codigo}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Chips dos municípios adicionados */}
+      {perfis.length > 0 && (
+        <div className="db__chips">
+          {perfis.map(({ perfil, cor }) => (
+            <span
+              key={perfil.municipio.codigo_ibge}
+              className="db__chip"
+              style={{ '--chip-color': cor } as React.CSSProperties}
+            >
+              <span className="db__chip-dot" style={{ background: cor }} />
+              {perfil.municipio.nome}
+              <button
+                className="db__chip-remove"
+                onClick={() => removerMunicipio(perfil.municipio.codigo_ibge)}
+                aria-label={`Remover ${perfil.municipio.nome}`}
+              >
+                <X size={11} />
+              </button>
+            </span>
+          ))}
+          {carregandoCod && (
+            <span className="db__chip db__chip--loading">
+              <Spinner size="sm" color="market" />
+              Carregando…
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Mensagem loading de adição */}
+      {carregandoCod && perfis.length === 0 && (
+        <div className="db__loading">
+          <Spinner size="md" color="market" />
+          <span>Carregando município…</span>
+        </div>
+      )}
+
+      {/* ── Estado vazio ───────────────────────────────────────────────────── */}
+      {!carregando && perfis.length === 0 && carregandoCod === null && (
+        <motion.div
+          className="db__empty-state"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <BarChart3 size={36} />
+          <h2 className="db__empty-state-title">Nenhum município selecionado</h2>
+          <p className="db__empty-state-desc">
+            Use o campo acima para buscar e adicionar até {MAX_MUNICIPIOS} municípios.<br />
+            Os gráficos comparativos serão gerados automaticamente.
+          </p>
+        </motion.div>
+      )}
+
       {erro && (
         <div className="db__error">
           <AlertCircle size={15} />{erro}
         </div>
       )}
 
-      {carregando ? (
-        <div className="db__loading">
-          <Spinner size="md" color="market" />
-          <span>Carregando indicadores de {MUNI_SAMPLE_CODES.length} municípios…</span>
-        </div>
-      ) : (
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={`${pilar}-${view}-${relatorioIdx}`}
-            className="db__chart-area"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.18 }}
-          >
-            {view === 'ranking' ? (
-              <RankingView dados={dadosIndicador} relatorio={relatorio} pilar={pilar} onMunicipio={(cod) => navigate(`/comparar?comparar=${cod}`)} />
-            ) : view === 'radar' ? (
-              <div className="db__chart-wrap">
-                <p className="db__chart-label">
-                  {pilar === 'mercado' ? <TrendingUp size={13} /> : <Users size={13} />}
-                  Comparativo radar — primeiros 4 indicadores de {pilar === 'mercado' ? 'Mercado' : 'Social'}
-                </p>
-                <ReactECharts option={optionRadar} style={{ height: 380 }} notMerge />
-              </div>
-            ) : (
-              <div className="db__chart-wrap">
-                <p className="db__chart-label">
-                  {pilar === 'mercado' ? <TrendingUp size={13} /> : <Users size={13} />}
-                  {relatorio.label} — {dadosIndicador.length} municípios · unidade: {relatorio.unidade}
-                </p>
-                {dadosIndicador.length === 0 ? (
-                  <div className="db__empty">
-                    <Map size={28} />
-                    <span>Nenhum dado disponível para este indicador nos municípios selecionados.</span>
+      {/* ── Controles (só visíveis quando há municípios) ────────────────────── */}
+      {perfis.length > 0 && (
+        <>
+          <div className="db__controls">
+            {/* Tabs pilar */}
+            <div className="db__pilar-tabs">
+              <button
+                className={`db__pilar-tab${pilar === 'mercado' ? ' db__pilar-tab--on db__pilar-tab--market' : ''}`}
+                onClick={() => setPilar('mercado')}
+              >
+                <TrendingUp size={14} /> Mercado
+              </button>
+              <button
+                className={`db__pilar-tab${pilar === 'social' ? ' db__pilar-tab--on db__pilar-tab--social' : ''}`}
+                onClick={() => setPilar('social')}
+              >
+                <Users size={14} /> Social
+              </button>
+            </div>
+
+            {/* Seletor de indicador */}
+            <div className="db__ind-tabs">
+              {relatorios.map((r, i) => (
+                <button
+                  key={r.chave}
+                  className={`db__ind-tab${relatorioIdx === i ? ' db__ind-tab--on' : ''}`}
+                  onClick={() => setRelatorioIdx(i)}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Tipo de visualização */}
+            <div className="db__view-tabs">
+              <button className={`db__view-tab${view === 'bar' ? ' db__view-tab--on' : ''}`} onClick={() => setView('bar')}>
+                <BarChart3 size={13} /> <span>Barras</span>
+              </button>
+              <button className={`db__view-tab${view === 'radar' ? ' db__view-tab--on' : ''}`} onClick={() => setView('radar')}>
+                <Map size={13} /> <span>Radar</span>
+              </button>
+              <button className={`db__view-tab${view === 'ranking' ? ' db__view-tab--on' : ''}`} onClick={() => setView('ranking')}>
+                <Trophy size={13} /> <span>Ranking</span>
+              </button>
+            </div>
+          </div>
+
+          {/* ── Conteúdo ─────────────────────────────────────────────────────── */}
+          {carregando ? (
+            <div className="db__loading">
+              <Spinner size="md" color="market" />
+              <span>Atualizando dados…</span>
+            </div>
+          ) : (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`${pilar}-${view}-${relatorioIdx}`}
+                className="db__chart-area"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.18 }}
+              >
+                {view === 'ranking' ? (
+                  <RankingView dados={dadosIndicador} relatorio={relatorio} pilar={pilar} onMunicipio={(cod) => navigate(`/comparar?comparar=${cod}`)} />
+                ) : view === 'radar' ? (
+                  <div className="db__chart-wrap">
+                    <p className="db__chart-label">
+                      {pilar === 'mercado' ? <TrendingUp size={13} /> : <Users size={13} />}
+                      Comparativo radar — primeiros 4 indicadores de {pilar === 'mercado' ? 'Mercado' : 'Social'}
+                    </p>
+                    <ReactECharts option={optionRadar} style={{ height: 380 }} notMerge />
                   </div>
                 ) : (
-                  <ReactECharts
-                    option={optionBar}
-                    style={{ height: Math.max(260, dadosIndicador.length * 38) }}
-                    notMerge
-                  />
-                )}
-              </div>
-            )}
-          </motion.div>
-        </AnimatePresence>
-      )}
-
-      {/* ── Acesso rápido ──────────────────────────────────────────────────── */}
-      {!carregando && perfis.length > 0 && (
-        <div className="db__quick">
-          <div className="db__section-header">
-            <div className="db__section-bar" />
-            <h2 className="db__section-title">Municípios analisados</h2>
-          </div>
-          <div className="db__muni-grid">
-            {perfis.map(({ perfil, cor }) => {
-              const lista = pilar === 'mercado' ? perfil.mercado : perfil.social
-              const ind = lista.find(i => i.chave === relatorio.chave)
-              const valor = getValor(ind)
-              return (
-                <button
-                  key={perfil.municipio.codigo_ibge}
-                  className="db__muni-card"
-                  style={{ '--accent': cor } as React.CSSProperties}
-                  onClick={() => navigate(`/comparar?comparar=${perfil.municipio.codigo_ibge}`)}
-                >
-                  <span className="db__muni-dot" style={{ background: cor }} />
-                  <div className="db__muni-text">
-                    <span className="db__muni-nome">{perfil.municipio.nome}</span>
-                    <span className="db__muni-val">
-                      {valor !== null ? formatNum(valor, relatorio.unidade) : 'N/D'}
-                    </span>
+                  <div className="db__chart-wrap">
+                    <p className="db__chart-label">
+                      {pilar === 'mercado' ? <TrendingUp size={13} /> : <Users size={13} />}
+                      {relatorio.label} — {dadosIndicador.length} municípios · unidade: {relatorio.unidade}
+                    </p>
+                    {dadosIndicador.length === 0 ? (
+                      <div className="db__empty">
+                        <Map size={28} />
+                        <span>Nenhum dado disponível para este indicador nos municípios selecionados.</span>
+                      </div>
+                    ) : (
+                      <ReactECharts
+                        option={optionBar}
+                        style={{ height: Math.max(260, dadosIndicador.length * 38) }}
+                        notMerge
+                      />
+                    )}
                   </div>
-                  <ArrowRight size={12} className="db__muni-arrow" />
-                </button>
-              )
-            })}
+                )}
+              </motion.div>
+            </AnimatePresence>
+          )}
+
+          {/* ── Chips / lista de municípios com remoção rápida ────────────────── */}
+          <div className="db__quick">
+            <div className="db__section-header">
+              <div className="db__section-bar" />
+              <h2 className="db__section-title">Municípios selecionados</h2>
+              <button className="db__btn-ghost db__btn-ghost--sm" onClick={() => setPerfis([])}>
+                <X size={12} /> Limpar todos
+              </button>
+            </div>
+            <div className="db__muni-grid">
+              {perfis.map(({ perfil, cor }) => {
+                const lista = pilar === 'mercado' ? perfil.mercado : perfil.social
+                const ind = lista.find(i => i.chave === relatorio.chave)
+                const valor = getValor(ind)
+                return (
+                  <button
+                    key={perfil.municipio.codigo_ibge}
+                    className="db__muni-card"
+                    style={{ '--accent': cor } as React.CSSProperties}
+                    onClick={() => navigate(`/comparar?comparar=${perfil.municipio.codigo_ibge}`)}
+                  >
+                    <span className="db__muni-dot" style={{ background: cor }} />
+                    <div className="db__muni-text">
+                      <span className="db__muni-nome">{perfil.municipio.nome}</span>
+                      <span className="db__muni-val">
+                        {valor !== null ? formatNum(valor, relatorio.unidade) : 'N/D'}
+                      </span>
+                    </div>
+                    <ArrowRight size={12} className="db__muni-arrow" />
+                  </button>
+                )
+              })}
+            </div>
           </div>
-        </div>
+        </>
       )}
     </motion.div>
   )
