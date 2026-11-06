@@ -220,14 +220,23 @@ export default function PerfilPage() {
                   </div>
                 </div>
               </div>
-              <button
-                className="perfil__muni-btn"
-                onClick={() => navigate(`/investigar?municipio=${perfil.municipio.codigo_ibge}&nome=${encodeURIComponent(perfil.municipio.nome)}`)}
-              >
-                <Brain size={14} aria-hidden="true" />
-                Investigar com IA
-                <ExternalLink size={13} aria-hidden="true" />
-              </button>
+              <div className="perfil__muni-btns">
+                <button
+                  className="perfil__muni-btn perfil__muni-btn--ghost"
+                  onClick={() => navigate(`/mapa`)}
+                >
+                  <MapPin size={14} aria-hidden="true" />
+                  Ver no mapa
+                </button>
+                <button
+                  className="perfil__muni-btn"
+                  onClick={() => navigate(`/investigar?municipio=${perfil.municipio.codigo_ibge}&nome=${encodeURIComponent(perfil.municipio.nome)}`)}
+                >
+                  <Brain size={14} aria-hidden="true" />
+                  Investigar com IA
+                  <ExternalLink size={13} aria-hidden="true" />
+                </button>
+              </div>
             </div>
 
             {/* Tabs de pilar + toggle de visualização */}

@@ -209,6 +209,14 @@
   font-size: var(--text-xs);
 }
 
+.perfil__muni-btns {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
 .perfil__muni-btn {
   display: inline-flex;
   align-items: center;
@@ -219,7 +227,7 @@
   color: #fff;
   font-size: var(--text-sm);
   font-weight: 600;
-  border: none;
+  border: 1.5px solid transparent;
   box-shadow: var(--shadow-sm);
   transition: opacity var(--t-fast), transform var(--t-fast);
   white-space: nowrap;
@@ -227,6 +235,19 @@
   cursor: pointer;
 }
 .perfil__muni-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+
+.perfil__muni-btn--ghost {
+  background: transparent;
+  color: var(--color-muted);
+  border-color: var(--color-line);
+  box-shadow: none;
+}
+.perfil__muni-btn--ghost:hover {
+  background: var(--color-highlight);
+  color: var(--color-ink);
+  opacity: 1;
+  transform: translateY(-1px);
+}
 
 /* ── Tabs de pilar ───────────────────────────────────────────────────────── */
 .perfil__tabs {

@@ -1,9 +1,11 @@
 import { NavLink, useLocation } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import { motion } from 'motion/react'
 import {
-  LayoutDashboard, Map, BarChart2, Brain, MessageSquare,
-  Sun, Moon,
+  LayoutDashboard, Map, BarChart2, MessageSquare,
+  Sun, Moon, Clock,
 } from 'lucide-react'
+import { ANALISES_STORAGE_KEY } from '../../pages/AnalisesPage'
 import './TopBar.css'
 
 interface TopBarProps {
@@ -15,12 +17,30 @@ const NAV_ITEMS = [
   { to: '/',           label: 'Dashboard',  icon: LayoutDashboard, exact: true },
   { to: '/mapa',       label: 'Mapa',       icon: Map,             exact: false },
   { to: '/perfil',     label: 'Perfil',     icon: BarChart2,       exact: false },
-  { to: '/analises',   label: 'Análises',   icon: Brain,           exact: false },
+  { to: '/analises',   label: 'Análises',   icon: Clock,           exact: false },
   { to: '/investigar', label: 'Investigar', icon: MessageSquare,   exact: false },
 ]
 
 export default function TopBar({ theme, onToggleTheme }: TopBarProps) {
   const location = useLocation()
+  const [analiseCount, setAnaliseCount] = useState(0)
+
+  useEffect(() => {
+    function lerCount() {
+      try {
+        const lista = JSON.parse(localStorage.getItem(ANALISES_STORAGE_KEY) ?? '[]')
+        setAnaliseCount(Array.isArray(lista) ? lista.length : 0)
+      } catch { setAnaliseCount(0) }
+    }
+    lerCount()
+    window.addEventListener('storage', lerCount)
+    // Também relê ao focar a janela (útil quando salva numa aba e volta para outra)
+    window.addEventListener('focus', lerCount)
+    return () => {
+      window.removeEventListener('storage', lerCount)
+      window.removeEventListener('focus', lerCount)
+    }
+  }, [])
 
   return (
     <>
@@ -58,6 +78,9 @@ export default function TopBar({ theme, onToggleTheme }: TopBarProps) {
                 >
                   <Icon size={15} aria-hidden="true" />
                   <span>{label}</span>
+                  {to === '/analises' && analiseCount > 0 && (
+                    <span className="topbar__nav-badge">{analiseCount > 99 ? '99+' : analiseCount}</span>
+                  )}
                   {active && (
                     <motion.span
                       className="topbar__link-indicator"

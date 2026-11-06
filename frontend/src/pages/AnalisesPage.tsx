@@ -68,13 +68,23 @@ export default function AnalisesPage() {
   const [secaoAberta, setSecaoAberta] = useState<string | null>(null)
 
   useEffect(() => {
-    try {
-      const lista: AnaliseRecord[] = JSON.parse(
-        localStorage.getItem(ANALISES_STORAGE_KEY) ?? '[]'
-      )
-      setAnalises(lista)
-    } catch {
-      setAnalises([])
+    function carregarAnalises() {
+      try {
+        const lista: AnaliseRecord[] = JSON.parse(
+          localStorage.getItem(ANALISES_STORAGE_KEY) ?? '[]'
+        )
+        setAnalises(lista)
+      } catch {
+        setAnalises([])
+      }
+    }
+    carregarAnalises()
+    // Relê quando outra aba salva uma análise
+    window.addEventListener('storage', carregarAnalises)
+    window.addEventListener('focus', carregarAnalises)
+    return () => {
+      window.removeEventListener('storage', carregarAnalises)
+      window.removeEventListener('focus', carregarAnalises)
     }
   }, [])
 
@@ -116,7 +126,12 @@ export default function AnalisesPage() {
           <Brain size={22} />
         </div>
         <div className="analises__header-text">
-          <h1 className="analises__title">Análises Recentes</h1>
+          <h1 className="analises__title">
+            Análises Recentes
+            {analises.length > 0 && (
+              <span className="analises__count-badge">{analises.length}</span>
+            )}
+          </h1>
           <p className="analises__subtitle">
             Histórico das investigações por IA — salvo localmente no navegador.
           </p>

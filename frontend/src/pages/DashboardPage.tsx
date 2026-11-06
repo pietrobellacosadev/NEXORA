@@ -2,7 +2,7 @@ import { motion } from 'motion/react'
 import { Link } from 'react-router-dom'
 import {
   Map, BarChart2, Brain, ArrowRight,
-  TrendingUp, Users, ShieldCheck, Wifi, Activity,
+  TrendingUp, Users, ShieldCheck, Wifi, Activity, Clock,
 } from 'lucide-react'
 import './DashboardPage.css'
 
@@ -32,7 +32,7 @@ const FEATURES = [
   },
   {
     to: '/analises',
-    icon: Brain,
+    icon: Clock,
     title: 'Análises Recentes',
     desc: 'Histórico das investigações por IA salvo localmente. Consulte sínteses, constatações e convergências.',
     color: 'ai',

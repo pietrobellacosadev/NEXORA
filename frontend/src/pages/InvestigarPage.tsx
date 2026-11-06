@@ -112,6 +112,8 @@ export default function InvestigarPage() {
       setEstado({ geral: 'done', market: 'done', social: 'done', consolidator: 'done' })
       setResultado(data)
       salvarAnalise(data)
+      // Auto-expande ambos os pilares na primeira exibição
+      setExpanded('market')
     } catch (e: unknown) {
       const msg = (e as { response?: { data?: { detail?: string } }; message?: string })
         ?.response?.data?.detail ?? (e as { message?: string })?.message ?? 'Erro desconhecido'

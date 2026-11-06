@@ -1,13 +1,13 @@
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
-import { Home, Map, BarChart2, GitCompare, MessageSquare } from 'lucide-react'
+import { Home, Map, BarChart2, MessageSquare, Clock } from 'lucide-react'
 import './NotFoundPage.css'
 
 const ATALHOS = [
   { to: '/',           label: 'Dashboard',  icon: Home          },
   { to: '/mapa',       label: 'Mapa',       icon: Map           },
   { to: '/perfil',     label: 'Perfil',     icon: BarChart2     },
-  { to: '/comparar',   label: 'Comparar',   icon: GitCompare    },
+  { to: '/analises',   label: 'Análises',   icon: Clock         },
   { to: '/investigar', label: 'Investigar', icon: MessageSquare },
 ]
 
