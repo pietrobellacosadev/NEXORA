@@ -45,7 +45,7 @@ export default function InvestigarPage() {
   const [estado, setEstado] = useState<EstadoInvestigacao>(ESTADO_INICIAL)
   const [resultado, setResultado] = useState<ResultadoConsolidado | null>(null)
   const [erro, setErro] = useState('')
-  const [expanded, setExpanded] = useState<string | null>(null)
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
 
   // Busca reativa por nome
   useEffect(() => {
@@ -113,7 +113,7 @@ export default function InvestigarPage() {
       setResultado(data)
       salvarAnalise(data)
       // Auto-expande ambos os pilares na primeira exibição
-      setExpanded('market')
+      setExpanded(new Set(['market', 'social']))
     } catch (e: unknown) {
       const msg = (e as { response?: { data?: { detail?: string } }; message?: string })
         ?.response?.data?.detail ?? (e as { message?: string })?.message ?? 'Erro desconhecido'
@@ -122,7 +122,12 @@ export default function InvestigarPage() {
     }
   }
 
-  const toggle = (key: string) => setExpanded(e => e === key ? null : key)
+  const toggle = (key: string) => setExpanded(prev => {
+    const next = new Set(prev)
+    if (next.has(key)) next.delete(key)
+    else next.add(key)
+    return next
+  })
 
   return (
     <motion.div
@@ -273,6 +278,7 @@ export default function InvestigarPage() {
               estado={estado.market}
               color="market"
             />
+            <div className="inv__flow-sep" aria-hidden="true" />
             <AgentStep
               icon={<Users size={16} />}
               label="Agente Social"
@@ -340,7 +346,7 @@ export default function InvestigarPage() {
                 fontes={resultado.mercado?.fontes ?? []}
                 limitacoes={resultado.mercado?.limitacoes ?? []}
                 ausentes={resultado.mercado?.dados_ausentes ?? []}
-                expanded={expanded === 'market'}
+                expanded={expanded.has('market')}
                 onToggle={() => toggle('market')}
               />
               <ResultSection
@@ -351,7 +357,7 @@ export default function InvestigarPage() {
                 fontes={resultado.social?.fontes ?? []}
                 limitacoes={resultado.social?.limitacoes ?? []}
                 ausentes={resultado.social?.dados_ausentes ?? []}
-                expanded={expanded === 'social'}
+                expanded={expanded.has('social')}
                 onToggle={() => toggle('social')}
               />
             </div>
