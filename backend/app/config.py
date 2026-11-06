@@ -31,17 +31,18 @@ class Settings(BaseSettings):
     groq_api_key_consolidator: SecretStr = Field(default=SecretStr(""))
 
     # ── GroqCloud — modelos por agente ────────────────────────────────────────
-    # Modelos confirmados disponíveis nas chaves desta conta (verificado 2026-11)
-    # llama-3.x retorna 404 — não disponível nestas chaves.
-    # Modelos de chat disponíveis: qwen/qwen3.8-27b · openai/gpt-oss-20b · openai/gpt-oss-120b
-    groq_model_market: str = Field(default="qwen/qwen3.8-27b")
-    groq_model_social: str = Field(default="qwen/qwen3.8-27b")
-    groq_model_consolidator: str = Field(default="qwen/qwen3.8-27b")
+    # Modelos recomendados (free tier GroqCloud, 2026-11):
+    #   llama-3.1-8b-instant    — rápido, especialistas (market/social)
+    #   llama-3.3-70b-versatile — melhor qualidade (consolidador)
+    # Override via GROQ_MODEL_MARKET / GROQ_MODEL_SOCIAL / GROQ_MODEL_CONSOLIDATOR no .env
+    groq_model_market: str = Field(default="llama-3.1-8b-instant")
+    groq_model_social: str = Field(default="llama-3.1-8b-instant")
+    groq_model_consolidator: str = Field(default="llama-3.3-70b-versatile")
 
     # ── GroqCloud — limites de consumo ────────────────────────────────────────
     groq_max_tokens: int = Field(default=4096)
     groq_timeout_seconds: int = Field(default=60)
-    groq_max_retries: int = Field(default=1)
+    groq_max_retries: int = Field(default=2)
 
     def groq_key_for(self, agent: str) -> str:
         """
