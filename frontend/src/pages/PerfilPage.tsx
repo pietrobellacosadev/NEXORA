@@ -6,10 +6,7 @@ import {
   Brain, AlertCircle, Info, ShieldCheck, ExternalLink,
   CheckCircle, HelpCircle, LayoutGrid, BarChart,
 } from 'lucide-react'
-import {
-  BarChart as ReBarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, Cell,
-} from 'recharts'
+import ReactECharts from 'echarts-for-react'
 import api from '../lib/api'
 import type { MunicipioResumo, PerfilMunicipio, IndicadorItem } from '../types'
 import Spinner from '../components/ui/Spinner'
@@ -400,22 +397,24 @@ function BadgeInline({ tipo }: { tipo: IndicadorItem['tipo'] }) {
 /* ── Gráfico de indicadores ─────────────────────────────────────────────── */
 function IndicadoresChart({ indicadores, pilar }: { indicadores: IndicadorItem[]; pilar: 'mercado' | 'social' }) {
   const cor = pilar === 'mercado' ? '#2d7dd2' : '#20B8A5'
-  const corLt = pilar === 'mercado' ? '#eaf3ff' : '#e6faf8'
+  const corAlt = pilar === 'mercado' ? '#63A7F2' : '#34d4bf'
 
-  const dados = indicadores
-    .filter(i => i.valor_num !== null && i.valor_num !== undefined && i.tipo !== 'indisponivel')
+  // Só indicadores com valor numérico positivo (exclui zeros e negativos para
+  // que a normalização por máximo faça sentido visualmente)
+  const dadosRaw = indicadores
+    .filter(i => i.valor_num !== null && i.valor_num !== undefined && i.tipo !== 'indisponivel' && (i.valor_num as number) > 0)
     .map(i => ({
-      nome: i.nome.length > 28 ? i.nome.slice(0, 26) + '…' : i.nome,
+      nome: i.nome.length > 30 ? i.nome.slice(0, 28) + '…' : i.nome,
+      nomeCompleto: i.nome,
       valor: i.valor_num as number,
       unidade: i.unidade ?? '',
-      fonte: i.fonte,
     }))
     .sort((a, b) => b.valor - a.valor)
     .slice(0, 12)
 
-  const semDados = indicadores.filter(i => i.tipo === 'indisponivel' || i.valor_num === null)
+  const semDados = indicadores.filter(i => i.tipo === 'indisponivel' || i.valor_num === null || (i.valor_num as number) <= 0)
 
-  if (dados.length === 0) {
+  if (dadosRaw.length === 0) {
     return (
       <div className="perfil__chart-empty">
         <Info size={16} />
@@ -424,51 +423,61 @@ function IndicadoresChart({ indicadores, pilar }: { indicadores: IndicadorItem[]
     )
   }
 
-  const chartHeight = Math.max(220, dados.length * 38)
+  // Normalização: cada valor como % do máximo da série (0–100)
+  // Isso resolve o problema de escalas incompatíveis (ex: população vs IDHM)
+  // O tooltip sempre mostra o valor real + unidade original
+  const maxValor = Math.max(...dadosRaw.map(d => d.valor))
+  const dados = dadosRaw.map(d => ({
+    ...d,
+    valorNorm: maxValor > 0 ? (d.valor / maxValor) * 100 : 0,
+  }))
+
+  // Grid left dinâmico: caracteres do nome mais longo × ~7px, limitado entre 140–240px
+  const maxNomeLen = Math.max(...dados.map(d => d.nome.length))
+  const gridLeft = Math.min(240, Math.max(140, maxNomeLen * 7))
+
+  const option = {
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' as const },
+      formatter: (params: Array<{ value: number; name: string }>) => {
+        const p = params[0]
+        const item = dados.find(d => d.nome === p.name)
+        if (!item) return p.name
+        const unidade = item.unidade ? ` ${item.unidade}` : ''
+        return `<b>${item.nomeCompleto}</b><br/>${item.valor.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}${unidade}`
+      },
+    },
+    grid: { left: gridLeft, right: 24, top: 8, bottom: 8, containLabel: false },
+    xAxis: {
+      type: 'value' as const,
+      max: 100,
+      axisLabel: { show: false },
+      splitLine: { lineStyle: { type: 'dashed' as const, color: '#e5e7eb' } },
+    },
+    yAxis: {
+      type: 'category' as const,
+      data: dados.map(d => d.nome),
+      axisLabel: { fontSize: 11, width: gridLeft - 8, overflow: 'truncate' as const },
+    },
+    series: [{
+      type: 'bar' as const,
+      data: dados.map((d, i) => ({
+        value: d.valorNorm,
+        itemStyle: { color: i % 2 === 0 ? cor : corAlt, borderRadius: [0, 3, 3, 0] },
+      })),
+      barMaxWidth: 22,
+    }],
+  }
+
+  const chartHeight = Math.max(220, dados.length * 42)
 
   return (
     <div className="perfil__chart-wrap">
-      <ResponsiveContainer width="100%" height={chartHeight}>
-        <ReBarChart
-          data={dados}
-          layout="vertical"
-          margin={{ top: 4, right: 60, bottom: 4, left: 8 }}
-          barCategoryGap="28%"
-        >
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--color-line)" horizontal={false} />
-          <XAxis
-            type="number"
-            tick={{ fontSize: 10, fill: 'var(--color-muted)', fontFamily: 'Inter' }}
-            domain={[0, 'auto']}
-          />
-          <YAxis
-            type="category"
-            dataKey="nome"
-            width={200}
-            tick={{ fontSize: 11, fill: 'var(--color-ink)', fontFamily: 'Inter' }}
-          />
-          <Tooltip
-            contentStyle={{
-              background: 'var(--color-card)',
-              border: '1px solid var(--color-line)',
-              borderRadius: '10px',
-              fontSize: '12px',
-              boxShadow: 'var(--shadow-lg)',
-            }}
-            formatter={(value, _name, props) => {
-              const v = value as number
-              const u = (props as { payload?: { unidade?: string } })?.payload?.unidade ?? ''
-              return [`${v.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ${u}`, 'Valor']
-            }}
-          />
-          <Bar dataKey="valor" radius={[0, 4, 4, 0]} maxBarSize={24}>
-            {dados.map((_, i) => (
-              <Cell key={i} fill={i % 2 === 0 ? cor : `color-mix(in srgb, ${cor} 75%, ${corLt})`} />
-            ))}
-          </Bar>
-        </ReBarChart>
-      </ResponsiveContainer>
-
+      <p className="perfil__chart-note">
+        Barras normalizadas (% do maior valor da série). Passe o cursor para ver o valor real.
+      </p>
+      <ReactECharts option={option} style={{ height: chartHeight }} notMerge={true} />
       {semDados.length > 0 && (
         <div className="perfil__chart-nd">
           <Info size={12} />

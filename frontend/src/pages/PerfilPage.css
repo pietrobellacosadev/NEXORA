@@ -357,6 +357,16 @@
   box-shadow: var(--shadow-sm);
 }
 
+.perfil__chart-note {
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  font-style: italic;
+  margin: 0 0 var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--color-highlight);
+  border-radius: var(--r-sm);
+}
+
 .perfil__chart-empty {
   display: flex;
   align-items: center;
@@ -560,12 +570,31 @@
 
 /* ── Responsivo ─────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .perfil__grid { grid-template-columns: repeat(2, 1fr); }
-  .perfil__muni-header { flex-direction: column; align-items: flex-start; }
-  .perfil__muni-btn { width: 100%; justify-content: center; }
+  .perfil               { padding-bottom: var(--sp-8); }
+  .perfil__header       { gap: var(--sp-3); }
+  .perfil__header-icon  { width: 42px; height: 42px; }
+  .perfil__title        { font-size: var(--text-xl); }
+  .perfil__grid         { grid-template-columns: repeat(2, 1fr); gap: var(--sp-3); }
+  .perfil__muni-header  { flex-direction: column; align-items: flex-start; gap: var(--sp-3); }
+  .perfil__muni-btns    { width: 100%; }
+  .perfil__muni-btn     { flex: 1; justify-content: center; }
+  .perfil__tabs         { overflow-x: auto; gap: var(--sp-1); }
+  .perfil__tab          { padding: var(--sp-2) var(--sp-3); font-size: var(--text-xs); white-space: nowrap; }
+  .perfil__tabs-row     { flex-direction: column; align-items: flex-start; gap: var(--sp-2); }
+  .ind-card             { padding: var(--sp-4); }
+  .ind-card__num        { font-size: var(--text-2xl); }
 }
 
 @media (max-width: 480px) {
-  .perfil__grid { grid-template-columns: 1fr; }
-  .perfil__tabs { overflow-x: auto; }
+  .perfil__header-icon  { display: none; }
+  .perfil__grid         { grid-template-columns: 1fr; gap: var(--sp-2); }
+  .perfil__tabs         { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .perfil__tab          { font-size: 0.7rem; padding: var(--sp-1) var(--sp-2); }
+  .perfil__muni-nome    { font-size: var(--text-xl); }
+  .perfil__muni-meta    { flex-wrap: wrap; gap: var(--sp-1); }
+  .perfil__muni-sep     { display: none; }
+  .ind-card             { padding: var(--sp-3); }
+  .ind-card__nome       { font-size: var(--text-xs); }
+  .ind-card__num        { font-size: var(--text-xl); }
+  .ind-card__limitacao  { display: none; }
 }
