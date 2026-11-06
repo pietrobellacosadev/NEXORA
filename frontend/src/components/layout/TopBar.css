@@ -204,4 +204,16 @@
   .topbar__divider       { display: none; }
   .topbar__nav           { display: none; }
   .bottom-nav            { display: flex; }
+
+  /* Logo menor em mobile */
+  .topbar__logo-img      { width: 38px; height: 38px; }
+  .topbar__name          { font-size: var(--text-lg); }
+
+  /* Botão de ação: toque maior */
+  .topbar__action-btn    { width: 40px; height: 40px; }
+}
+
+@media (max-width: 480px) {
+  .topbar__inner         { padding: 0 var(--sp-3); }
+  .bottom-nav__item      { font-size: 0.60rem; gap: 2px; }
 }

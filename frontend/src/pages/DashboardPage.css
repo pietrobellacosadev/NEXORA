@@ -343,16 +343,33 @@
 }
 
 @media (max-width: 768px) {
-  .dash__hero { padding: var(--sp-7) var(--sp-6); min-height: auto; }
+  .dash          { gap: var(--sp-6); }
+  .dash__hero    { padding: var(--sp-6) var(--sp-5); min-height: auto; grid-template-columns: 1fr; }
   .dash__hero-title { font-size: var(--text-3xl); }
-  .dash__stats { grid-template-columns: repeat(2, 1fr); gap: var(--sp-3); }
-  .dash__grid  { grid-template-columns: 1fr; }
+  .dash__hero-lead  { font-size: var(--text-sm); margin-bottom: var(--sp-4); }
+  .dash__hero-pills { gap: var(--sp-1); }
+  .dash__pill       { font-size: 0.65rem; padding: 3px 8px; }
+  .dash__stats      { grid-template-columns: repeat(2, 1fr); gap: var(--sp-3); }
+  .dash__grid       { grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
   .dash__section-note { display: none; }
+  .dash__card       { padding: var(--sp-4); }
+  .dash__card-desc  { display: none; }
+  .dash__card-footer { display: none; }
+  .dash__btn        { padding: 9px 16px; font-size: var(--text-xs); }
 }
 
 @media (max-width: 480px) {
-  .dash__stats { grid-template-columns: 1fr 1fr; }
-  .dash__stat { flex-direction: column; gap: var(--sp-2); }
+  .dash__hero       { padding: var(--sp-5) var(--sp-4); }
   .dash__hero-title { font-size: var(--text-2xl); }
-  .dash__hero-lead { font-size: var(--text-base); }
+  .dash__hero-lead  { display: none; }
+  .dash__hero-eyebrow { margin-bottom: var(--sp-3); }
+  .dash__stats      { grid-template-columns: 1fr 1fr; gap: var(--sp-2); }
+  .dash__stat       { padding: var(--sp-3); gap: var(--sp-2); }
+  .dash__stat-icon-wrap { width: 34px; height: 34px; }
+  .dash__stat-value { font-size: var(--text-2xl); }
+  .dash__grid       { grid-template-columns: 1fr; gap: var(--sp-2); }
+  .dash__card       { flex-direction: row; gap: var(--sp-3); align-items: center; }
+  .dash__card-top   { flex-direction: row; align-items: center; }
+  .dash__card-icon  { width: 36px; height: 36px; flex-shrink: 0; }
+  .dash__integrity  { font-size: var(--text-xs); }
 }

@@ -18,9 +18,21 @@
 /* Mobile: espaço para bottom nav */
 @media (max-width: 768px) {
   .app-layout__main {
-    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    /* padding-bottom apenas para páginas normais;
+       MapaPage usa negative-margin e gerencia a própria altura */
+    padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+    padding-top: var(--sp-4);
   }
   .app-layout__container {
     padding: 0 var(--sp-4);
+  }
+}
+
+@media (max-width: 480px) {
+  .app-layout__main {
+    padding-top: var(--sp-3);
+  }
+  .app-layout__container {
+    padding: 0 var(--sp-3);
   }
 }

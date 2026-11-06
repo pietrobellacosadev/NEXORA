@@ -287,6 +287,11 @@
   min-height: 400px;
 }
 
+/* Delete button: always visible on touch devices */
+@media (hover: none) {
+  .analises__item-del { opacity: 0.6; }
+}
+
 .analises__detalhe-empty {
   display: flex;
   flex-direction: column;
@@ -530,9 +535,33 @@
   .analises__cvd { grid-template-columns: 1fr; }
 }
 
+@media (max-width: 768px) {
+  .analises            { gap: var(--sp-4); }
+  .analises__header    { gap: var(--sp-3); }
+  .analises__header-icon { width: 38px; height: 38px; }
+  .analises__title     { font-size: var(--text-xl); }
+  .analises__subtitle  { font-size: var(--text-xs); }
+  .analises__search    { font-size: var(--text-sm); }
+  .analises__detalhe-content { padding: var(--sp-4); }
+  .analises__det-municipio   { font-size: var(--text-xl); }
+  .analises__sintese         { padding: var(--sp-4); }
+  .analises__sintese-text    { font-size: var(--text-sm); }
+  .analises__conclusao       { font-size: var(--text-xs); }
+}
+
 @media (max-width: 600px) {
-  .analises__header { flex-wrap: wrap; }
-  .analises__det-header { flex-direction: column; }
+  .analises__header      { flex-wrap: wrap; }
+  .analises__limpar      { width: 100%; justify-content: center; }
+  .analises__det-header  { flex-direction: column; gap: var(--sp-3); }
   .analises__det-actions { width: 100%; }
-  .analises__det-btn { flex: 1; justify-content: center; }
+  .analises__det-btn     { flex: 1; justify-content: center; }
+  .analises__item-pergunta { -webkit-line-clamp: 1; }
+}
+
+@media (max-width: 480px) {
+  .analises__header-icon { display: none; }
+  .analises__det-actions { flex-direction: column; }
+  .analises__det-btn     { width: 100%; }
+  .analises__cvd-block   { padding: var(--sp-3); }
+  .analises__pilar-hd    { padding: var(--sp-2) var(--sp-3); }
 }
