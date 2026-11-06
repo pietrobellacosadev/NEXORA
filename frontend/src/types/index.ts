@@ -38,6 +38,23 @@ export interface PerfilMunicipio {
 
 export type PilarTipo = 'mercado' | 'social'
 
+export interface CustoEstimado {
+  tipo_rede?: string
+  custo_total_min_reais?: number
+  custo_total_max_reais?: number
+  custo_por_domicilio?: string
+  payback_estimado_anos?: string
+  classificacao_retorno?: string
+  premissas?: string
+}
+
+export interface ImpactoEstimado {
+  domicilios_beneficiados?: string
+  escolas_beneficiadas?: string
+  reducao_exclusao_digital_pct?: string
+  observacoes?: string
+}
+
 export interface ResultadoAgente {
   pilar?: PilarTipo
   agente?: string
@@ -49,6 +66,17 @@ export interface ResultadoAgente {
   periodos?: string[]
   limitacoes: string[]
   dados_ausentes: string[]
+  custo_estimado?: CustoEstimado
+  programas_elegiveis?: string[]
+  impacto_estimado?: ImpactoEstimado
+}
+
+export interface ViabilidadeFinanceira {
+  tipo_rede_recomendado?: string
+  investimento_estimado_range?: string
+  payback_anos?: string
+  classificacao?: string
+  financiamentos_disponiveis?: string
 }
 
 export interface ResultadoConsolidado {
@@ -56,6 +84,7 @@ export interface ResultadoConsolidado {
   codigo_ibge: string
   pergunta: string
   sintese: string
+  viabilidade_financeira?: ViabilidadeFinanceira
   mercado: ResultadoAgente
   social: ResultadoAgente
   convergencias: string[]
