@@ -65,7 +65,7 @@ export default function AnalisesPage() {
   const [analises, setAnalises] = useState<AnaliseRecord[]>([])
   const [aberta, setAberta] = useState<AnaliseRecord | null>(null)
   const [busca, setBusca] = useState('')
-  const [secaoAberta, setSecaoAberta] = useState<string | null>(null)
+  const [secaoAberta, setSecaoAberta] = useState<string | null>('mercado')
 
   useEffect(() => {
     function carregarAnalises() {
@@ -198,7 +198,7 @@ export default function AnalisesPage() {
                 >
                   <button
                     className={`analises__item${aberta?.id === a.id ? ' analises__item--active' : ''}`}
-                    onClick={() => { setAberta(a); setSecaoAberta(null) }}
+                    onClick={() => { setAberta(a); setSecaoAberta('mercado') }}
                   >
                     <div className="analises__item-main">
                       <span className="analises__item-municipio">{a.municipio}</span>
