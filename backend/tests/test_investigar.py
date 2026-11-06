@@ -22,9 +22,18 @@ def _make_row(data: dict):
 
 
 def _mock_db_municipio(nome: str = "São Paulo"):
+    """Mock que responde corretamente para 2 execute_fetchall:
+    1ª chamada: busca o município pelo código IBGE → retorna [{"nome": nome}]
+    2ª chamada: busca indicadores → retorna [] (sem indicadores, mas não quebra)
+    """
     db = AsyncMock()
     db.close = AsyncMock()
-    db.execute_fetchall = AsyncMock(return_value=[_make_row({"nome": nome})])
+
+    # side_effect lista: primeira chamada retorna municipio, segunda retorna []
+    db.execute_fetchall = AsyncMock(side_effect=[
+        [_make_row({"nome": nome})],  # municipios query
+        [],                            # indicadores query (vazio — sem dados, agentes usam fallback)
+    ])
     return db
 
 
@@ -137,6 +146,8 @@ async def test_investigar_passa_nome_correto_ao_consolidador():
         codigo_ibge="3509502",
         nome_municipio="Campinas",
         pergunta="oportunidades",
+        contexto_mercado="Nenhum indicador mercado disponível para este município.",
+        contexto_social="Nenhum indicador sociais disponível para este município.",
     )
 
 

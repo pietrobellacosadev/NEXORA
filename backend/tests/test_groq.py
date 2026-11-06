@@ -41,9 +41,9 @@ class TestConfigPrioridade:
 
     def test_modelo_por_agente(self):
         s = Settings()
-        assert s.groq_model_for("market") == "openai/gpt-oss-20b"
-        assert s.groq_model_for("social") == "openai/gpt-oss-20b"
-        assert s.groq_model_for("consolidator") == "openai/gpt-oss-120b"
+        assert s.groq_model_for("market") == "llama-3.1-8b-instant"
+        assert s.groq_model_for("social") == "llama-3.1-8b-instant"
+        assert s.groq_model_for("consolidator") == "llama-3.3-70b-versatile"
 
 
 # ── Testes do cliente (mockado) ───────────────────────────────────────────────
@@ -178,3 +178,51 @@ async def test_endpoint_validar_estrutura():
     assert "market" in nomes
     assert "social" in nomes
     assert "consolidator" in nomes
+
+
+# ── Testes do json_mode no GroqClient ────────────────────────────────────────
+
+@pytest.mark.asyncio
+async def test_chat_json_mode_inclui_response_format():
+    """json_mode=True deve incluir response_format no payload enviado."""
+    payload_capturado = {}
+
+    async def _fake_post(endpoint, payload):
+        payload_capturado.update(payload)
+        return {"choices": [{"message": {"content": '{"ok": true}'}}]}
+
+    with patch("app.services.groq_client.settings") as mock_cfg:
+        mock_cfg.groq_key_for.return_value = "test-key"
+        mock_cfg.groq_model_for.return_value = "llama-3.1-8b-instant"
+        mock_cfg.groq_max_tokens = 512
+        mock_cfg.groq_timeout_seconds = 10
+        mock_cfg.groq_max_retries = 1
+        c = GroqClient("market")
+
+    c._post = _fake_post  # type: ignore[method-assign]
+    await c.chat([{"role": "user", "content": "teste"}], json_mode=True)
+
+    assert payload_capturado.get("response_format") == {"type": "json_object"}
+
+
+@pytest.mark.asyncio
+async def test_chat_sem_json_mode_nao_inclui_response_format():
+    """json_mode=False (padrão) não deve incluir response_format."""
+    payload_capturado = {}
+
+    async def _fake_post(endpoint, payload):
+        payload_capturado.update(payload)
+        return {"choices": [{"message": {"content": "resposta livre"}}]}
+
+    with patch("app.services.groq_client.settings") as mock_cfg:
+        mock_cfg.groq_key_for.return_value = "test-key"
+        mock_cfg.groq_model_for.return_value = "llama-3.1-8b-instant"
+        mock_cfg.groq_max_tokens = 512
+        mock_cfg.groq_timeout_seconds = 10
+        mock_cfg.groq_max_retries = 1
+        c = GroqClient("social")
+
+    c._post = _fake_post  # type: ignore[method-assign]
+    await c.chat([{"role": "user", "content": "teste"}])
+
+    assert "response_format" not in payload_capturado
