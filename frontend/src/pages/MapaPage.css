@@ -1,10 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   MapaPage — layout sidebar + mapa  (redesign v2)
+   MapaPage — layout sidebar + mapa  (redesign v3)
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .mapa-page {
   display: grid;
-  grid-template-columns: 360px 1fr;
+  grid-template-columns: 340px 1fr;
   height: calc(100dvh - var(--nav-height));
   margin: calc(-1 * var(--sp-6)) calc(-1 * var(--sp-6)) calc(-1 * var(--sp-12));
   overflow: hidden;
@@ -184,19 +184,19 @@
   align-items: center;
   gap: 4px;
   padding: 2px 8px;
-  background: var(--color-social-lt);
-  border: 1px solid var(--color-social);
+  background: color-mix(in srgb, var(--chip-color, var(--color-social)) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--chip-color, var(--color-social)) 55%, transparent);
   border-radius: var(--r-full);
   font-size: var(--text-xs);
   font-weight: 600;
-  color: var(--color-social-dk);
+  color: var(--chip-color, var(--color-social-dk));
 }
 .mapa-comparar-chip button {
   display: grid;
   place-items: center;
   border: none;
   background: none;
-  color: var(--color-social-dk);
+  color: var(--chip-color, var(--color-social-dk));
   cursor: pointer;
   padding: 0;
   line-height: 1;
@@ -557,15 +557,6 @@
   border-color: #20B8A5;
 }
 
-.mapa-legend__comparar {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--color-social-dk);
-  margin-left: auto;
-}
 
 /* ══ Container do mapa ═══════════════════════════════════════════════════════ */
 .mapa-container {
@@ -618,8 +609,12 @@
 }
 
 /* ── Responsivo ──────────────────────────────────────────────────────────── */
+@media (max-width: 1280px) {
+  .mapa-page { grid-template-columns: 310px 1fr; }
+}
+
 @media (max-width: 1024px) {
-  .mapa-page { grid-template-columns: 320px 1fr; }
+  .mapa-page { grid-template-columns: 290px 1fr; }
 }
 
 @media (max-width: 768px) {

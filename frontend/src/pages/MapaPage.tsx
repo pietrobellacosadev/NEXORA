@@ -25,6 +25,9 @@ const DESTAQUES_SOCIAL  = ['idhm', 'acesso_internet_domiciliar', 'taxa_alfabetiz
 
 const MAX_COMPARAR = 3
 
+/* ── Cores para municípios na comparação ────────────────────────────────── */
+const COMPARAR_CORES = ['#f97316', '#a855f7', '#ec4899']
+
 function formatarValor(ind: IndicadorItem): string {
   if (ind.valor_num === null || ind.valor_num === undefined) return '–'
   const v = ind.valor_num
@@ -34,14 +37,56 @@ function formatarValor(ind: IndicadorItem): string {
   return v.toLocaleString('pt-BR', { maximumFractionDigits: 2 })
 }
 
+/* ── Cria polígono invertido para mascarar fora do SP ─────────────────────
+   GeoJSON com um anel externo cobrindo o mundo inteiro e um buraco no
+   formato de SP (extraído do GeoJSON já carregado).
+   ─────────────────────────────────────────────────────────────────────── */
+function buildMaskLayer(spGeoJSON: GeoJSON.FeatureCollection): L.GeoJSON {
+  // Anel externo: retângulo que cobre o mundo
+  const world = [[-90, -180], [-90, 180], [90, 180], [90, -180], [-90, -180]]
+
+  // Dissolve todos os polígonos de SP num único MultiPolygon de buracos
+  const holes: number[][][][] = []
+  for (const feature of spGeoJSON.features) {
+    const geom = feature.geometry
+    if (geom.type === 'Polygon') {
+      holes.push(geom.coordinates as number[][][])
+    } else if (geom.type === 'MultiPolygon') {
+      for (const poly of (geom.coordinates as number[][][][])) {
+        holes.push(poly)
+      }
+    }
+  }
+
+  const maskFeature: GeoJSON.Feature = {
+    type: 'Feature',
+    properties: {},
+    geometry: {
+      type: 'Polygon',
+      // Primeiro anel = mundo; demais anéis = buracos de cada polígono SP
+      coordinates: [world as number[][], ...holes.map(h => h[0])],
+    },
+  }
+
+  return L.geoJSON(maskFeature, {
+    style: {
+      fillColor: '#0f172a',
+      fillOpacity: 0.55,
+      color: 'transparent',
+      weight: 0,
+    },
+    interactive: false,
+  })
+}
+
 export default function MapaPage() {
   const navigate = useNavigate()
-  const mapRef        = useRef<L.Map | null>(null)
-  const mapElRef      = useRef<HTMLDivElement>(null)
-  const geoLayerRef   = useRef<L.GeoJSON | null>(null)
+  const mapRef           = useRef<L.Map | null>(null)
+  const mapElRef         = useRef<HTMLDivElement>(null)
+  const geoLayerRef      = useRef<L.GeoJSON | null>(null)
   const selectedLayerRef = useRef<L.Layer | null>(null)
-  const layerByCodRef = useRef<Map<string, L.Layer>>(new Map())
-  const nomesRef      = useRef<Map<string, string>>(new Map())
+  const layerByCodRef    = useRef<Map<string, L.Layer>>(new Map())
+  const nomesRef         = useRef<Map<string, string>>(new Map())
 
   const [busca, setBusca]           = useState('')
   const [resultados, setResultados] = useState<MunicipioResumo[]>([])
@@ -54,6 +99,24 @@ export default function MapaPage() {
   const [pilar, setPilar]           = useState<'mercado' | 'social'>('mercado')
   const [comparar, setComparar]     = useState<MunicipioResumo[]>([])
   const [compararMsg, setComparMsg] = useState('')
+  const searchInputRef              = useRef<HTMLInputElement>(null)
+
+  /* ── Mantém camadas de comparação coloridas após re-render ──────────────── */
+  const compararLayersRef = useRef<Map<string, string>>(new Map()) // codigo → cor
+
+  const aplicarEstiloComparar = useCallback(() => {
+    compararLayersRef.current.forEach((cor, codigo) => {
+      const layer = layerByCodRef.current.get(codigo)
+      if (layer && layer !== selectedLayerRef.current) {
+        ;(layer as L.Path).setStyle({
+          fillColor: cor,
+          fillOpacity: 0.30,
+          color: cor,
+          weight: 2.0,
+        })
+      }
+    })
+  }, [])
 
   /* ── Inicializa Leaflet ──────────────────────────────────────────────────── */
   useEffect(() => {
@@ -66,7 +129,6 @@ export default function MapaPage() {
       maxZoom: 14,
       zoomControl: false,
       attributionControl: true,
-      // Bounds suaves — serão substituídos pelo extent real após o GeoJSON carregar
       maxBounds: SP_BOUNDS,
       maxBoundsViscosity: 0.85,
     })
@@ -89,14 +151,14 @@ export default function MapaPage() {
     // Carrega GeoJSON dos municípios de SP
     fetch('/sp_municipios.geojson')
       .then(r => r.json())
-      .then(data => {
+      .then((data: GeoJSON.FeatureCollection) => {
         const layer = L.geoJSON(data, {
           style: {
             fillColor: '#2d7dd2',
-            fillOpacity: 0.10,
+            fillOpacity: 0.12,
             color: '#2d7dd2',
-            weight: 0.8,
-            opacity: 0.55,
+            weight: 0.9,
+            opacity: 0.60,
           },
           onEachFeature(feature, featureLayer) {
             const codigo = feature.properties?.codarea
@@ -104,26 +166,45 @@ export default function MapaPage() {
             featureLayer.on({
               mouseover(e) {
                 const l = e.target as L.Path
-                l.setStyle({ fillOpacity: 0.25, weight: 1.8, color: '#2d7dd2' })
+                // Não sobrescreve se já está na comparação
+                if (!compararLayersRef.current.has(codigo) && selectedLayerRef.current !== e.target) {
+                  l.setStyle({ fillOpacity: 0.28, weight: 1.8, color: '#2d7dd2' })
+                }
                 const nome = nomesRef.current.get(codigo) ?? codigo
                 setTooltip(nome || '')
               },
               mouseout(e) {
                 if (selectedLayerRef.current !== e.target) {
-                  layer.resetStyle(e.target as L.Path)
+                  if (compararLayersRef.current.has(codigo)) {
+                    const cor = compararLayersRef.current.get(codigo)!
+                    ;(e.target as L.Path).setStyle({
+                      fillColor: cor, fillOpacity: 0.30, color: cor, weight: 2.0,
+                    })
+                  } else {
+                    layer.resetStyle(e.target as L.Path)
+                  }
                 }
                 setTooltip('')
               },
               click() {
                 if (selectedLayerRef.current && selectedLayerRef.current !== featureLayer) {
-                  layer.resetStyle(selectedLayerRef.current as L.Path)
+                  const prevCodigo = [...layerByCodRef.current.entries()]
+                    .find(([, v]) => v === selectedLayerRef.current)?.[0]
+                  if (prevCodigo && compararLayersRef.current.has(prevCodigo)) {
+                    const cor = compararLayersRef.current.get(prevCodigo)!
+                    ;(selectedLayerRef.current as L.Path).setStyle({
+                      fillColor: cor, fillOpacity: 0.30, color: cor, weight: 2.0,
+                    })
+                  } else {
+                    layer.resetStyle(selectedLayerRef.current as L.Path)
+                  }
                 }
                 selectedLayerRef.current = featureLayer
                 ;(featureLayer as L.Path).setStyle({
                   fillColor: '#20B8A5',
-                  fillOpacity: 0.35,
+                  fillOpacity: 0.40,
                   color: '#20B8A5',
-                  weight: 2.2,
+                  weight: 2.5,
                 })
                 selecionarMunicipio(codigo)
               },
@@ -132,20 +213,22 @@ export default function MapaPage() {
         }).addTo(map)
         geoLayerRef.current = layer
 
+        // Adiciona máscara invertida (fora de SP fica escurecido)
+        buildMaskLayer(data).addTo(map)
+
         // Ajusta view e bounds ao extent REAL do GeoJSON carregado
         const geoBounds = layer.getBounds()
         if (geoBounds.isValid()) {
           const pad = L.point(8, 8)
           map.fitBounds(geoBounds, { padding: pad })
-          // Calcula minZoom baseado no tamanho real do container
           const fitZoom = map.getBoundsZoom(geoBounds, false, pad)
           map.setMinZoom(Math.max(5, fitZoom - 1))
-          // Trava: não pode sair dos limites reais do GeoJSON
-          map.setMaxBounds(geoBounds.pad(0.05))
+          map.setMaxBounds(geoBounds.pad(0.06))
         }
       })
 
     return () => { map.remove(); mapRef.current = null }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   /* ── Seleciona município e carrega perfil ───────────────────────────────── */
@@ -179,18 +262,26 @@ export default function MapaPage() {
     setResultados([])
     selecionarMunicipio(m.codigo_ibge)
 
-    // Destaca a camada no mapa e voa até ela
     const featureLayer = layerByCodRef.current.get(m.codigo_ibge)
     if (featureLayer && geoLayerRef.current && mapRef.current) {
       if (selectedLayerRef.current && selectedLayerRef.current !== featureLayer) {
-        geoLayerRef.current.resetStyle(selectedLayerRef.current as L.Path)
+        const prevCodigo = [...layerByCodRef.current.entries()]
+          .find(([, v]) => v === selectedLayerRef.current)?.[0]
+        if (prevCodigo && compararLayersRef.current.has(prevCodigo)) {
+          const cor = compararLayersRef.current.get(prevCodigo)!
+          ;(selectedLayerRef.current as L.Path).setStyle({
+            fillColor: cor, fillOpacity: 0.30, color: cor, weight: 2.0,
+          })
+        } else {
+          geoLayerRef.current.resetStyle(selectedLayerRef.current as L.Path)
+        }
       }
       selectedLayerRef.current = featureLayer
       ;(featureLayer as L.Path).setStyle({
         fillColor: '#20B8A5',
-        fillOpacity: 0.35,
+        fillOpacity: 0.40,
         color: '#20B8A5',
-        weight: 2.2,
+        weight: 2.5,
       })
       const bounds = (featureLayer as L.GeoJSON).getBounds?.()
       if (bounds?.isValid()) {
@@ -217,27 +308,42 @@ export default function MapaPage() {
   }, [busca])
 
   /* ── Comparação ──────────────────────────────────────────────────────────── */
-  const toggleComparar = useCallback(() => {
-    if (!resumo) return
+  const toggleComparar = useCallback((alvo?: MunicipioResumo) => {
+    const mun = alvo ?? resumo
+    if (!mun) return
     setComparar(prev => {
-      const jaEsta = prev.some(m => m.codigo_ibge === resumo.codigo_ibge)
+      const jaEsta = prev.some(m => m.codigo_ibge === mun.codigo_ibge)
       if (jaEsta) {
+        // Remove da comparação e reseta cor do layer
+        compararLayersRef.current.delete(mun.codigo_ibge)
+        const layer = layerByCodRef.current.get(mun.codigo_ibge)
+        if (layer && geoLayerRef.current && selectedLayerRef.current !== layer) {
+          geoLayerRef.current.resetStyle(layer as L.Path)
+        }
         setComparMsg('')
-        return prev.filter(m => m.codigo_ibge !== resumo.codigo_ibge)
+        return prev.filter(m => m.codigo_ibge !== mun.codigo_ibge)
       }
       if (prev.length >= MAX_COMPARAR) {
         setComparMsg(`Máximo de ${MAX_COMPARAR} municípios para comparar.`)
         setTimeout(() => setComparMsg(''), 2500)
         return prev
       }
-      setComparMsg(`${resumo.nome} adicionado à comparação (${prev.length + 1}/${MAX_COMPARAR})`)
+      // Atribui cor e colore o layer no mapa
+      const cor = COMPARAR_CORES[prev.length % COMPARAR_CORES.length]
+      compararLayersRef.current.set(mun.codigo_ibge, cor)
+      const layer = layerByCodRef.current.get(mun.codigo_ibge)
+      if (layer && selectedLayerRef.current !== layer) {
+        ;(layer as L.Path).setStyle({
+          fillColor: cor, fillOpacity: 0.30, color: cor, weight: 2.0,
+        })
+      }
+      setComparMsg(`${mun.nome} adicionado à comparação (${prev.length + 1}/${MAX_COMPARAR})`)
       setTimeout(() => setComparMsg(''), 2000)
-      return [...prev, resumo]
+      return [...prev, mun]
     })
   }, [resumo])
 
   const irParaComparar = () => {
-    // Navega para InvestigarPage com o primeiro município (ou perfil)
     if (comparar.length === 1) {
       navigate(`/perfil/${comparar[0].codigo_ibge}`)
     } else if (comparar.length > 1) {
@@ -245,6 +351,11 @@ export default function MapaPage() {
       navigate(`/perfil?comparar=${ids}`)
     }
   }
+
+  /* ── Reaplica cores de comparação sempre que a lista muda ────────────────── */
+  useEffect(() => {
+    aplicarEstiloComparar()
+  }, [comparar, aplicarEstiloComparar])
 
   /* ── Indicadores filtrados ──────────────────────────────────────────────── */
   const destaqueKeys = pilar === 'mercado' ? DESTAQUES_MERCADO : DESTAQUES_SOCIAL
@@ -263,7 +374,16 @@ export default function MapaPage() {
     setPerfil(null)
     setErroPerfil('')
     if (selectedLayerRef.current && geoLayerRef.current) {
-      geoLayerRef.current.resetStyle(selectedLayerRef.current as L.Path)
+      const codigo = [...layerByCodRef.current.entries()]
+        .find(([, v]) => v === selectedLayerRef.current)?.[0]
+      if (codigo && compararLayersRef.current.has(codigo)) {
+        const cor = compararLayersRef.current.get(codigo)!
+        ;(selectedLayerRef.current as L.Path).setStyle({
+          fillColor: cor, fillOpacity: 0.30, color: cor, weight: 2.0,
+        })
+      } else {
+        geoLayerRef.current.resetStyle(selectedLayerRef.current as L.Path)
+      }
       selectedLayerRef.current = null
     }
   }
@@ -296,9 +416,10 @@ export default function MapaPage() {
         <div className="mapa-search">
           <Search size={13} className="mapa-search__icon" aria-hidden="true" />
           <input
+            ref={searchInputRef}
             className="mapa-search__input"
             type="search"
-            placeholder="Buscar e ir para município…"
+            placeholder="Buscar município…"
             value={busca}
             onChange={e => setBusca(e.target.value)}
             aria-label="Buscar município"
@@ -312,38 +433,38 @@ export default function MapaPage() {
               {buscando ? <Spinner size="sm" /> : <X size={13} />}
             </button>
           )}
+
+          {/* Dropdown de resultados */}
+          <AnimatePresence>
+            {resultados.length > 0 && (
+              <motion.ul
+                className="mapa-results"
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.13 }}
+              >
+                {resultados.map(m => (
+                  <li key={m.codigo_ibge}>
+                    <button
+                      className="mapa-results__item"
+                      onClick={() => flyToMunicipio(m)}
+                    >
+                      <MapPin size={12} aria-hidden="true" />
+                      <span className="mapa-results__nome">{m.nome}</span>
+                      {m.regiao_administrativa && (
+                        <span className="mapa-results__region">{m.regiao_administrativa}</span>
+                      )}
+                      <ChevronRight size={12} className="mapa-results__arrow" />
+                    </button>
+                  </li>
+                ))}
+              </motion.ul>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Dropdown de resultados */}
-        <AnimatePresence>
-          {resultados.length > 0 && (
-            <motion.ul
-              className="mapa-results"
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              transition={{ duration: 0.13 }}
-            >
-              {resultados.map(m => (
-                <li key={m.codigo_ibge}>
-                  <button
-                    className="mapa-results__item"
-                    onClick={() => flyToMunicipio(m)}
-                  >
-                    <MapPin size={12} aria-hidden="true" />
-                    <span className="mapa-results__nome">{m.nome}</span>
-                    {m.regiao_administrativa && (
-                      <span className="mapa-results__region">{m.regiao_administrativa}</span>
-                    )}
-                    <ChevronRight size={12} className="mapa-results__arrow" />
-                  </button>
-                </li>
-              ))}
-            </motion.ul>
-          )}
-        </AnimatePresence>
-
-        {/* Barra de comparação (flutuante se tiver itens) */}
+        {/* Barra de comparação */}
         <AnimatePresence>
           {comparar.length > 0 && (
             <motion.div
@@ -358,11 +479,15 @@ export default function MapaPage() {
                 <span>{comparar.length} {comparar.length === 1 ? 'município' : 'municípios'} selecionado{comparar.length !== 1 ? 's' : ''}</span>
               </div>
               <div className="mapa-comparar-bar__chips">
-                {comparar.map(m => (
-                  <span key={m.codigo_ibge} className="mapa-comparar-chip">
+                {comparar.map((m, idx) => (
+                  <span
+                    key={m.codigo_ibge}
+                    className="mapa-comparar-chip"
+                    style={{ '--chip-color': COMPARAR_CORES[idx % COMPARAR_CORES.length] } as React.CSSProperties}
+                  >
                     {m.nome}
                     <button
-                      onClick={() => setComparar(p => p.filter(x => x.codigo_ibge !== m.codigo_ibge))}
+                      onClick={() => toggleComparar(m)}
                       aria-label={`Remover ${m.nome}`}
                     >
                       <X size={10} />
@@ -395,11 +520,11 @@ export default function MapaPage() {
                 </div>
                 <p className="mapa-empty__title">Selecione um município</p>
                 <p className="mapa-empty__desc">
-                  Clique no mapa ou busque pelo nome acima para ver indicadores e comparar municípios.
+                  Clique no mapa ou use a busca para ver indicadores e adicionar à comparação.
                 </p>
                 <div className="mapa-empty__dica">
                   <Info size={12} />
-                  Use a busca para navegar diretamente até o município no mapa.
+                  Adicione até {MAX_COMPARAR} municípios para comparar lado a lado.
                 </div>
               </motion.div>
             ) : (
@@ -431,7 +556,7 @@ export default function MapaPage() {
                 {/* Botão de comparação */}
                 <button
                   className={`mapa-comparar-btn${jaComparando ? ' mapa-comparar-btn--active' : ''}`}
-                  onClick={toggleComparar}
+                  onClick={() => toggleComparar()}
                 >
                   {jaComparando
                     ? <><Check size={13} /> Na comparação</>
@@ -520,11 +645,14 @@ export default function MapaPage() {
           <span className="mapa-legend__item">
             <span className="mapa-legend__dot mapa-legend__dot--selected" /> Selecionado
           </span>
-          {comparar.length > 0 && (
-            <span className="mapa-legend__comparar">
-              <GitCompare size={10} /> {comparar.length} na comparação
-            </span>
-          )}
+          {COMPARAR_CORES.slice(0, Math.min(comparar.length, 3)).map((cor, i) => (
+            comparar[i] && (
+              <span key={cor} className="mapa-legend__item">
+                <span className="mapa-legend__dot" style={{ background: cor + '50', borderColor: cor }} />
+                {comparar[i].nome.split(' ')[0]}
+              </span>
+            )
+          ))}
         </div>
       </aside>
 
