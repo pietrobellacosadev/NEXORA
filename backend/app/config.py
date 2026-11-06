@@ -32,13 +32,13 @@ class Settings(BaseSettings):
 
     # ── GroqCloud — modelos por agente ────────────────────────────────────────
     # Modelos confirmados disponíveis na conta GroqCloud (verificado em 2026-11)
-    groq_model_market: str = Field(default="openai/gpt-oss-20b")
-    groq_model_social: str = Field(default="openai/gpt-oss-20b")
-    groq_model_consolidator: str = Field(default="openai/gpt-oss-120b")
+    groq_model_market: str = Field(default="llama-3.1-8b-instant")
+    groq_model_social: str = Field(default="llama-3.1-8b-instant")
+    groq_model_consolidator: str = Field(default="llama-3.3-70b-versatile")
 
     # ── GroqCloud — limites de consumo ────────────────────────────────────────
-    groq_max_tokens: int = Field(default=2048)
-    groq_timeout_seconds: int = Field(default=30)
+    groq_max_tokens: int = Field(default=4096)
+    groq_timeout_seconds: int = Field(default=60)
     groq_max_retries: int = Field(default=2)
 
     def groq_key_for(self, agent: str) -> str:

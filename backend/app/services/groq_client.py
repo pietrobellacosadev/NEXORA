@@ -119,20 +119,34 @@ class GroqClient:
         messages: list[dict[str, str]],
         max_tokens: int | None = None,
         temperature: float = 0.2,
-    ) -> str:
+        json_mode: bool = False,
+        return_usage: bool = False,
+    ) -> str | tuple[str, int | None]:
         """
         Envia mensagens ao modelo e retorna o texto da resposta.
         Lança GroqError em caso de falha.
+
+        Quando json_mode=True, ativa response_format={"type":"json_object"},
+        garantindo que o modelo só emita JSON válido e completo.
+
+        Quando return_usage=True, retorna (conteúdo, tokens_totais) em vez de
+        apenas o conteúdo, permitindo contabilizar o uso de tokens do agente.
         """
-        payload = {
+        payload: dict[str, Any] = {
             "model": self._model,
             "messages": messages,
             "max_tokens": max_tokens or self._max_tokens,
             "temperature": temperature,
         }
+        if json_mode:
+            payload["response_format"] = {"type": "json_object"}
         data = await self._post("/chat/completions", payload)
         try:
-            return data["choices"][0]["message"]["content"]
+            content = data["choices"][0]["message"]["content"]
+            if return_usage:
+                tokens = data.get("usage", {}).get("total_tokens")
+                return content, tokens
+            return content
         except (KeyError, IndexError) as exc:
             raise GroqError("Resposta inesperada da GroqCloud.") from exc
 
