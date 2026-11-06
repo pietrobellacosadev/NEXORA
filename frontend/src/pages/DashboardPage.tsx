@@ -164,37 +164,60 @@ export default function DashboardPage() {
     }
   }).filter(d => d.valor !== null).sort((a, b) => (b.valor ?? 0) - (a.valor ?? 0))
 
-  // Opções ECharts — Barras horizontais
+  // Opções ECharts — Barras horizontais (melhoradas)
   const optionBar = {
+    backgroundColor: 'transparent',
     tooltip: {
       trigger: 'axis',
-      formatter: (p: Array<{ value: number; name: string }>) =>
-        `<b>${p[0].name}</b><br/>${formatNum(p[0].value, relatorio.unidade)}`,
+      backgroundColor: '#fff',
+      borderColor: '#e5e7eb',
+      borderWidth: 1,
+      textStyle: { color: '#101827', fontSize: 12 },
+      formatter: (p: Array<{ value: number; name: string; color: string }>) =>
+        `<div style="font-weight:700;margin-bottom:4px">${p[0].name}</div>` +
+        `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${p[0].color};margin-right:6px;vertical-align:middle"></span>` +
+        `<b>${formatNum(p[0].value, relatorio.unidade)}</b>` +
+        ` <span style="color:#8ba3c0;font-size:10px">${relatorio.unidade}</span>`,
     },
-    grid: { left: 140, right: 20, top: 8, bottom: 8, containLabel: false },
+    grid: { left: 8, right: 72, top: 12, bottom: 12, containLabel: true },
     xAxis: {
       type: 'value' as const,
-      axisLabel: { show: false },
-      splitLine: { lineStyle: { type: 'dashed' as const, color: '#e5e7eb' } },
+      axisLabel: {
+        show: true,
+        fontSize: 10,
+        color: '#8ba3c0',
+        formatter: (v: number) => formatNum(v, relatorio.unidade),
+      },
+      splitLine: { lineStyle: { type: 'dashed' as const, color: '#e5e7eb', width: 1 } },
+      axisLine: { show: false },
+      axisTick: { show: false },
     },
     yAxis: {
       type: 'category' as const,
       data: dadosIndicador.map(d => d.nome),
-      axisLabel: { fontSize: 11, width: 130, overflow: 'truncate' as const },
+      axisLabel: { fontSize: 11, color: '#5a6a82', width: 140, overflow: 'truncate' as const, fontWeight: '600' },
+      axisLine: { show: false },
+      axisTick: { show: false },
       inverse: false,
     },
     series: [{
       type: 'bar' as const,
       data: dadosIndicador.map((d, i) => ({
         value: d.valor,
-        itemStyle: { color: MUNI_COLORS[i % MUNI_COLORS.length], borderRadius: [0, 4, 4, 0] },
+        itemStyle: { color: MUNI_COLORS[i % MUNI_COLORS.length], borderRadius: [0, 6, 6, 0] },
       })),
-      barMaxWidth: 22,
+      barMaxWidth: 24,
       label: {
         show: true,
         position: 'right' as const,
-        fontSize: 10,
+        fontSize: 11,
+        fontWeight: '700',
+        color: '#5a6a82',
         formatter: (p: { value: number }) => formatNum(p.value, relatorio.unidade),
+      },
+      emphasis: {
+        focus: 'series' as const,
+        itemStyle: { shadowBlur: 8, shadowColor: 'rgba(0,0,0,0.15)' },
       },
     }],
   }
@@ -210,14 +233,42 @@ export default function DashboardPage() {
   })
 
   const optionRadar = {
-    tooltip: { trigger: 'item' as const },
-    legend: { bottom: 0, textStyle: { fontSize: 10 }, type: 'scroll' as const },
+    backgroundColor: 'transparent',
+    tooltip: {
+      trigger: 'item' as const,
+      backgroundColor: '#fff',
+      borderColor: '#e5e7eb',
+      borderWidth: 1,
+      textStyle: { color: '#101827', fontSize: 12 },
+      formatter: (p: { name: string; value: number[] }) =>
+        `<b style="display:block;margin-bottom:4px">${p.name}</b>` +
+        radarIndicadores.map((ri, i) =>
+          `${ri.label}: <b>${formatNum(p.value[i], ri.unidade)}</b>`
+        ).join('<br/>'),
+    },
+    legend: {
+      bottom: 4,
+      textStyle: { fontSize: 10, color: '#5a6a82' },
+      type: 'scroll' as const,
+      icon: 'circle',
+      itemWidth: 10,
+      itemHeight: 10,
+    },
     radar: {
       indicator: radarIndicadores.map((ri, idx) => ({
-        name: ri.label.length > 18 ? ri.label.slice(0, 16) + '…' : ri.label,
+        name: ri.label.length > 20 ? ri.label.slice(0, 18) + '…' : ri.label,
         max: radarMax[idx],
       })),
-      splitArea: { areaStyle: { color: ['rgba(45,125,210,0.02)', 'rgba(45,125,210,0.06)'] } },
+      radius: '68%',
+      axisName: { color: '#5a6a82', fontSize: 11 },
+      splitArea: {
+        areaStyle: {
+          color: ['rgba(45,125,210,0.02)', 'rgba(45,125,210,0.05)',
+                  'rgba(45,125,210,0.02)', 'rgba(45,125,210,0.05)'],
+        },
+      },
+      splitLine: { lineStyle: { color: '#e5e7eb', width: 1 } },
+      axisLine: { lineStyle: { color: '#dde3ed' } },
     },
     series: [{
       type: 'radar' as const,
@@ -226,11 +277,11 @@ export default function DashboardPage() {
         return {
           name: perfil.municipio.nome,
           value: radarIndicadores.map(ri => getValor(lista.find(i => i.chave === ri.chave)) ?? 0),
-          lineStyle: { color: cor, width: 1.5 },
-          areaStyle: { color: cor, opacity: 0.06 },
+          lineStyle: { color: cor, width: 2 },
+          areaStyle: { color: cor, opacity: 0.07 },
           itemStyle: { color: cor },
           symbol: 'circle',
-          symbolSize: 5,
+          symbolSize: 6,
         }
       }),
     }],
