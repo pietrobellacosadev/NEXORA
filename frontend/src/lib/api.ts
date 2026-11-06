@@ -2,7 +2,8 @@ import axios from 'axios'
 
 const api = axios.create({
   baseURL: '/api',
-  timeout: 30_000,
+  // Investigação com 3 chamadas Groq (2 paralelas + consolidação): até 120s sob rate-limit
+  timeout: 120_000,
   headers: { 'Content-Type': 'application/json' },
 })
 

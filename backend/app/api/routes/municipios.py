@@ -42,7 +42,7 @@ class PerfilMunicipio(BaseModel):
 @router.get("", response_model=MunicipioLista)
 async def listar_municipios(
     q: Optional[str] = Query(default=None, description="Filtro por nome (parcial, sem acento)"),
-    limite: int = Query(default=20, le=700),
+    limite: int = Query(default=20, ge=1, le=700),
     offset: int = Query(default=0, ge=0),
 ) -> MunicipioLista:
     """Lista municípios do Estado de São Paulo com suporte a busca por nome."""
