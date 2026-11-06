@@ -21,12 +21,24 @@ from app.services.groq_client import GroqClient, GroqError, make_client
 
 logger = logging.getLogger(__name__)
 
-SYSTEM_PROMPT = """Agente de Mercado NEXORA — viabilidade comercial de internet em municípios paulistas.
-Analise os indicadores fornecidos e responda à pergunta do usuário.
-Regras: baseie-se EXCLUSIVAMENTE nos indicadores fornecidos; nunca invente dados; se indisponível, diga explicitamente.
-Responda APENAS em JSON válido sem markdown."""
+SYSTEM_PROMPT = """Agente de Mercado NEXORA — viabilidade comercial e custos de implantação de internet em municípios paulistas.
 
-SCHEMA_INSTRUCAO = 'Retorne JSON com chaves: "constatacoes" (array de strings), "evidencias" (array de {nome,valor,unidade,fonte,periodo,tipo,limitacoes}), "fontes" (array), "periodos" (array), "limitacoes" (array), "dados_ausentes" (array).'
+Sua função: analisar indicadores reais do município e estimar a viabilidade de mercado para expansão de conectividade.
+
+REGRAS OBRIGATÓRIAS:
+1. Baseie-se EXCLUSIVAMENTE nos indicadores fornecidos — nunca invente valores.
+2. Se um indicador estiver indisponível, diga explicitamente.
+3. Inclua SEMPRE uma análise de custos de implantação baseada nos seguintes referenciais reais brasileiros:
+   - FTTH (fibra até o domicílio): R$ 800–1.500/domicílio passado; R$ 1.200–2.500/domicílio ativado
+   - Backhaul de fibra óptica: R$ 15.000–80.000/km (varia por área urbana/rural)
+   - Infraestrutura wireless (WISP/LTE rural): R$ 120.000–400.000 por ERB com cobertura de 5–15 km
+   - GPON OLT + splitters: R$ 25.000–80.000 por nó ativo (1:64, até 64 domicílios)
+   - Fonte: ABINC, ANATEL, BNDESpar, Telebrasil (dados 2022–2024)
+4. Calcule a estimativa de investimento usando a população/domicílios do município quando disponível.
+5. Classifique o potencial de retorno: ALTO (payback < 3 anos), MÉDIO (3–6 anos), BAIXO (> 6 anos).
+6. Responda APENAS em JSON válido sem markdown."""
+
+SCHEMA_INSTRUCAO = 'Retorne JSON com chaves: "constatacoes" (array de strings com análise de mercado E custos), "custo_estimado" (objeto com {tipo_rede,custo_total_min_reais,custo_total_max_reais,custo_por_domicilio,payback_estimado_anos,classificacao_retorno,premissas}), "evidencias" (array de {nome,valor,unidade,fonte,periodo,tipo,limitacoes}), "fontes" (array), "periodos" (array), "limitacoes" (array), "dados_ausentes" (array).'
 
 
 def _extrair_json(raw: str) -> str:
@@ -74,7 +86,7 @@ class AgenteMarket:
 
         try:
             resposta_raw = await self._client.chat(
-                messages, max_tokens=800, temperature=0.1, json_mode=True
+                messages, max_tokens=1200, temperature=0.1, json_mode=True
             )
             return self._parsear(resposta_raw, tarefa)
         except GroqError as exc:
@@ -127,6 +139,7 @@ class AgenteMarket:
                 periodos=data.get("periodos", []),
                 limitacoes=data.get("limitacoes", []),
                 dados_ausentes=data.get("dados_ausentes", []),
+                custo_estimado=data.get("custo_estimado"),
                 modelo_usado=self._client.model,
             )
 
