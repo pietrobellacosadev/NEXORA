@@ -83,14 +83,15 @@ class GroqClient:
                         try:
                             retry_after = int(raw_ra)
                         except (ValueError, TypeError):
-                            retry_after = 15
-                        # Só retenta se o wait for curto (≤15s) e ainda há tentativas
-                        if tentativa < self._max_retries and retry_after <= 15:
+                            retry_after = 20
+                        # Retenta se ainda há tentativas disponíveis (sem limite de wait)
+                        if tentativa < self._max_retries:
+                            wait = min(retry_after, 60)  # aguarda no máximo 60s por tentativa
                             logger.warning(
-                                "GroqCloud rate-limit (agente=%s). Aguardando %ds.",
-                                self._agent, retry_after,
+                                "GroqCloud rate-limit (agente=%s, tentativa=%d/%d). Aguardando %ds.",
+                                self._agent, tentativa + 1, self._max_retries, wait,
                             )
-                            await asyncio.sleep(retry_after)
+                            await asyncio.sleep(wait)
                             tentativa += 1
                             continue
                         raise GroqError(_ERROS[429], status_code=429)
