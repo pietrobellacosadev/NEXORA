@@ -55,8 +55,10 @@ def _formatar_indicadores(rows: list, categoria: str) -> str:
     if not items:
         # fallback: qualquer indicador da categoria (máx 6)
         items = [r for r in rows if r["categoria"] == categoria][:6]
+    _LABEL = {"mercado": "de mercado", "social": "sociais"}
+    label = _LABEL.get(categoria, f"de {categoria}")
     if not items:
-        return f"Nenhum indicador de {categoria} disponível."
+        return f"Nenhum indicador {label} disponível."
 
     linhas = []
     for r in items:
