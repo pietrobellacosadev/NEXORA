@@ -45,6 +45,23 @@ class EvidenciaIndicador(BaseModel):
 
 # ── Resultado de um agente especialista ───────────────────────────────────────
 
+class CustoEstimado(BaseModel):
+    tipo_rede: Optional[str] = None                  # ex: "FTTH", "WISP/LTE"
+    custo_total_min_reais: Optional[float] = None
+    custo_total_max_reais: Optional[float] = None
+    custo_por_domicilio: Optional[str] = None
+    payback_estimado_anos: Optional[str] = None
+    classificacao_retorno: Optional[str] = None       # "ALTO", "MÉDIO", "BAIXO"
+    premissas: Optional[str] = None
+
+
+class ImpactoEstimado(BaseModel):
+    domicilios_beneficiados: Optional[str] = None
+    escolas_beneficiadas: Optional[str] = None
+    reducao_exclusao_digital_pct: Optional[str] = None
+    observacoes: Optional[str] = None
+
+
 class ResultadoAgente(BaseModel):
     agente: TipoAgente
     municipio: str
@@ -55,12 +72,23 @@ class ResultadoAgente(BaseModel):
     periodos: list[str] = Field(default_factory=list)
     limitacoes: list[str] = Field(default_factory=list)
     dados_ausentes: list[str] = Field(default_factory=list)
+    custo_estimado: Optional[CustoEstimado] = None       # estimativa de custos (agente market)
+    programas_elegiveis: list[str] = Field(default_factory=list)  # programas públicos (agente social)
+    impacto_estimado: Optional[ImpactoEstimado] = None   # impacto social esperado
     modelo_usado: str = ""
     tokens_usados: Optional[int] = None
     erro: Optional[str] = None           # preenchido se o agente falhou
 
 
 # ── Resultado final do Consolidador ───────────────────────────────────────────
+
+class ViabilidadeFinanceira(BaseModel):
+    tipo_rede_recomendado: Optional[str] = None
+    investimento_estimado_range: Optional[str] = None
+    payback_anos: Optional[str] = None
+    classificacao: Optional[str] = None          # "ALTO", "MÉDIO", "BAIXO"
+    financiamentos_disponiveis: Optional[str] = None
+
 
 class ResultadoConsolidado(BaseModel):
     municipio: str
@@ -73,6 +101,7 @@ class ResultadoConsolidado(BaseModel):
 
     # Síntese do Consolidador
     sintese: str
+    viabilidade_financeira: Optional[ViabilidadeFinanceira] = None
     convergencias: list[str] = Field(default_factory=list)
     divergencias: list[str] = Field(default_factory=list)
     dados_insuficientes: list[str] = Field(default_factory=list)
