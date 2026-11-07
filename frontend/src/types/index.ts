@@ -76,7 +76,8 @@ export interface ViabilidadeFinanceira {
   investimento_estimado_range?: string
   payback_anos?: string
   classificacao?: string
-  financiamentos_disponiveis?: string
+  /** Array de programas de financiamento — o backend sempre devolve list[str] */
+  financiamentos_disponiveis?: string[]
   // Campos expandidos para análise detalhada
   potencial_mercado?: string
   potencial_social?: string

@@ -41,7 +41,7 @@ REGRAS OBRIGATÓRIAS:
 3. Estime o potencial de mercado endereçável: quantos domicílios podem ser atendidos, ARPU esperado, receita anual potencial.
 4. Avalie o potencial social: redução da exclusão digital, impacto em educação/saúde/emprego, elegibilidade a programas públicos.
 5. Detalhe os riscos principais: concorrência, orografia, densidade populacional, ROI negativo.
-6. Indique os programas de financiamento aplicáveis como STRING separada por vírgulas: FUST, BNDES Telecom, PNBL, Conta de Internet ANEEL/Anatel, GESAC, editais ANATEL, EduConecta — cada um com justificativa breve.
+6. Indique os programas de financiamento aplicáveis em um array de strings: ["FUST", "BNDES Telecom", "PNBL", "Conta de Internet ANEEL/Anatel", "GESAC", "editais ANATEL", "EduConecta"] — inclua apenas os aplicáveis ao município.
 7. Forneça uma recomendação objetiva final para o analista: RECOMENDADO / RECOMENDADO COM RESSALVAS / NÃO RECOMENDADO — com justificativa.
 8. Nunca invente dados — use APENAS o que os agentes especialistas forneceram.
 9. Responda APENAS em JSON válido sem markdown nem comentários."""
@@ -55,7 +55,7 @@ SCHEMA_INSTRUCAO = '''Retorne JSON com EXATAMENTE estas chaves:
     "investimento_estimado_range": "string — ex: R$ 2,5M a R$ 4,8M",
     "payback_anos": "string — ex: 4 a 6 anos",
     "classificacao": "string — ALTO, MÉDIO ou BAIXO",
-    "financiamentos_disponiveis": "string — programas separados por vírgula, ex: FUST, BNDES Telecom, PNBL",
+    "financiamentos_disponiveis": ["array de strings — programas aplicáveis, ex: [\"FUST\", \"BNDES Telecom\", \"PNBL\"]"],
     "potencial_mercado": "string — análise narrativa: domicílios elegíveis, penetração esperada, ARPU e receita anual potencial",
     "potencial_social": "string — análise narrativa: impacto em exclusão digital, educação, saúde, emprego, elegibilidade a programas",
     "justificativa": "string — por que essa tecnologia é a mais adequada para este município",
@@ -208,6 +208,90 @@ class AgenteConsolidador:
             return texto[start:end + 1]
         return texto
 
+    @staticmethod
+    def _sanitizar_string(v: Any, campo: str = "") -> str:
+        """
+        Garante que um campo esperado como string seja realmente uma string.
+        Se o LLM retornar um dict ou list, converte para texto legível.
+        """
+        if v is None:
+            return ""
+        if isinstance(v, str):
+            # Se a string começa com { ou [ é provável que seja JSON aninhado — tenta parsear
+            stripped = v.strip()
+            if stripped.startswith("{"):
+                try:
+                    obj = json.loads(stripped)
+                    # Extrai o campo homônimo se existir, senão usa o primeiro valor string
+                    if isinstance(obj, dict):
+                        if campo and campo in obj:
+                            return str(obj[campo])
+                        for val in obj.values():
+                            if isinstance(val, str) and len(val) > 20:
+                                return val
+                        return str(list(obj.values())[0]) if obj else ""
+                except (json.JSONDecodeError, IndexError):
+                    pass
+            return v
+        if isinstance(v, dict):
+            # Extrai o campo homônimo se existir
+            if campo and campo in v:
+                return str(v[campo])
+            for val in v.values():
+                if isinstance(val, str) and len(val) > 20:
+                    return val
+            return str(v)
+        if isinstance(v, list):
+            return "; ".join(str(i) for i in v if i)
+        return str(v)
+
+    @staticmethod
+    def _sanitizar_lista(v: Any) -> list[str]:
+        """
+        Garante que um campo esperado como list[str] seja realmente uma lista de strings limpas.
+        Trata casos onde o LLM retorna um dict, uma string JSON, etc.
+        """
+        if v is None:
+            return []
+        if isinstance(v, str):
+            stripped = v.strip()
+            if stripped.startswith("["):
+                try:
+                    parsed = json.loads(stripped)
+                    if isinstance(parsed, list):
+                        v = parsed
+                    else:
+                        return [stripped] if stripped else []
+                except json.JSONDecodeError:
+                    return [stripped] if stripped else []
+            elif stripped:
+                return [stripped]
+            else:
+                return []
+        if isinstance(v, dict):
+            # Pode ser {"constatacoes": [...]} — extrai o array
+            for val in v.values():
+                if isinstance(val, list):
+                    return AgenteConsolidador._sanitizar_lista(val)
+            return [str(v)]
+        if isinstance(v, list):
+            resultado = []
+            for item in v:
+                if isinstance(item, str):
+                    resultado.append(item)
+                elif isinstance(item, dict):
+                    # Extrai o primeiro valor string significativo do dict
+                    for val in item.values():
+                        if isinstance(val, str) and len(val) > 5:
+                            resultado.append(val)
+                            break
+                    else:
+                        resultado.append(str(item))
+                elif item is not None:
+                    resultado.append(str(item))
+            return resultado
+        return []
+
     def _parsear(
         self,
         raw: str,
@@ -216,6 +300,8 @@ class AgenteConsolidador:
         social: ResultadoAgente,
         tokens_anteriores: int,
     ) -> ResultadoConsolidado:
+        from pydantic import ValidationError
+
         if not raw or not raw.strip():
             logger.warning("Agente Consolidador retornou resposta vazia")
             return ResultadoConsolidado(
@@ -233,33 +319,53 @@ class AgenteConsolidador:
             texto = self._extrair_json(raw)
             data: dict[str, Any] = json.loads(texto)
 
+            # Os validators do Pydantic em ViabilidadeFinanceira tratam todos os tipos —
+            # passamos o dict diretamente sem sanitização manual prévia.
+            vf_raw = data.get("viabilidade_financeira")
+
             return ResultadoConsolidado(
                 municipio=market.municipio,
                 codigo_ibge=market.codigo_ibge,
                 pergunta=pergunta,
                 mercado=market,
                 social=social,
-                sintese=data.get("sintese", ""),
-                viabilidade_financeira=data.get("viabilidade_financeira"),
-                convergencias=data.get("convergencias", []),
-                divergencias=data.get("divergencias", []),
-                dados_insuficientes=data.get("dados_insuficientes", []),
-                conclusao=data.get("conclusao", ""),
-                fontes_consultadas=data.get("fontes_consolidadas", []),
-                periodos_referencia=data.get("periodos_referencia", []),
-                limitacoes_gerais=data.get("limitacoes_gerais", []),
+                sintese=self._sanitizar_string(data.get("sintese", ""), "sintese"),
+                viabilidade_financeira=vf_raw,
+                convergencias=self._sanitizar_lista(data.get("convergencias", [])),
+                divergencias=self._sanitizar_lista(data.get("divergencias", [])),
+                dados_insuficientes=self._sanitizar_lista(data.get("dados_insuficientes", [])),
+                conclusao=self._sanitizar_string(data.get("conclusao", ""), "conclusao"),
+                fontes_consultadas=self._sanitizar_lista(data.get("fontes_consolidadas", [])),
+                periodos_referencia=self._sanitizar_lista(data.get("periodos_referencia", [])),
+                limitacoes_gerais=self._sanitizar_lista(data.get("limitacoes_gerais", [])),
                 modelo_consolidador=self._client.model,
                 tokens_totais=tokens_anteriores,
             )
-        except (json.JSONDecodeError, ValueError, KeyError) as exc:
-            logger.warning("Erro ao parsear resposta do Consolidador: %s", exc)
+        except (json.JSONDecodeError, ValueError, KeyError, ValidationError) as exc:
+            # Log detalhado para diagnóstico — inclui o tipo de erro e os primeiros 500 chars da resposta
+            logger.warning(
+                "Erro ao parsear resposta do Consolidador (%s: %s). "
+                "Raw (primeiros 500 chars): %.500s",
+                type(exc).__name__, exc, raw,
+            )
+            # Tenta extrair a sintese limpa mesmo da resposta malformada
+            sintese_fallback = ""
+            try:
+                texto = self._extrair_json(raw)
+                data_parcial = json.loads(texto)
+                sintese_fallback = self._sanitizar_string(data_parcial.get("sintese", ""), "sintese")
+            except Exception:
+                sintese_fallback = self._sanitizar_string(raw[:800], "sintese")
             return ResultadoConsolidado(
                 municipio=market.municipio,
                 codigo_ibge=market.codigo_ibge,
                 pergunta=pergunta,
                 mercado=market,
                 social=social,
-                sintese=raw[:500],
-                conclusao=f"Resposta fora do formato esperado: {exc}",
+                sintese=sintese_fallback or "Análise parcialmente concluída — formato de resposta inesperado.",
+                conclusao=(
+                    f"Análise gerada com limitações ({type(exc).__name__}). "
+                    "Consulte os dados dos pilares de Mercado e Social abaixo."
+                ),
                 modelo_consolidador=self._client.model,
             )

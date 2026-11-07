@@ -554,10 +554,12 @@ function ViabilidadeCard({ vf }: { vf: ViabilidadeFinanceira }) {
             <span className="inv__viabilidade-value">{vf.payback_anos}</span>
           </div>
         )}
-        {vf.financiamentos_disponiveis && (
+        {vf.financiamentos_disponiveis && vf.financiamentos_disponiveis.length > 0 && (
           <div className="inv__viabilidade-item inv__viabilidade-item--full">
             <span className="inv__viabilidade-label">Financiamentos públicos</span>
-            <span className="inv__viabilidade-value">{vf.financiamentos_disponiveis}</span>
+            <span className="inv__viabilidade-value">
+              {vf.financiamentos_disponiveis.join(' · ')}
+            </span>
           </div>
         )}
       </div>

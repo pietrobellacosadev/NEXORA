@@ -6,7 +6,15 @@
 
 .app-layout__main {
   flex: 1;
-  padding: var(--sp-6) 0 var(--sp-12);
+  padding: var(--sp-6) 0 var(--sp-16);
+}
+
+/* Páginas full-bleed (ex: /mapa): sem padding, ocupam toda a área disponível */
+.app-layout__main--full-bleed {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .app-layout__container {
@@ -22,6 +30,10 @@
        MapaPage usa negative-margin e gerencia a própria altura */
     padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
     padding-top: var(--sp-4);
+  }
+  .app-layout__main--full-bleed {
+    padding: 0;
+    padding-bottom: 0;
   }
   .app-layout__container {
     padding: 0 var(--sp-4);

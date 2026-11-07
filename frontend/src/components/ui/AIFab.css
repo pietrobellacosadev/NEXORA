@@ -4,7 +4,8 @@
   position: fixed;
   bottom: calc(var(--sp-6) + env(safe-area-inset-bottom, 0px));
   right: var(--sp-6);
-  z-index: var(--z-modal);
+  /* Acima do Leaflet (z-index 400–600) */
+  z-index: calc(var(--z-toast) + 100);
   width: 56px;
   height: 56px;
   border-radius: var(--r-full);
@@ -41,9 +42,10 @@
   position: fixed;
   bottom: calc(var(--sp-6) + 56px + var(--sp-3) + env(safe-area-inset-bottom, 0px));
   right: var(--sp-6);
-  z-index: var(--z-modal);
-  width: 380px;
-  max-height: 540px;
+  /* Acima do z-index do Leaflet (400–600) e de qualquer overlay da página */
+  z-index: calc(var(--z-toast) + 100);
+  width: 420px;
+  max-height: 620px;
   display: flex;
   flex-direction: column;
   background: var(--color-card);
@@ -139,11 +141,11 @@
 }
 
 .ai-fab__bubble {
-  max-width: 84%;
-  padding: var(--sp-2) var(--sp-3);
+  max-width: 88%;
+  padding: var(--sp-3) var(--sp-3);
   border-radius: var(--r-lg);
-  font-size: var(--text-sm);
-  line-height: 1.6;
+  font-size: 0.82rem;
+  line-height: 1.65;
   word-break: break-word;
 }
 .ai-fab__msg--assistant .ai-fab__bubble {
@@ -157,6 +159,48 @@
   color: #fff;
   border-bottom-right-radius: var(--r-sm);
 }
+
+/* ── Elementos de markdown dentro do bubble ─────────────────────────────── */
+.ai-fab__bubble .ai-fab__para {
+  margin: 0 0 0.55em;
+  line-height: 1.65;
+}
+.ai-fab__bubble .ai-fab__para:last-child { margin-bottom: 0; }
+
+.ai-fab__bubble .ai-fab__section-title {
+  margin: 0.6em 0 0.3em;
+  font-weight: 700;
+  font-size: 0.80rem;
+  color: var(--color-ai, #7c3aed);
+  line-height: 1.4;
+}
+.ai-fab__msg--user .ai-fab__bubble .ai-fab__section-title { color: rgba(255,255,255,.85); }
+
+.ai-fab__bubble .ai-fab__list {
+  margin: 0.3em 0 0.6em;
+  padding-left: 1.2em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+  list-style: disc;
+}
+.ai-fab__bubble .ai-fab__list li {
+  font-size: 0.80rem;
+  line-height: 1.55;
+  padding-left: 0.2em;
+}
+.ai-fab__msg--user .ai-fab__bubble .ai-fab__list { padding-left: 1.1em; }
+
+.ai-fab__bubble .ai-fab__hr {
+  border: none;
+  border-top: 1px solid var(--color-line);
+  margin: 0.6em 0;
+}
+.ai-fab__msg--user .ai-fab__bubble .ai-fab__hr { border-color: rgba(255,255,255,.3); }
+
+/* Strong no bubble da IA */
+.ai-fab__msg--assistant .ai-fab__bubble strong { color: var(--color-ink); font-weight: 700; }
+.ai-fab__msg--user .ai-fab__bubble strong { color: #fff; }
 
 /* Indicador "digitando" */
 .ai-fab__bubble--typing {
@@ -295,13 +339,18 @@
     height: 50px;
   }
   .ai-fab__panel {
+    /* No mobile, o painel cobre a tela do topo ao botão — sem ser cortado pelo mapa */
+    top: calc(var(--nav-height, 64px) + var(--sp-3));
     bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 50px + var(--sp-3));
     right: var(--sp-3);
     left: var(--sp-3);
     width: auto;
-    max-height: 460px;
+    max-height: none;
   }
 }
 @media (max-width: 480px) {
-  .ai-fab__panel { max-height: 380px; }
+  .ai-fab__panel {
+    top: calc(var(--nav-height, 64px) + var(--sp-2));
+    max-height: none;
+  }
 }
