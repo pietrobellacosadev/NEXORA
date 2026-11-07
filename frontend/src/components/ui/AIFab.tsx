@@ -69,6 +69,44 @@ async function resolverMunicipio(texto: string): Promise<{ codigo: string; nome:
   return null
 }
 
+// ── Tradutor de erros — nunca expõe caminhos de API nem stack traces ─────────
+function _mensagemErro(err: unknown, municipio?: string): string {
+  const ctx = municipio ? ` para **${municipio}**` : ''
+
+  // Erro de rede / servidor indisponível
+  if (err instanceof Error) {
+    const msg = err.message.toLowerCase()
+    if (msg.includes('network') || msg.includes('fetch') || msg.includes('econnrefused') || msg.includes('failed to fetch')) {
+      return `⚠️ Não foi possível conectar ao servidor de análise${ctx}. Verifique sua conexão e tente novamente em instantes.`
+    }
+    if (msg.includes('timeout') || msg.includes('timed out')) {
+      return `⏱️ A análise${ctx} demorou mais do que o esperado e foi interrompida. Os modelos de IA podem estar sob alta demanda — aguarde alguns segundos e tente de novo.`
+    }
+    if (msg.includes('429') || msg.includes('rate limit') || msg.includes('too many')) {
+      return `🚦 Limite de requisições atingido${ctx}. Aguarde alguns segundos antes de enviar uma nova análise.`
+    }
+    if (msg.includes('401') || msg.includes('unauthorized') || msg.includes('403')) {
+      return `🔒 Falha de autenticação no serviço de IA${ctx}. Verifique a configuração da chave de API no servidor.`
+    }
+    if (msg.includes('500') || msg.includes('internal server')) {
+      return `🛠️ O servidor encontrou um problema interno ao processar a análise${ctx}. Tente novamente ou contate o suporte.`
+    }
+  }
+
+  // Resposta HTTP com status de erro (axios)
+  const axiosErr = err as { response?: { status?: number } }
+  if (axiosErr?.response?.status) {
+    const status = axiosErr.response.status
+    if (status === 404) return `🔍 Município não encontrado${ctx}. Verifique o nome ou código IBGE e tente novamente.`
+    if (status === 422) return `⚠️ A pergunta enviada não pôde ser processada${ctx}. Reformule e tente novamente.`
+    if (status >= 500) return `🛠️ O servidor encontrou um problema interno${ctx}. Tente novamente em instantes.`
+    if (status >= 400) return `⚠️ Não foi possível completar a análise${ctx} (código ${status}). Tente novamente.`
+  }
+
+  // Fallback genérico — sem expor mensagem técnica
+  return `⚠️ Não foi possível completar a análise${ctx}. Tente novamente em alguns segundos. Se o problema persistir, recarregue a página.`
+}
+
 // ── Renderizador de markdown mínimo para o bubble do chat ────────────────────
 function renderInline(text: string): React.ReactNode[] {
   // Suporta **bold** e _italic_
@@ -359,11 +397,11 @@ export default function AIFab() {
               const sem = prev.filter(m => !m.text.includes(`Analisando **${proximo.nome}**`))
               return [...sem, { role: 'assistant', text: respostaProximo }]
             })
-          } catch {
+          } catch (err) {
             pararProgresso()
             setMsgs(prev => [...prev, {
               role: 'assistant',
-              text: `❌ Erro ao analisar **${proximo.nome}**. Tente novamente.`,
+              text: _mensagemErro(err, proximo.nome),
             }])
           }
         }
@@ -377,11 +415,11 @@ export default function AIFab() {
           text: 'Dados completos salvos em **Análises** e enviados ao **Dashboard**.',
         }])
       }
-    } catch {
+    } catch (err) {
       pararProgresso()
       setMsgs(prev => [...prev, {
         role: 'assistant',
-        text: 'Erro ao consultar a IA. Verifique se o servidor está rodando e tente novamente.',
+        text: _mensagemErro(err, municipioAtual?.nome),
       }])
     } finally {
       setEnviando(false)

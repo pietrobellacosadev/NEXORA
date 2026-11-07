@@ -7,12 +7,14 @@
 
   Plataforma de inteligência territorial com IA agêntica para análise de oportunidades de expansão da conectividade nos 645 municípios do Estado de São Paulo.
 
-  ![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?style=flat-square&logo=python&logoColor=white)
+  ![Python](https://img.shields.io/badge/Python-3.15%2B-3776AB?style=flat-square&logo=python&logoColor=white)
   ![FastAPI](https://img.shields.io/badge/FastAPI-0.162-009688?style=flat-square&logo=fastapi&logoColor=white)
   ![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)
   ![TypeScript](https://img.shields.io/badge/TypeScript-7.0-3178C6?style=flat-square&logo=typescript&logoColor=white)
+  ![Pydantic](https://img.shields.io/badge/Pydantic-v2-E92063?style=flat-square&logo=pydantic&logoColor=white)
   ![SQLite](https://img.shields.io/badge/SQLite-aiosqlite-003B57?style=flat-square&logo=sqlite&logoColor=white)
   ![GroqCloud](https://img.shields.io/badge/IA-GroqCloud-F55036?style=flat-square)
+  ![Tests](https://img.shields.io/badge/testes-138%20passing-16a34a?style=flat-square)
 
 </div>
 
@@ -37,38 +39,29 @@ Nenhum pilar tem prioridade sobre o outro. As análises são apresentadas em par
 
 ---
 
-## Objetivos
-
-- Oferecer uma visão equilibrada entre potencial de mercado e potencial social da conectividade.
-- Fundamentar decisões de expansão em dados oficiais, com rastreabilidade completa.
-- Democratizar o acesso à análise territorial por meio de interface acessível e intuitiva.
-- Identificar municípios com necessidade social elevada que seriam invisíveis em análises puramente comerciais.
-- Garantir transparência sobre limitações e ausência de dados, sem preencher lacunas com suposições.
-
----
-
 ## Funcionalidades
-
-### Implementadas
 
 | Funcionalidade | Descrição |
 |---|---|
-| **Dashboard** | Visão geral da plataforma com estatísticas, acesso às funcionalidades e nota de integridade dos dados |
-| **Mapa Territorial** | Mapa interativo dos 645 municípios paulistas com busca por nome, seleção no mapa e acesso ao perfil |
+| **Mapa Territorial** | Mapa interativo dos 645 municípios paulistas full-screen com busca, seleção, drawer mobile e comparação visual por cores |
+| **Dashboard** | Visão geral com estatísticas da plataforma, histórico da última análise de IA e rankings de indicadores |
 | **Perfil Municipal** | Indicadores detalhados por município nos pilares Mercado e Social, com fonte, período, tipo e limitações |
-| **Comparação** | Comparação lado a lado de até 4 municípios, com alternância entre pilares e destaque do melhor valor |
-| **Investigação por IA** | Análise agêntica por município: três agentes especializados investigam em paralelo e o Consolidador sintetiza |
-| **Tema claro/escuro** | Alternância de tema com preferência salva localmente |
+| **Comparação** | Comparação lado a lado de até 3 municípios, com alternância entre pilares e destaque do melhor valor |
+| **Chat IA (FAB)** | Assistente flutuante que aciona os três agentes, suporta análise de múltiplos municípios em sequência e salva o histórico localmente |
+| **Análises Recentes** | Histórico das investigações salvo no localStorage, com síntese, viabilidade financeira, financiamentos e programas elegíveis |
+| **Tema claro/escuro** | Alternância com preferência persistida no localStorage e respeito ao `prefers-color-scheme` |
 
 ### Comportamento dos indicadores
 
 Cada indicador é classificado quanto à sua origem:
 
-- `Oficial` — dado direto de fonte governamental
-- `Calculado` — derivado de operações sobre dados oficiais
-- `Estimado` — projeção por coeficiente metodológico
-- `Interpretado` — inferência fundamentada
-- `Indisponível` — dado não encontrado (nunca substituído por zero)
+| Badge | Significado |
+|---|---|
+| `Oficial` | Dado direto de fonte governamental |
+| `Calculado` | Derivado de operações sobre dados oficiais |
+| `Estimado` | Projeção por coeficiente metodológico |
+| `Interpretado` | Inferência fundamentada pelo agente |
+| `Indisponível` | Dado não encontrado — nunca substituído por zero |
 
 ---
 
@@ -77,13 +70,13 @@ Cada indicador é classificado quanto à sua origem:
 O NEXORA utiliza três agentes especializados que operam sobre a API GroqCloud:
 
 ### Agente de Mercado
-Investiga o potencial comercial da conectividade: características econômicas e demográficas, indicadores ANATEL de telefonia móvel e internet fixa, presença de operadoras e oportunidades de expansão. Opera com dados do IBGE e ANATEL. Nunca inventa indicadores — ausências são declaradas explicitamente.
+Investiga o potencial comercial da conectividade: características econômicas e demográficas, indicadores ANATEL de telefonia móvel e internet fixa, estimativas de custo de implantação (FTTH, WISP, LTE rural) e classificação de retorno. Opera com dados do IBGE e ANATEL. Nunca inventa indicadores — ausências são declaradas explicitamente.
 
 ### Agente Social
-Investiga necessidades e impactos sociais da conectividade: indicadores educacionais (INEP), de saúde (DATASUS), vulnerabilidade social, perfil urbano/rural e lacunas de inclusão digital. Identifica municípios com alta necessidade, independentemente da atratividade comercial.
+Investiga necessidades e impactos sociais da conectividade: indicadores educacionais (INEP), de saúde (DATASUS), vulnerabilidade social, perfil urbano/rural e elegibilidade a programas públicos (PNBL, GESAC, FUST, EduConecta). Identifica municípios com alta necessidade, independentemente da atratividade comercial.
 
 ### Agente Consolidador
-Orquestra a investigação completa. Aciona Mercado e Social em paralelo, recebe seus resultados, verifica coerência das evidências, identifica convergências e divergências entre os pilares e produz uma síntese equilibrada. Nunca simplesmente concatena as respostas — analisa e integra.
+Orquestra a investigação completa. Aciona Mercado e Social em sequência, recebe seus resultados, verifica coerência das evidências, identifica convergências e divergências entre os pilares e produz síntese técnico-executiva com recomendação objetiva para o analista (`RECOMENDADO / RECOMENDADO COM RESSALVAS / NÃO RECOMENDADO`). Nunca simplesmente concatena as respostas — analisa e integra.
 
 ```mermaid
 flowchart TD
@@ -94,13 +87,13 @@ flowchart TD
         M[Agente de Mercado]
         S[Agente Social]
 
-        C -->|aciona em paralelo| M
-        C -->|aciona em paralelo| S
+        C -->|aciona| M
+        C -->|aciona| S
         M -->|ResultadoAgente| C
         S -->|ResultadoAgente| C
     end
 
-    C -->|síntese consolidada| U
+    C -->|ResultadoConsolidado| U
 
     M -.->|IBGE, ANATEL| D[(Dados oficiais)]
     S -.->|INEP, DATASUS, IBGE| D
@@ -110,20 +103,30 @@ flowchart TD
     style S fill:#059669,color:#fff,stroke:#047857
 ```
 
-O fluxo de investigação também implementa **cache local** (SQLite): respostas para o mesmo município e pergunta são reutilizadas, evitando chamadas desnecessárias à API.
+O fluxo implementa **cache local** (SQLite, TTL 24h): respostas para o mesmo município e pergunta são reutilizadas, evitando chamadas desnecessárias à API.
+
+### Validação e coerção de tipos
+
+Os schemas Pydantic possuem validators robustos que normalizam as respostas da IA independentemente do formato retornado:
+
+- **`TipoDado`** — aceita maiúsculas, femininos (`"calculada"`, `"estimada"`) e aliases (`"n/a"`, `"unavailable"`)
+- **`ViabilidadeFinanceira.financiamentos_disponiveis`** — `list[str]`; aceita lista nativa, string CSV (`"FUST, BNDES"`) ou string JSON (`'["FUST","BNDES"]'`)
+- **`CustoEstimado`** — campos float aceitam string formatada em BR (`"R$ 2.500.000"`, `"2,5M"`, `"500K"`)
+- **`ImpactoEstimado`** — campos string aceitam `int`, `float` e `list` retornados pela IA
+- Respostas parcialmente válidas são preservadas — um campo inválido não descarta a análise inteira
 
 ---
 
 ## Fontes de dados
 
-| Fonte | Uso no NEXORA | Integração |
-|---|---|---|
-| [IBGE](https://www.ibge.gov.br/) | Cadastro de municípios, população, densidade, PIB per capita | Dados incorporados ao banco local via seed |
-| [ANATEL](https://www.gov.br/anatel/pt-br/dados) | Indicadores de telefonia móvel, internet fixa, cobertura e provedores | Referenciada pelos agentes nas análises |
-| [INEP](https://www.gov.br/inep/pt-br/acesso-a-informacao/dados-abertos) | Indicadores educacionais (IDEB, número de escolas, acesso à tecnologia) | Referenciada pelo Agente Social |
-| [DATASUS](https://datasus.saude.gov.br/) | Cobertura de serviços de saúde, indicadores de vulnerabilidade social | Referenciada pelo Agente Social |
+| Fonte | Uso no NEXORA |
+|---|---|
+| [IBGE](https://www.ibge.gov.br/) | Cadastro de municípios, população, densidade, PIB per capita |
+| [ANATEL](https://www.gov.br/anatel/pt-br/dados) | Indicadores de telefonia móvel, internet fixa, cobertura e provedores |
+| [INEP](https://www.gov.br/inep/pt-br/acesso-a-informacao/dados-abertos) | Indicadores educacionais (IDEB, número de escolas, acesso à tecnologia) |
+| [DATASUS](https://datasus.saude.gov.br/) | Cobertura de serviços de saúde, indicadores de vulnerabilidade social |
 
-> As fontes são referenciadas pelos agentes durante as análises. A integração direta via API é prevista em etapas futuras do projeto; atualmente os indicadores são calculados e estimados a partir dos dados cadastrais disponíveis.
+> Os indicadores são calculados e estimados a partir dos dados cadastrais disponíveis. A integração direta via API das fontes é prevista em etapas futuras.
 
 ---
 
@@ -142,15 +145,14 @@ O fluxo de investigação também implementa **cache local** (SQLite): respostas
 | Recharts | 3 | Gráficos e visualizações de dados |
 | Lucide React | 1.6 | Biblioteca de ícones |
 | Axios | 1.2 | Cliente HTTP |
-| Zod | 4 | Validação de schemas |
 
 ### Backend
 
 | Tecnologia | Versão | Função |
 |---|---|---|
-| Python | 3.12+ | Linguagem do servidor |
+| Python | 3.15+ | Linguagem do servidor |
 | FastAPI | 0.162 | Framework da API REST |
-| Pydantic | v2 | Validação e serialização de dados |
+| Pydantic | v2.14 | Validação e serialização de dados com coerção de tipos |
 | pydantic-settings | 2.16 | Gerenciamento de configurações via `.env` |
 | aiosqlite | 0.22 | Acesso assíncrono ao banco de dados |
 | aiohttp | 3.14 | Cliente HTTP assíncrono |
@@ -158,124 +160,26 @@ O fluxo de investigação também implementa **cache local** (SQLite): respostas
 
 ### Inteligência Artificial
 
-| Tecnologia | Uso |
-|---|---|
-| GroqCloud | Inferência dos três agentes de IA (Mercado, Social e Consolidador) |
+| Modelo | Agente | Uso |
+|---|---|---|
+| `openai/gpt-oss-20b` | Mercado e Social | Análise especializada rápida |
+| `openai/gpt-oss-120b` | Consolidador | Síntese e recomendação executiva |
 
 A chave de API GroqCloud é configurada exclusivamente no arquivo `.env` do backend. O frontend **nunca recebe, armazena ou transmite** credenciais.
 
 ### Banco de dados
 
 - **SQLite** — banco local, persistido em `backend/nexora.db`
-- Populado via scripts de seed com os 645 municípios do Estado de São Paulo
-- Também utilizado para cache das respostas dos agentes
+- Populado via scripts de seed com os 645 municípios do Estado de São Paulo e seus indicadores
+- Cache das respostas dos agentes com TTL de 24 horas
 
 ### Testes
 
-| Ferramenta | Escopo |
-|---|---|
-| Vitest + Testing Library | Testes unitários do frontend |
-| Playwright | Testes E2E do frontend |
-| Pytest + pytest-asyncio | Testes do backend (rotas, agentes, cache) |
-
----
-
-## Identidade visual e Design System
-
-### Paleta de cores
-
-A paleta foi construída ao redor dos dois pilares da plataforma e do sistema de IA, com variantes claras e escuras para cada um.
-
-**Cores neutras**
-
-| Token | HEX (light) | Uso |
+| Ferramenta | Escopo | Total |
 |---|---|---|
-| `--color-ink` | `#1a2332` | Texto principal |
-| `--color-paper` | `#f4f6f8` | Fundo da aplicação |
-| `--color-card` | `#ffffff` | Superfície de cards |
-| `--color-line` | `#e2e8f0` | Bordas e divisores |
-| `--color-muted` | `#64748b` | Texto secundário |
-| `--color-highlight` | `#eef2f7` | Fundo de destaques sutis |
-
-**Pilar Mercado (azul)**
-
-| Token | HEX | Uso |
-|---|---|---|
-| `--color-market` | `#2563eb` | Cor principal do pilar Mercado |
-| `--color-market-dk` | `#1d4ed8` | Hover e gradiente |
-| `--color-market-mid` | `#3b82f6` | Variante intermediária |
-| `--color-market-lt` | `#eff6ff` | Fundos de cards de Mercado |
-
-**Pilar Social (verde-esmeralda)**
-
-| Token | HEX | Uso |
-|---|---|---|
-| `--color-social` | `#059669` | Cor principal do pilar Social |
-| `--color-social-dk` | `#047857` | Hover e gradiente |
-| `--color-social-mid` | `#10b981` | Variante intermediária |
-| `--color-social-lt` | `#ecfdf5` | Fundos de cards de Social |
-
-**IA / Consolidador (violeta)**
-
-| Token | HEX | Uso |
-|---|---|---|
-| `--color-ai` | `#7c3aed` | Cor do Agente Consolidador |
-| `--color-ai-dk` | `#6d28d9` | Hover e gradiente |
-| `--color-ai-lt` | `#f5f3ff` | Fundo do bloco de IA |
-
-**Estados**
-
-| Token | HEX | Uso |
-|---|---|---|
-| `--color-warn` | `#d97706` | Alertas, dados estimados, ausências |
-| `--color-error` | `#dc2626` | Erros |
-
-**Hero (gradiente)**
-
-```
-linear-gradient(135deg, #1e3a5f 0%, #1a5276 40%, #0e6655 100%)
-```
-
-O gradiente do hero parte do azul-marinho profundo (mercado) e transita para o verde-escuro (social), unificando os dois pilares visualmente.
-
-### Tipografia
-
-- **Família principal:** `Inter` (Google Fonts) — aplicada em todos os textos, títulos e rótulos
-- **Família mono:** `JetBrains Mono` / `Fira Code` — reservada para valores de indicadores e códigos técnicos
-- **Escala de tamanhos:** de `0.70rem` (labels menores) até `2.5rem` (títulos de hero)
-- **Line-height:** `1.2` (títulos), `1.4` (subtítulos), `1.6` (corpo de texto)
-
-### Componentes e padrões visuais
-
-**Cards de funcionalidade**
-Cards com borda lateral colorida por pilar, ícone em destaque, título, descrição e seta de navegação. Cor do acento determinada pelo pilar: `--color-market` ou `--color-social`.
-
-**Tabs de pilar**
-Botões de alternância entre Mercado e Social com marcador colorido animado para o tab ativo. Presente em Perfil Municipal, Comparação e Investigação.
-
-**Cards de indicador**
-Cada indicador exibe nome, valor formatado, unidade, fonte, período e badge de tipo. Indicadores indisponíveis são marcados explicitamente com `N/D` — nunca com zero ou traço.
-
-**Tabela comparativa**
-Tabela responsiva com rolagem horizontal. A célula com o maior valor numérico válido entre os municípios comparados recebe destaque (`✦`).
-
-**Badges de tipo**
-Badges coloridas indicam a origem de cada indicador: `Oficial`, `Calculado`, `Estimado`, `Interpretado` ou `Indisponível`.
-
-### Ícones e animações
-
-- **Lucide React** — biblioteca unificada de ícones SVG. Usada em toda a navegação, cards, botões e indicadores.
-- **Motion (Framer Motion)** — animações de entrada com `fadeUp` (y + opacity), `scaleIn` e `staggerChildren` para listas. Transições de tab com `layoutId` para indicador animado. `AnimatePresence` em todos os elementos que aparecem e desaparecem condicionalmente.
-- **CSS keyframes globais** — `fadeIn`, `fadeUp`, `fadeDown`, `scaleIn`, `shimmer` (skeleton loader).
-- **Respeito ao `prefers-reduced-motion`** — todas as animações são desabilitadas automaticamente quando o sistema operacional solicita.
-
-### Layout
-
-- **Barra superior fixa** (`60px`) com logo, navegação principal e toggle de tema.
-- **Conteúdo centralizado** com `max-width: 1280px`.
-- **Painel lateral** em páginas como Mapa (`360px`).
-- **Grade responsiva** nos cards do dashboard (1 a 4 colunas conforme viewport).
-- **Tema escuro nativo** via `prefers-color-scheme` e atributo `data-theme` no `<html>`.
+| Pytest + pytest-asyncio | Backend: rotas, agentes, cache, schemas, coerção de tipos | 138 testes |
+| Vitest + Testing Library | Frontend: componentes e páginas | — |
+| Playwright | E2E: fluxos completos de navegação | — |
 
 ---
 
@@ -285,31 +189,39 @@ Badges coloridas indicam a origem de cada indicador: `Oficial`, `Calculado`, `Es
 NEXORA/
 ├── frontend/
 │   ├── public/
-│   │   ├── nexora-icon.svg        # Logo e favicon da aplicação
-│   │   └── sp_municipios.geojson  # GeoJSON dos municípios paulistas
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── layout/            # AppLayout, TopBar
-│   │   │   └── ui/                # Spinner, Card, Badge, EmptyState, ErrorState
-│   │   ├── e2e/                   # Testes E2E Playwright
-│   │   ├── lib/                   # Cliente HTTP (axios)
-│   │   ├── pages/                 # Dashboard, Mapa, Perfil, Comparar, Investigar
-│   │   ├── styles/                # Design tokens e CSS global
-│   │   ├── test/                  # Testes unitários Vitest
-│   │   └── types/                 # Tipos TypeScript
-│   ├── index.html
-│   ├── vite.config.ts
-│   └── package.json
+│   │   ├── nexora-icon.svg          # Logo e favicon
+│   │   └── sp_municipios.geojson    # GeoJSON dos 645 municípios paulistas
+│   └── src/
+│       ├── components/
+│       │   ├── layout/              # AppLayout (full-bleed para /mapa), TopBar
+│       │   └── ui/                  # AIFab (chat IA), Badge, Card, Spinner…
+│       ├── pages/                   # Início, Mapa, Dashboard, Comparar, Análises
+│       ├── styles/                  # Design tokens (tokens.css) e CSS global
+│       ├── test/                    # Testes unitários Vitest
+│       ├── e2e/                     # Testes E2E Playwright
+│       └── types/                   # Contratos TypeScript (espelham schemas do backend)
 ├── backend/
 │   ├── app/
-│   │   ├── agents/                # AgenteMarket, AgenteSocial, AgenteConsolidador
-│   │   ├── api/routes/            # health, municipios, groq, investigar
-│   │   ├── db/                    # database.py, seed.py, seed_indicadores.py
-│   │   ├── services/              # groq_client.py, agent_cache.py
-│   │   ├── config.py              # Configurações via pydantic-settings
-│   │   └── main.py                # App FastAPI
-│   ├── tests/                     # Testes pytest
-│   ├── .env.example               # Modelo de variáveis de ambiente
+│   │   ├── agents/
+│   │   │   ├── schemas.py           # Contratos Pydantic com validators de coerção
+│   │   │   ├── market_agent.py      # Agente de Mercado
+│   │   │   ├── social_agent.py      # Agente Social
+│   │   │   └── consolidator_agent.py # Agente Consolidador
+│   │   ├── api/routes/              # health, municipios, groq, investigar
+│   │   ├── db/                      # database.py, seed.py, seed_indicadores.py
+│   │   ├── services/                # groq_client.py, agent_cache.py
+│   │   ├── config.py                # Configurações via pydantic-settings
+│   │   └── main.py                  # App FastAPI
+│   ├── tests/
+│   │   ├── test_schema_validation.py # Coerção de tipos, TipoDado, listas, nulos
+│   │   ├── test_agents.py            # Agentes Market, Social e Consolidador
+│   │   ├── test_groq.py              # Cliente GroqCloud e endpoint /groq/validar
+│   │   ├── test_investigar.py        # Endpoint /investigar
+│   │   ├── test_municipios.py        # Endpoints de municípios
+│   │   ├── test_perfil.py            # Endpoint de perfil municipal
+│   │   ├── test_health.py            # Health check
+│   │   └── test_agent_cache.py       # Cache de agentes
+│   ├── .env.example
 │   ├── requirements.txt
 │   └── run.py
 └── README.md
@@ -323,7 +235,7 @@ NEXORA/
 
 - Python 3.12 ou superior
 - Node.js 20 ou superior
-- Chave de API GroqCloud (`GROQ_API_KEY`)
+- Chave de API GroqCloud (`GROQ_API_KEY`) — obtenha gratuitamente em [console.groq.com](https://console.groq.com)
 
 ### 1. Clonar o repositório
 
@@ -350,17 +262,23 @@ copy .env.example .env
 # Editar .env e inserir sua GROQ_API_KEY
 ```
 
-**Variáveis obrigatórias no `.env`:**
+**Variáveis no `.env`:**
 
 ```env
 GROQ_API_KEY=gsk_sua_chave_aqui
+
+# Opcional: chaves por agente (caso queira limites separados de rate)
+# GROQ_API_KEY_MARKET=gsk_...
+# GROQ_API_KEY_SOCIAL=gsk_...
+# GROQ_API_KEY_CONSOLIDATOR=gsk_...
+
 APP_HOST=127.0.0.1
 APP_PORT=8000
 CORS_ORIGIN=http://localhost:5173
 DB_PATH=./nexora.db
 ```
 
-> A chave `GROQ_API_KEY` deve permanecer **exclusivamente no arquivo `.env` do backend**, que está listado no `.gitignore`. Nunca a inclua em código-fonte, commits ou no frontend.
+> A chave `GROQ_API_KEY` deve permanecer **exclusivamente no arquivo `.env` do backend**, listado no `.gitignore`. Nunca a inclua em código-fonte, commits ou no frontend.
 
 ### 3. Popular o banco de dados
 
@@ -376,11 +294,11 @@ python -m app.db.seed_indicadores
 
 ```bash
 python run.py
-# API disponível em: http://127.0.0.1:8000
-# Documentação interativa em: http://127.0.0.1:8000/api/docs
+# API disponível em:           http://127.0.0.1:8000
+# Documentação interativa em:  http://127.0.0.1:8000/api/docs
 ```
 
-### 5. Configurar e iniciar o frontend
+### 5. Iniciar o frontend
 
 ```bash
 cd ../frontend
@@ -389,26 +307,19 @@ npm run dev
 # Interface disponível em: http://localhost:5173
 ```
 
-### 6. Executar os testes
+### 6. Executar os testes do backend
 
 ```bash
-# Testes unitários do frontend
-cd frontend
-npm test
-
-# Testes E2E (requer frontend em execução)
-npm run test:e2e
-
-# Testes do backend
-cd ../backend
+cd backend
 python -m pytest tests/ -v
+# 138 testes · 0 falhas
 ```
 
 ---
 
 ## Segurança
 
-- Credenciais ficam **exclusivamente** no arquivo `backend/.env`, que está listado no `.gitignore`.
+- Credenciais ficam **exclusivamente** no arquivo `backend/.env`, listado no `.gitignore`.
 - Chaves GroqCloud são carregadas como `SecretStr` (Pydantic) — nunca aparecem em logs, `repr()` ou respostas da API.
 - O frontend **nunca recebe, armazena nem transmite** credenciais ou chaves de API.
 - O arquivo `.env.example` contém apenas nomes de variáveis e valores fictícios — é seguro versionar.
@@ -443,8 +354,6 @@ Mensagens em **português**, no imperativo presente, com prefixo indicando a nat
 | `main` | Versão estável e validada |
 | `pietro` | Desenvolvimento ativo |
 
-Toda implementação ocorre na branch `pietro`. A integração com `main` é feita gradualmente, mediante revisão explícita.
-
 ---
 
 ## Equipe
@@ -454,5 +363,5 @@ Projeto desenvolvido para apresentação institucional a representantes da IBM e
 ---
 
 <div align="center">
-  <sub>NEXORA — Inteligência Territorial · Estado de São Paulo</sub>
+  <sub>NEXORA — Inteligência Territorial · Estado de São Paulo · 2026</sub>
 </div>
