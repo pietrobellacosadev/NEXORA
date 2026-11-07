@@ -87,10 +87,12 @@ class AgenteConsolidador:
         )
 
         # Market e social executam em sequência.
-        # Pequeno delay antes do consolidador para aliviar pressão no TPM da janela de 60s.
+        # Delay entre market→social para evitar 429 (mesma janela de 60s de tokens).
         resultado_market = await self._market.investigar(tarefa_market)
+        await asyncio.sleep(3)
         resultado_social = await self._social.investigar(tarefa_social)
-        await asyncio.sleep(5)
+        # Pausa extra antes do consolidador para liberar a janela de TPM.
+        await asyncio.sleep(8)
 
         # ── 3. Consolidação e persistência no cache ───────────────────────
         resultado = await self._consolidar(pergunta, resultado_market, resultado_social)
@@ -108,6 +110,7 @@ class AgenteConsolidador:
         # Resumo estruturado para o consolidador — evita enviar raw text completo
         resumo_market = {
             "constatacoes": market.constatacoes,
+            "custo_estimado": market.custo_estimado,
             "fontes": market.fontes,
             "periodos": market.periodos,
             "limitacoes": market.limitacoes,
@@ -116,6 +119,8 @@ class AgenteConsolidador:
         }
         resumo_social = {
             "constatacoes": social.constatacoes,
+            "programas_elegiveis": social.programas_elegiveis,
+            "impacto_estimado": social.impacto_estimado,
             "fontes": social.fontes,
             "periodos": social.periodos,
             "limitacoes": social.limitacoes,

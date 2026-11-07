@@ -241,16 +241,19 @@
 
 /* ── Controles ───────────────────────────────────────────────────────────── */
 .db__controls {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  display: flex;
   align-items: center;
-  gap: var(--sp-4);
+  flex-wrap: wrap;
+  gap: var(--sp-3);
   padding: var(--sp-4);
   background: var(--color-card);
   border: 1px solid var(--color-line);
   border-radius: var(--r-xl);
   box-shadow: var(--shadow-sm);
 }
+.db__controls .db__pilar-tabs { flex-shrink: 0; }
+.db__controls .db__ind-tabs   { flex: 1; }
+.db__controls .db__view-tabs  { margin-left: auto; flex-shrink: 0; }
 
 /* Tabs pilar */
 .db__pilar-tabs {
@@ -597,23 +600,15 @@
 @media (max-width: 768px) {
   .db__header { gap: var(--sp-3); }
   .db__header-actions { width: 100%; justify-content: flex-end; }
-  .db__controls {
-    grid-template-columns: 1fr 1fr;
-    gap: var(--sp-3);
-    padding: var(--sp-3);
-  }
-  .db__pilar-tabs { max-width: 100%; grid-column: span 2; }
-  .db__ind-tabs { grid-column: span 2; }
+  .db__controls { padding: var(--sp-3); gap: var(--sp-2); }
+  .db__controls .db__view-tabs { margin-left: 0; }
+  .db__pilar-tabs { max-width: 100%; }
   .db__muni-grid { grid-template-columns: repeat(2, 1fr); }
   .db__ranking-item { gap: var(--sp-2); }
 }
 
 @media (max-width: 480px) {
-  .db__controls {
-    grid-template-columns: 1fr;
-  }
-  .db__pilar-tabs { grid-column: span 1; }
-  .db__ind-tabs { grid-column: span 1; gap: var(--sp-1); }
+  .db__controls .db__ind-tabs { width: 100%; }
   .db__ind-tab { padding: 4px 10px; font-size: 0.68rem; }
   .db__view-tab span { display: none; }
   .db__muni-grid { grid-template-columns: 1fr 1fr; }
