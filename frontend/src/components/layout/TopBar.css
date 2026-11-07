@@ -11,7 +11,7 @@
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid var(--color-line);
-  box-shadow: 0 1px 0 var(--color-line), var(--shadow-sm);
+  box-shadow: 0 1px 0 var(--color-line);
 }
 
 .topbar__inner {
@@ -28,7 +28,7 @@
 .topbar__brand {
   display: flex;
   align-items: center;
-  gap: var(--sp-3);
+  gap: var(--sp-2);
   text-decoration: none;
   flex-shrink: 0;
   padding: var(--sp-1) var(--sp-2);
@@ -38,33 +38,38 @@
 .topbar__brand:hover { background: var(--color-highlight); text-decoration: none; }
 
 .topbar__logo-img {
-  width: 46px;
-  height: 46px;
+  width: 40px;
+  height: 40px;
   flex-shrink: 0;
   display: block;
 }
 
+.topbar__brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
 .topbar__name {
   display: block;
-  font-size: var(--text-xl);
+  font-size: var(--text-lg);
   font-weight: 800;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   color: var(--color-ink);
   line-height: 1;
 }
 
 .topbar__tagline {
   display: block;
-  font-size: var(--text-xs);
+  font-size: 0.65rem;
   color: var(--color-muted);
-  letter-spacing: 0.02em;
-  margin-top: 2px;
+  letter-spacing: 0.03em;
 }
 
 /* ── Separador ──────────────────────────────────────────────────────────── */
 .topbar__divider {
   width: 1px;
-  height: 22px;
+  height: 20px;
   background: var(--color-line);
   flex-shrink: 0;
   margin: 0 var(--sp-1);
@@ -73,7 +78,7 @@
 /* ── Navegação ──────────────────────────────────────────────────────────── */
 .topbar__nav {
   display: flex;
-  gap: var(--sp-1);
+  gap: 2px;
   flex: 1;
 }
 
@@ -98,31 +103,26 @@
   text-decoration: none;
 }
 .topbar__link--active {
-  color: var(--color-accent);
+  color: var(--color-market);
   font-weight: 600;
+  background: var(--color-market-lt);
+}
+.topbar__link--active:hover {
+  background: var(--color-market-lt);
+  color: var(--color-market-dk);
 }
 
+/* Indicador de página ativa — linha embaixo */
 .topbar__link-indicator {
   position: absolute;
-  bottom: -1px;
-  left: var(--sp-3);
-  right: var(--sp-3);
+  bottom: -1px;   /* alinha com a border-bottom da topbar */
+  left: 50%;
+  right: auto;
+  width: 24px;
   height: 2px;
-  background: var(--color-accent);
+  background: var(--color-market);
   border-radius: var(--r-full);
-}
-
-/* Destaque especial para o link Investigar (IA) */
-.topbar__link--ai {
-  color: var(--color-ai);
-  font-weight: 600;
-}
-.topbar__link--ai:hover {
-  background: var(--color-ai-lt);
-  color: var(--color-ai);
-}
-.topbar__link--ai .topbar__link-indicator {
-  background: var(--color-ai);
+  transform: translateX(-50%);
 }
 
 .topbar__nav-badge {
@@ -161,9 +161,9 @@
   transition: border-color var(--t-fast), color var(--t-fast), background var(--t-fast);
 }
 .topbar__action-btn:hover {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
-  background: var(--color-accent-lt);
+  border-color: var(--color-market);
+  color: var(--color-market);
+  background: var(--color-market-lt);
 }
 
 /* ── Bottom Navigation (mobile) ─────────────────────────────────────────── */
@@ -177,10 +177,10 @@
   height: calc(60px + env(safe-area-inset-bottom, 0px));
   padding-bottom: env(safe-area-inset-bottom, 0px);
   background: color-mix(in srgb, var(--color-card) 96%, transparent);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
   border-top: 1px solid var(--color-line);
-  box-shadow: 0 -1px 0 var(--color-line), 0 -4px 12px rgba(16,24,39,.08);
+  box-shadow: 0 -1px 0 var(--color-line), 0 -4px 12px rgba(15,23,42,.08);
   align-items: stretch;
 }
 
@@ -200,11 +200,11 @@
 }
 .bottom-nav__item:hover { text-decoration: none; }
 .bottom-nav__item--active {
-  color: var(--color-accent);
+  color: var(--color-market);
   font-weight: 700;
 }
 .bottom-nav__item--active svg {
-  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--color-accent) 60%, transparent));
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--color-market) 60%, transparent));
 }
 
 /* ── Responsivo ─────────────────────────────────────────────────────────── */
@@ -219,8 +219,7 @@
   .bottom-nav            { display: flex; }
 
   /* Logo menor em mobile */
-  .topbar__logo-img      { width: 38px; height: 38px; }
-  .topbar__name          { font-size: var(--text-lg); }
+  .topbar__logo-img      { width: 36px; height: 36px; }
 
   /* Botão de ação: toque maior */
   .topbar__action-btn    { width: 40px; height: 40px; }

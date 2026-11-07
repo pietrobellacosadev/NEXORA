@@ -1,63 +1,64 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   NEXORA — Design Tokens v3  |  Paleta: azul profundo · verde tecnológico
+   NEXORA — Design Tokens v5
+   Paleta: slate profundo · azul conexão · verde impacto · violeta IA
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* ── Cores neutras ──────────────────────────────────────────────────────── */
-  --color-ink:        #101827;   /* azul profundo */
-  --color-paper:      #F1F5F9;   /* cinza claro   */
+  /* ── Neutros ────────────────────────────────────────────────────────────── */
+  --color-ink:        #0f172a;
+  --color-paper:      #f1f5f9;
   --color-card:       #ffffff;
-  --color-line:       #dde3ed;
-  --color-muted:      #5a6a82;
-  --color-highlight:  #eaf0f8;
-  --color-surface:    #f7fafc;
+  --color-line:       #e2e8f0;
+  --color-muted:      #64748b;
+  --color-highlight:  #e8f0fa;
+  --color-surface:    #f8fafc;
 
-  /* ── Pilar Mercado (azul conexão) ─────────────────────────────────────── */
-  --color-market:      #2d7dd2;
-  --color-market-lt:   #eaf3ff;
-  --color-market-dk:   #1a5fa8;
-  --color-market-mid:  #63A7F2;
+  /* ── Mercado (azul) ──────────────────────────────────────────────────────── */
+  --color-market:      #2563eb;
+  --color-market-lt:   #dbeafe;
+  --color-market-dk:   #1d4ed8;
+  --color-market-mid:  #60a5fa;
 
-  /* ── Pilar Social (verde tecnológico) ────────────────────────────────── */
-  --color-social:      #20B8A5;
-  --color-social-lt:   #e6faf8;
-  --color-social-dk:   #178f80;
-  --color-social-mid:  #34d4bf;
+  /* ── Social (verde) ──────────────────────────────────────────────────────── */
+  --color-social:      #059669;
+  --color-social-lt:   #d1fae5;
+  --color-social-dk:   #047857;
+  --color-social-mid:  #34d399;
 
-  /* ── IA / Consolidador (violeta) ──────────────────────────────────────── */
+  /* ── IA / Consolidador (violeta) ─────────────────────────────────────────── */
   --color-ai:          #7c3aed;
-  --color-ai-lt:       #f3efff;
-  --color-ai-dk:       #6025c4;
+  --color-ai-lt:       #ede9fe;
+  --color-ai-dk:       #6d28d9;
 
-  /* ── Accent / destaque principal ─────────────────────────────────────── */
-  --color-accent:      #20B8A5;
-  --color-accent-lt:   #e6faf8;
-  --color-link:        #63A7F2;
+  /* ── Accent ──────────────────────────────────────────────────────────────── */
+  --color-accent:      #2563eb;
+  --color-accent-lt:   #dbeafe;
+  --color-link:        #3b82f6;
 
-  /* ── Alerta / dado ausente ────────────────────────────────────────────── */
+  /* ── Alerta ──────────────────────────────────────────────────────────────── */
   --color-warn:        #d97706;
-  --color-warn-lt:     #fff8ed;
+  --color-warn-lt:     #fef3c7;
   --color-warn-dk:     #b45309;
 
-  /* ── Erro ─────────────────────────────────────────────────────────────── */
+  /* ── Erro ────────────────────────────────────────────────────────────────── */
   --color-error:       #dc2626;
-  --color-error-lt:    #fef2f2;
+  --color-error-lt:    #fee2e2;
 
-  /* ── Sucesso ──────────────────────────────────────────────────────────── */
+  /* ── Sucesso ─────────────────────────────────────────────────────────────── */
   --color-ok:          #16a34a;
-  --color-ok-lt:       #f0fdf4;
+  --color-ok-lt:       #dcfce7;
 
-  /* ── Gradientes ───────────────────────────────────────────────────────── */
-  --gradient-hero:    linear-gradient(135deg, #101827 0%, #172C43 45%, #0d3d36 100%);
-  --gradient-market:  linear-gradient(135deg, #2d7dd2, #1a5fa8);
-  --gradient-social:  linear-gradient(135deg, #20B8A5, #178f80);
-  --gradient-ai:      linear-gradient(135deg, #7c3aed, #6025c4);
-  --gradient-accent:  linear-gradient(135deg, #20B8A5, #63A7F2);
-  --gradient-card:    linear-gradient(145deg, #ffffff 0%, #f7fafc 100%);
+  /* ── Gradientes ──────────────────────────────────────────────────────────── */
+  --gradient-hero:    linear-gradient(135deg, #0f172a 0%, #1e3a5f 45%, #0c2a3c 100%);
+  --gradient-market:  linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  --gradient-social:  linear-gradient(135deg, #059669 0%, #047857 100%);
+  --gradient-ai:      linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  --gradient-accent:  linear-gradient(135deg, #2563eb 0%, #059669 100%);
+  --gradient-card:    linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
 
-  /* ── Tipografia ───────────────────────────────────────────────────────── */
+  /* ── Tipografia ──────────────────────────────────────────────────────────── */
   --font-sans:  "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
-  --font-mono:  "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+  --font-mono:  "JetBrains Mono", "Fira Code", monospace;
 
   --text-xs:    0.70rem;
   --text-sm:    0.82rem;
@@ -67,13 +68,13 @@
   --text-xl:    1.35rem;
   --text-2xl:   1.6rem;
   --text-3xl:   2rem;
-  --text-4xl:   2.5rem;
+  --text-4xl:   2.6rem;
 
   --leading-tight:  1.2;
   --leading-snug:   1.4;
-  --leading-normal: 1.6;
+  --leading-normal: 1.65;
 
-  /* ── Espaçamento (escala 4px) ─────────────────────────────────────────── */
+  /* ── Espaçamento (escala 4px) ────────────────────────────────────────────── */
   --sp-1:   4px;
   --sp-2:   8px;
   --sp-3:   12px;
@@ -85,24 +86,24 @@
   --sp-12:  48px;
   --sp-16:  64px;
 
-  /* ── Raios de borda ───────────────────────────────────────────────────── */
+  /* ── Raios de borda ──────────────────────────────────────────────────────── */
   --r-sm:   6px;
   --r-md:   10px;
   --r-lg:   14px;
-  --r-xl:   20px;
-  --r-2xl:  28px;
+  --r-xl:   18px;
+  --r-2xl:  24px;
   --r-full: 9999px;
 
-  /* ── Sombras ──────────────────────────────────────────────────────────── */
-  --shadow-xs:  0 1px 2px rgba(16,24,39,.06);
-  --shadow-sm:  0 1px 4px rgba(16,24,39,.08), 0 1px 2px rgba(16,24,39,.04);
-  --shadow-md:  0 4px 12px rgba(16,24,39,.10), 0 2px 4px rgba(16,24,39,.05);
-  --shadow-lg:  0 8px 24px rgba(16,24,39,.12), 0 4px 8px rgba(16,24,39,.06);
-  --shadow-xl:  0 16px 40px rgba(16,24,39,.14), 0 8px 16px rgba(16,24,39,.06);
-  --shadow-glow-teal: 0 0 20px rgba(32,184,165,.25);
-  --shadow-glow-blue: 0 0 20px rgba(99,167,242,.25);
+  /* ── Sombras ─────────────────────────────────────────────────────────────── */
+  --shadow-xs:  0 1px 2px rgba(15,23,42,.05);
+  --shadow-sm:  0 1px 3px rgba(15,23,42,.08), 0 1px 2px rgba(15,23,42,.04);
+  --shadow-md:  0 4px 12px rgba(15,23,42,.10), 0 2px 4px rgba(15,23,42,.05);
+  --shadow-lg:  0 8px 24px rgba(15,23,42,.12), 0 4px 8px rgba(15,23,42,.06);
+  --shadow-xl:  0 16px 40px rgba(15,23,42,.14), 0 8px 16px rgba(15,23,42,.06);
+  --shadow-focus: 0 0 0 3px rgba(37,99,235,.20);
+  --shadow-focus-ai: 0 0 0 3px rgba(124,58,237,.20);
 
-  /* ── Transições ───────────────────────────────────────────────────────── */
+  /* ── Transições ──────────────────────────────────────────────────────────── */
   --ease-out:   cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in:    cubic-bezier(0.4, 0, 1, 1);
   --ease-inout: cubic-bezier(0.4, 0, 0.2, 1);
@@ -110,12 +111,12 @@
   --t-normal: 220ms;
   --t-slow:   380ms;
 
-  /* ── Layout ───────────────────────────────────────────────────────────── */
+  /* ── Layout ──────────────────────────────────────────────────────────────── */
   --max-width:     1280px;
   --sidebar-width: 300px;
-  --nav-height:    68px;
+  --nav-height:    64px;
 
-  /* ── Z-index ──────────────────────────────────────────────────────────── */
+  /* ── Z-index ─────────────────────────────────────────────────────────────── */
   --z-base:    0;
   --z-raised:  10;
   --z-overlay: 100;
@@ -123,71 +124,81 @@
   --z-toast:   300;
 }
 
-/* ── Tema escuro ─────────────────────────────────────────────────────────── */
+/* ── Tema escuro ─────────────────────────────────────────────────────────────── */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --color-ink:        #edf2f7;
-    --color-paper:      #101827;
-    --color-card:       #172C43;
-    --color-line:       #223350;
-    --color-muted:      #8ba3c0;
-    --color-highlight:  #1a2f4a;
-    --color-surface:    #141e2d;
-    --color-market:     #63A7F2;
-    --color-market-lt:  #172340;
+    --color-ink:        #f1f5f9;
+    --color-paper:      #0d1117;
+    --color-card:       #161b22;
+    --color-line:       #30363d;
+    --color-muted:      #8b949e;
+    --color-highlight:  #1c2333;
+    --color-surface:    #0d1117;
+    --color-market:     #60a5fa;
+    --color-market-lt:  #172554;
     --color-market-dk:  #93c5fd;
-    --color-market-mid: #7bb8f7;
-    --color-social:     #34d4bf;
-    --color-social-lt:  #0d2e2b;
-    --color-social-dk:  #5fe0cf;
-    --color-social-mid: #4ddec9;
+    --color-market-mid: #7cb9fa;
+    --color-social:     #34d399;
+    --color-social-lt:  #064e3b;
+    --color-social-dk:  #6ee7b7;
+    --color-social-mid: #4ade80;
     --color-ai:         #a78bfa;
-    --color-ai-lt:      #2a1854;
+    --color-ai-lt:      #1e1040;
     --color-ai-dk:      #c4b5fd;
-    --color-accent:     #34d4bf;
-    --color-accent-lt:  #0d2e2b;
-    --color-link:       #7bb8f7;
+    --color-accent:     #60a5fa;
+    --color-accent-lt:  #172554;
+    --color-link:       #7cb9fa;
     --color-warn:       #fbbf24;
-    --color-warn-lt:    #2d1800;
+    --color-warn-lt:    #2d1a00;
+    --color-warn-dk:    #fcd34d;
     --color-error:      #f87171;
-    --color-error-lt:   #2d0808;
-    --gradient-hero:    linear-gradient(135deg, #0a1120 0%, #101827 45%, #0b2420 100%);
-    --gradient-card:    linear-gradient(145deg, #172C43 0%, #1a3050 100%);
-    --shadow-sm:  0 1px 4px rgba(0,0,0,.3);
-    --shadow-md:  0 4px 12px rgba(0,0,0,.35);
-    --shadow-lg:  0 8px 24px rgba(0,0,0,.4);
+    --color-error-lt:   #2d0a0a;
+    --color-ok:         #4ade80;
+    --color-ok-lt:      #052e16;
+    --gradient-hero:    linear-gradient(135deg, #080f1c 0%, #0f172a 50%, #061520 100%);
+    --gradient-card:    linear-gradient(145deg, #161b22 0%, #1c2333 100%);
+    --shadow-sm:  0 1px 4px rgba(0,0,0,.4);
+    --shadow-md:  0 4px 12px rgba(0,0,0,.45);
+    --shadow-lg:  0 8px 24px rgba(0,0,0,.50);
+    --shadow-focus: 0 0 0 3px rgba(96,165,250,.25);
+    --shadow-focus-ai: 0 0 0 3px rgba(167,139,250,.25);
   }
 }
 
 :root[data-theme="dark"] {
-  --color-ink:        #edf2f7;
-  --color-paper:      #101827;
-  --color-card:       #172C43;
-  --color-line:       #223350;
-  --color-muted:      #8ba3c0;
-  --color-highlight:  #1a2f4a;
-  --color-surface:    #141e2d;
-  --color-market:     #63A7F2;
-  --color-market-lt:  #172340;
+  --color-ink:        #f1f5f9;
+  --color-paper:      #0d1117;
+  --color-card:       #161b22;
+  --color-line:       #30363d;
+  --color-muted:      #8b949e;
+  --color-highlight:  #1c2333;
+  --color-surface:    #0d1117;
+  --color-market:     #60a5fa;
+  --color-market-lt:  #172554;
   --color-market-dk:  #93c5fd;
-  --color-market-mid: #7bb8f7;
-  --color-social:     #34d4bf;
-  --color-social-lt:  #0d2e2b;
-  --color-social-dk:  #5fe0cf;
-  --color-social-mid: #4ddec9;
+  --color-market-mid: #7cb9fa;
+  --color-social:     #34d399;
+  --color-social-lt:  #064e3b;
+  --color-social-dk:  #6ee7b7;
+  --color-social-mid: #4ade80;
   --color-ai:         #a78bfa;
-  --color-ai-lt:      #2a1854;
+  --color-ai-lt:      #1e1040;
   --color-ai-dk:      #c4b5fd;
-  --color-accent:     #34d4bf;
-  --color-accent-lt:  #0d2e2b;
-  --color-link:       #7bb8f7;
+  --color-accent:     #60a5fa;
+  --color-accent-lt:  #172554;
+  --color-link:       #7cb9fa;
   --color-warn:       #fbbf24;
-  --color-warn-lt:    #2d1800;
+  --color-warn-lt:    #2d1a00;
+  --color-warn-dk:    #fcd34d;
   --color-error:      #f87171;
-  --color-error-lt:   #2d0808;
-  --gradient-hero:    linear-gradient(135deg, #0a1120 0%, #101827 45%, #0b2420 100%);
-  --gradient-card:    linear-gradient(145deg, #172C43 0%, #1a3050 100%);
-  --shadow-sm:  0 1px 4px rgba(0,0,0,.3);
-  --shadow-md:  0 4px 12px rgba(0,0,0,.35);
-  --shadow-lg:  0 8px 24px rgba(0,0,0,.4);
+  --color-error-lt:   #2d0a0a;
+  --color-ok:         #4ade80;
+  --color-ok-lt:      #052e16;
+  --gradient-hero:    linear-gradient(135deg, #080f1c 0%, #0f172a 50%, #061520 100%);
+  --gradient-card:    linear-gradient(145deg, #161b22 0%, #1c2333 100%);
+  --shadow-sm:  0 1px 4px rgba(0,0,0,.4);
+  --shadow-md:  0 4px 12px rgba(0,0,0,.45);
+  --shadow-lg:  0 8px 24px rgba(0,0,0,.50);
+  --shadow-focus: 0 0 0 3px rgba(96,165,250,.25);
+  --shadow-focus-ai: 0 0 0 3px rgba(167,139,250,.25);
 }

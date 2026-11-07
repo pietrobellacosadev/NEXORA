@@ -4,12 +4,13 @@ import { motion, AnimatePresence } from 'motion/react'
 import {
   GitCompare, Search, X, TrendingUp, Users, MapPin,
   Plus, AlertCircle, Info, ShieldCheck, ChevronDown, ChevronUp,
-  TableProperties, BarChart3,
+  TableProperties, BarChart3, Brain,
 } from 'lucide-react'
 import ReactECharts from 'echarts-for-react'
 import api from '../lib/api'
 import type { MunicipioResumo, PerfilMunicipio, IndicadorItem } from '../types'
 import Spinner from '../components/ui/Spinner'
+import { openAIChat } from '../components/ui/AIFab'
 import './CompararPage.css'
 
 const MAX_MUNICIPIOS = 4
@@ -110,12 +111,22 @@ export default function CompararPage() {
         <div className="comp__header-icon">
           <GitCompare size={22} />
         </div>
-        <div>
+        <div className="comp__header-text">
           <h1 className="comp__title">Comparação Municipal</h1>
           <p className="comp__subtitle">
             Compare até {MAX_MUNICIPIOS} municípios lado a lado por pilar de análise.
           </p>
         </div>
+        {selecionados.length >= 2 && (
+          <button
+            className="comp__ia-btn"
+            onClick={() => openAIChat(selecionados.map(p => ({ codigo: p.municipio.codigo_ibge, nome: p.municipio.nome })))}
+          >
+            <Brain size={14} />
+            Analisar com IA
+            <span className="comp__ia-btn-count">{selecionados.length}</span>
+          </button>
+        )}
       </div>
 
       {/* Seleção de municípios */}

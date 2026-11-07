@@ -6,7 +6,7 @@ import {
   AlertCircle, GitCompare,
   Plus, Search, X, Brain, DollarSign, ShieldCheck,
   ChevronDown, ChevronRight, Zap, AlertTriangle, CheckCircle2,
-  Wifi, Target,
+  Wifi, Target, Radar, Trophy, ArrowRight,
 } from 'lucide-react'
 import ReactECharts from 'echarts-for-react'
 import api from '../lib/api'
@@ -119,9 +119,15 @@ export default function DashboardPage() {
     debounceRef.current = setTimeout(async () => {
       setBuscando(true)
       try {
-        const res = await api.get<{ municipios: MuniItem[] }>('/municipios', { params: { q: busca, limit: 8 } })
+        const res = await api.get<{ municipios: Array<{ codigo_ibge: string; nome: string }> }>(
+          '/municipios', { params: { q: busca, limite: 8 } }
+        )
         const jáAdicionados = new Set(perfis.map(p => p.perfil.municipio.codigo_ibge))
-        setSugestoes((res.data.municipios ?? []).filter(m => !jáAdicionados.has(m.codigo)))
+        setSugestoes(
+          (res.data.municipios ?? [])
+            .filter(m => !jáAdicionados.has(m.codigo_ibge))
+            .map(m => ({ codigo: m.codigo_ibge, nome: m.nome }))
+        )
       } catch {
         setSugestoes([])
       } finally {
@@ -722,7 +728,7 @@ export default function DashboardPage() {
                 <BarChart3 size={13} /> <span>Barras</span>
               </button>
               <button className={`db__view-tab${view === 'radar' ? ' db__view-tab--on' : ''}`} onClick={() => setView('radar')}>
-                <Map size={13} /> <span>Radar</span>
+                <Radar size={13} /> <span>Radar</span>
               </button>
               <button className={`db__view-tab${view === 'ranking' ? ' db__view-tab--on' : ''}`} onClick={() => setView('ranking')}>
                 <Trophy size={13} /> <span>Ranking</span>
@@ -764,7 +770,7 @@ export default function DashboardPage() {
                     </p>
                     {dadosIndicador.length === 0 ? (
                       <div className="db__empty">
-                        <Map size={28} />
+                        <BarChart3 size={28} />
                         <span>Nenhum dado disponível para este indicador nos municípios selecionados.</span>
                       </div>
                     ) : (
@@ -835,7 +841,7 @@ function RankingView({
   if (dados.length === 0) {
     return (
       <div className="db__empty">
-        <Map size={28} />
+        <BarChart3 size={28} />
         <span>Nenhum dado disponível para este indicador.</span>
       </div>
     )

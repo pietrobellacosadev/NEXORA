@@ -167,9 +167,10 @@
 
 .db__ai-sintese {
   font-size: var(--text-sm);
-  line-height: 1.7;
+  line-height: 1.75;
   color: var(--color-ink);
   margin: 0;
+  white-space: pre-line;
 }
 
 .db__ai-conclusao {
@@ -177,9 +178,10 @@
   color: var(--color-ink);
   margin: 0;
   padding: var(--sp-3) var(--sp-4);
-  background: var(--color-surface);
+  background: var(--color-ai-lt);
   border-radius: var(--r-md);
   border-left: 3px solid var(--color-ai);
+  line-height: 1.65;
 }
 
 /* ── Grid de detalhes (potencial mercado/social, justificativa, riscos) ── */

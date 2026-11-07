@@ -74,20 +74,30 @@ export default function InicioPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55, ease: EASE }}
       >
+        {/* Grade decorativa de fundo */}
+        <div className="dash__hero-grid" aria-hidden="true" />
+
         <div className="dash__hero-body">
+          {/* Eyebrow */}
           <div className="dash__hero-eyebrow">
-            <Wifi size={12} aria-hidden="true" />
+            <span className="dash__hero-eyebrow-dot" />
+            <Wifi size={11} aria-hidden="true" />
             <span>Plataforma de Inteligência Territorial — São Paulo</span>
           </div>
+
+          {/* Título principal */}
           <h1 className="dash__hero-title">
-            Conectividade orientada<br />
-            por <span className="dash__hero-accent">dados reais</span>
+            Decisões de conectividade<br />
+            <span className="dash__hero-accent">baseadas em dados</span>
           </h1>
+
+          {/* Lead */}
           <p className="dash__hero-lead">
-            Analise o potencial de mercado e o potencial social de expansão da
-            conectividade nos 645 municípios paulistas — com evidências, fontes
-            e limitações sempre à vista.
+            Analise viabilidade de mercado e impacto social nos <strong>645 municípios</strong> paulistas
+            — com 3 agentes de IA, evidências rastreáveis e fontes oficiais sempre visíveis.
           </p>
+
+          {/* Pills de capacidade */}
           <div className="dash__hero-pills">
             <span className="dash__pill dash__pill--market">
               <TrendingUp size={11} aria-hidden="true" />
@@ -101,28 +111,53 @@ export default function InicioPage() {
               <Brain size={11} aria-hidden="true" />
               3 Agentes de IA
             </span>
+            <span className="dash__pill dash__pill--neutral">
+              <ShieldCheck size={11} aria-hidden="true" />
+              Fontes oficiais
+            </span>
           </div>
+
+          {/* CTAs */}
           <div className="dash__hero-actions">
             <Link to="/mapa" className="dash__btn dash__btn--primary">
               <Map size={15} aria-hidden="true" />
               Explorar mapa
               <ArrowRight size={14} aria-hidden="true" />
             </Link>
+            <Link to="/investigar" className="dash__btn dash__btn--accent">
+              <Brain size={15} aria-hidden="true" />
+              Investigar com IA
+            </Link>
             <button
               className="dash__btn dash__btn--ghost"
               onClick={() => openAIChat({ codigo: '', nome: '' })}
             >
-              <Brain size={15} aria-hidden="true" />
-              Investigar município
+              <Activity size={14} aria-hidden="true" />
+              Chat rápido
             </button>
           </div>
         </div>
 
-        {/* Visual decorativo */}
+        {/* Visual decorativo lado direito */}
         <div className="dash__hero-visual" aria-hidden="true">
-          <img src="/nexora-icon.svg" alt="" className="dash__hero-icon" />
-          <div className="dash__hero-glow dash__hero-glow--a" />
-          <div className="dash__hero-glow dash__hero-glow--b" />
+          {/* Anéis concêntricos animados */}
+          <div className="dash__hero-rings">
+            <div className="dash__hero-ring dash__hero-ring--1" />
+            <div className="dash__hero-ring dash__hero-ring--2" />
+            <div className="dash__hero-ring dash__hero-ring--3" />
+          </div>
+          <div className="dash__hero-icon-wrap">
+            <img src="/nexora-icon.svg" alt="" className="dash__hero-icon" />
+          </div>
+          {/* Stat flutuante */}
+          <div className="dash__hero-stat-float dash__hero-stat-float--a">
+            <span className="dash__hero-stat-float-val">645</span>
+            <span className="dash__hero-stat-float-label">municípios</span>
+          </div>
+          <div className="dash__hero-stat-float dash__hero-stat-float--b">
+            <span className="dash__hero-stat-float-val">3</span>
+            <span className="dash__hero-stat-float-label">agentes IA</span>
+          </div>
         </div>
       </motion.header>
 

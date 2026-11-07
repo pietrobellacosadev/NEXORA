@@ -60,6 +60,48 @@ def _extrair_json(raw: str) -> str:
     return texto
 
 
+def _sanitizar_lista(v: Any) -> list[str]:
+    """Converte qualquer tipo retornado pelo LLM para list[str] limpa."""
+    if v is None:
+        return []
+    if isinstance(v, str):
+        stripped = v.strip()
+        if stripped.startswith("["):
+            try:
+                parsed = json.loads(stripped)
+                if isinstance(parsed, list):
+                    v = parsed
+                else:
+                    return [stripped] if stripped else []
+            except (json.JSONDecodeError, ValueError):
+                return [stripped] if stripped else []
+        elif stripped:
+            return [stripped]
+        else:
+            return []
+    if isinstance(v, dict):
+        for val in v.values():
+            if isinstance(val, list):
+                return _sanitizar_lista(val)
+        return []
+    if isinstance(v, list):
+        resultado: list[str] = []
+        for item in v:
+            if isinstance(item, str):
+                resultado.append(item)
+            elif isinstance(item, dict):
+                for val in item.values():
+                    if isinstance(val, str) and len(val) > 5:
+                        resultado.append(val)
+                        break
+                else:
+                    resultado.append(str(item))
+            elif item is not None:
+                resultado.append(str(item))
+        return resultado
+    return []
+
+
 class AgenteSocial:
     def __init__(self) -> None:
         self._client: GroqClient = make_client(TipoAgente.SOCIAL.value)
@@ -130,13 +172,13 @@ class AgenteSocial:
                 agente=TipoAgente.SOCIAL,
                 municipio=tarefa.nome_municipio,
                 codigo_ibge=tarefa.codigo_ibge,
-                constatacoes=data.get("constatacoes", []),
+                constatacoes=_sanitizar_lista(data.get("constatacoes", [])),
                 evidencias=evidencias,
-                fontes=data.get("fontes", []),
-                periodos=data.get("periodos", []),
-                limitacoes=data.get("limitacoes", []),
-                dados_ausentes=data.get("dados_ausentes", []),
-                programas_elegiveis=data.get("programas_elegiveis", []),
+                fontes=_sanitizar_lista(data.get("fontes", [])),
+                periodos=_sanitizar_lista(data.get("periodos", [])),
+                limitacoes=_sanitizar_lista(data.get("limitacoes", [])),
+                dados_ausentes=_sanitizar_lista(data.get("dados_ausentes", [])),
+                programas_elegiveis=_sanitizar_lista(data.get("programas_elegiveis", [])),
                 impacto_estimado=data.get("impacto_estimado"),
                 modelo_usado=self._client.model,
             )
@@ -150,7 +192,6 @@ class AgenteSocial:
                 agente=TipoAgente.SOCIAL,
                 municipio=tarefa.nome_municipio,
                 codigo_ibge=tarefa.codigo_ibge,
-                constatacoes=[raw[:300]] if raw else [],
                 erro=f"Resposta fora do formato esperado: {exc}",
                 modelo_usado=self._client.model,
             )

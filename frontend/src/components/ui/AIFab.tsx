@@ -14,10 +14,14 @@ import './AIFab.css'
 
 export const AI_ANALYSIS_KEY = 'nexora-ai-analysis'
 
-/** Abre o chat da IA pré-carregado com um município */
-export function openAIChat(municipio: { codigo: string; nome: string }, pergunta?: string) {
+/** Abre o chat da IA pré-carregado com um ou mais municípios */
+export function openAIChat(
+  municipio: { codigo: string; nome: string } | Array<{ codigo: string; nome: string }>,
+  pergunta?: string,
+) {
+  const municipios = Array.isArray(municipio) ? municipio : [municipio]
   window.dispatchEvent(
-    new CustomEvent('nexora:open-ai-chat', { detail: { municipio, pergunta } })
+    new CustomEvent('nexora:open-ai-chat', { detail: { municipios, pergunta } })
   )
 }
 
@@ -65,6 +69,84 @@ async function resolverMunicipio(texto: string): Promise<{ codigo: string; nome:
   return null
 }
 
+// ── Renderizador de markdown mínimo para o bubble do chat ────────────────────
+function renderInline(text: string): React.ReactNode[] {
+  // Suporta **bold** e _italic_
+  const parts = text.split(/(\*\*[^*]+\*\*|_[^_]+_)/)
+  return parts.map((p, i) => {
+    if (p.startsWith('**') && p.endsWith('**')) return <strong key={i}>{p.slice(2, -2)}</strong>
+    if (p.startsWith('_') && p.endsWith('_'))   return <em key={i}>{p.slice(1, -1)}</em>
+    return p
+  })
+}
+
+function BubbleContent({ text, isUser }: { text: string; isUser: boolean }) {
+  if (isUser) {
+    // Mensagem do utilizador: texto simples sem formatação especial
+    return <>{text.split('\n').map((l, i) => l ? <span key={i} style={{ display: 'block' }}>{l}</span> : <br key={i} />)}</>
+  }
+
+  // Divide em blocos por linha dupla (parágrafos) ou linha simples
+  const linhas = text.split('\n')
+  const elementos: React.ReactNode[] = []
+  let i = 0
+
+  while (i < linhas.length) {
+    const linha = linhas[i]
+
+    // Linha vazia — espaço entre blocos
+    if (!linha.trim()) { i++; continue }
+
+    // Separador horizontal
+    if (/^---+$/.test(linha.trim())) {
+      elementos.push(<hr key={i} className="ai-fab__hr" />)
+      i++
+      continue
+    }
+
+    // Item de lista: começa com -, •, *, ou número seguido de . ou )
+    if (/^[\-•*]\s/.test(linha) || /^\d+[.)]\s/.test(linha)) {
+      const itens: React.ReactNode[] = []
+      while (i < linhas.length && (/^[\-•*]\s/.test(linhas[i]) || /^\d+[.)]\s/.test(linhas[i]))) {
+        const conteudo = linhas[i].replace(/^[\-•*\d.)\s]+/, '').trim()
+        itens.push(<li key={i}>{renderInline(conteudo)}</li>)
+        i++
+      }
+      elementos.push(<ul key={`ul-${i}`} className="ai-fab__list">{itens}</ul>)
+      continue
+    }
+
+    // Linha com apenas emoji no início (ícone de seção) — título de seção
+    if (/^[🔍👥🧠📍⏳✅❌⚠️💡]\s/.test(linha)) {
+      elementos.push(
+        <p key={i} className="ai-fab__section-title">{renderInline(linha)}</p>
+      )
+      i++
+      continue
+    }
+
+    // Parágrafo normal — agrupa linhas consecutivas não vazias sem formatação especial
+    const paraLinhas: string[] = []
+    while (
+      i < linhas.length &&
+      linhas[i].trim() &&
+      !/^---+$/.test(linhas[i].trim()) &&
+      !/^[\-•*]\s/.test(linhas[i]) &&
+      !/^\d+[.)]\s/.test(linhas[i])
+    ) {
+      paraLinhas.push(linhas[i])
+      i++
+    }
+    if (paraLinhas.length) {
+      elementos.push(
+        <p key={i} className="ai-fab__para">{renderInline(paraLinhas.join(' '))}</p>
+      )
+    }
+  }
+
+  return <>{elementos}</>
+}
+
 export default function AIFab() {
   const navigate = useNavigate()
   const [aberto, setAberto] = useState(false)
@@ -73,6 +155,8 @@ export default function AIFab() {
   const [enviando, setEnviando] = useState(false)
   const [passoAtual, setPassoAtual] = useState(-1) // índice do passo de progresso ativo
   const [municipioAtual, setMunicipioAtual] = useState<{ codigo: string; nome: string } | null>(null)
+  // Fila para análise multi-município: municípios pendentes de análise
+  const [filaMunicipios, setFilaMunicipios] = useState<Array<{ codigo: string; nome: string }>>([])
   const [ultimaAnalise, setUltimaAnalise] = useState<ResultadoConsolidado | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -81,24 +165,45 @@ export default function AIFab() {
   // Abre o chat quando disparado por outras páginas
   useEffect(() => {
     const handler = (e: Event) => {
-      const { municipio, pergunta } = (e as CustomEvent<{ municipio: { codigo: string; nome: string }; pergunta?: string }>).detail
-      const muniValido = municipio.codigo.trim().length >= 7
-      if (muniValido) setMunicipioAtual(municipio)
+      const { municipios, pergunta } = (e as CustomEvent<{
+        municipios: Array<{ codigo: string; nome: string }>
+        pergunta?: string
+      }>).detail
+
+      const validos = municipios.filter(m => m.codigo.trim().length >= 7)
+      const primeiro = validos[0] ?? null
+
+      if (primeiro) setMunicipioAtual(primeiro)
+
+      // Se há mais de um, guarda o restante na fila para análise sequencial
+      if (validos.length > 1) {
+        setFilaMunicipios(validos.slice(1))
+      }
+
       setAberto(true)
+
       if (pergunta) {
         setInput(pergunta)
       } else {
         setMsgs(prev => {
           const jaTemBoasVindas = prev.length === 1 && prev[0].role === 'assistant'
-          if (jaTemBoasVindas) {
+          if (!jaTemBoasVindas) return prev
+
+          if (validos.length === 0) return [{ role: 'assistant', text: BOAS_VINDAS.text }]
+
+          if (validos.length === 1) {
             return [{
               role: 'assistant',
-              text: muniValido
-                ? `Olá! Vou analisar **${municipio.nome}**. O que você gostaria de saber? (viabilidade de internet, custos, programas públicos…)`
-                : BOAS_VINDAS.text,
+              text: `Olá! Vou analisar **${validos[0].nome}**. O que você gostaria de saber? (viabilidade de internet, custos, programas públicos…)`,
             }]
           }
-          return prev
+
+          // Múltiplos municípios
+          const nomes = validos.map(m => `**${m.nome}**`).join(', ')
+          return [{
+            role: 'assistant',
+            text: `Olá! Tenho ${validos.length} municípios prontos para análise: ${nomes}.\n\nVou analisar cada um sequencialmente. Digite sua pergunta e enviarei relatórios individuais para cada município.`,
+          }]
         })
       }
     }
@@ -144,6 +249,61 @@ export default function AIFab() {
     setPassoAtual(-1)
   }
 
+  /** Executa análise de um único município e retorna mensagem de resposta formatada */
+  const analisarMunicipio = async (muni: { codigo: string; nome: string }, pergunta: string): Promise<string> => {
+    const { data } = await api.post<ResultadoConsolidado>('/investigar', {
+      codigo_ibge: muni.codigo,
+      pergunta,
+    })
+
+    localStorage.setItem(AI_ANALYSIS_KEY, JSON.stringify(data))
+    salvarAnalise(data)
+    setUltimaAnalise(data)
+
+    const vf = data.viabilidade_financeira
+    const blocos: string[] = []
+
+    // Título
+    blocos.push(`📍 **${muni.nome}** — Análise concluída ✅`)
+
+    // Síntese (pode ter múltiplos parágrafos — preserva)
+    if (data.sintese) {
+      blocos.push(data.sintese.trim())
+    }
+
+    // Separador + dados financeiros como lista compacta
+    if (vf) {
+      const itens: string[] = []
+      if (vf.tecnologia_recomendada || vf.tipo_rede_recomendado) {
+        itens.push(`- **Tecnologia:** ${vf.tecnologia_recomendada ?? vf.tipo_rede_recomendado}`)
+      }
+      if (vf.investimento_estimado_range) {
+        itens.push(`- **Investimento:** ${vf.investimento_estimado_range}${vf.payback_anos ? ` · Payback: ${vf.payback_anos}` : ''}`)
+      }
+      if (vf.classificacao) {
+        itens.push(`- **Viabilidade:** ${vf.classificacao}`)
+      }
+      if (vf.recomendacao_analista) {
+        itens.push(`- **Recomendação:** ${vf.recomendacao_analista}`)
+      }
+      if (vf.financiamentos_disponiveis) {
+        itens.push(`- **Financiamentos:** ${vf.financiamentos_disponiveis}`)
+      }
+      if (itens.length) {
+        blocos.push('---')
+        blocos.push(itens.join('\n'))
+      }
+    }
+
+    // Conclusão
+    if (data.conclusao) {
+      blocos.push('---')
+      blocos.push(`💡 **Conclusão:** ${data.conclusao}`)
+    }
+
+    return blocos.join('\n\n')
+  }
+
   const enviar = async () => {
     const txt = input.trim()
     if (!txt || enviando) return
@@ -153,12 +313,14 @@ export default function AIFab() {
     iniciarProgresso()
 
     try {
-      // Tenta resolver município a partir do contexto atual ou da mensagem
+      // Resolve município: prioriza o já definido no contexto; só busca na mensagem se não houver nenhum
       let muni = municipioAtual
-      const resolvidoNaMensagem = await resolverMunicipio(txt)
-      if (resolvidoNaMensagem) {
-        muni = resolvidoNaMensagem
-        setMunicipioAtual(resolvidoNaMensagem)
+      if (!muni) {
+        const resolvidoNaMensagem = await resolverMunicipio(txt)
+        if (resolvidoNaMensagem) {
+          muni = resolvidoNaMensagem
+          setMunicipioAtual(resolvidoNaMensagem)
+        }
       }
 
       if (!muni) {
@@ -170,50 +332,51 @@ export default function AIFab() {
         return
       }
 
-      const { data } = await api.post<ResultadoConsolidado>('/investigar', {
-        codigo_ibge: muni.codigo,
-        pergunta: txt,
-      })
+      // Captura a fila atual ANTES de analisar (para análise multi-município)
+      const fila = filaMunicipios.slice()
 
+      // Analisa o município atual
+      const resposta = await analisarMunicipio(muni, txt)
       pararProgresso()
 
-      // Salva análise completa para o Dashboard e para o histórico de análises
-      localStorage.setItem(AI_ANALYSIS_KEY, JSON.stringify(data))
-      salvarAnalise(data)
-      setUltimaAnalise(data)
+      setMsgs(prev => [...prev, { role: 'assistant', text: resposta }])
 
-      const vf = data.viabilidade_financeira
-      const linhas = [
-        `**${muni.nome}** — Análise concluída ✅`,
-        '',
-        data.sintese,
-      ]
-
-      if (vf) {
-        if (vf.tecnologia_recomendada || vf.tipo_rede_recomendado) {
-          linhas.push(`**Tecnologia recomendada:** ${vf.tecnologia_recomendada ?? vf.tipo_rede_recomendado}`)
+      // Se há municípios na fila, analisa cada um sequencialmente
+      if (fila.length > 0) {
+        setFilaMunicipios([])
+        for (const proximo of fila) {
+          setMunicipioAtual(proximo)
+          setMsgs(prev => [...prev, {
+            role: 'assistant',
+            text: `⏳ Analisando **${proximo.nome}**…`,
+          }])
+          iniciarProgresso()
+          try {
+            const respostaProximo = await analisarMunicipio(proximo, txt)
+            pararProgresso()
+            setMsgs(prev => {
+              // Remove a mensagem "Analisando…"
+              const sem = prev.filter(m => !m.text.includes(`Analisando **${proximo.nome}**`))
+              return [...sem, { role: 'assistant', text: respostaProximo }]
+            })
+          } catch {
+            pararProgresso()
+            setMsgs(prev => [...prev, {
+              role: 'assistant',
+              text: `❌ Erro ao analisar **${proximo.nome}**. Tente novamente.`,
+            }])
+          }
         }
-        if (vf.investimento_estimado_range) {
-          linhas.push(`**Investimento estimado:** ${vf.investimento_estimado_range} · Payback: ${vf.payback_anos ?? 'N/D'}`)
-        }
-        if (vf.classificacao) {
-          linhas.push(`**Viabilidade:** ${vf.classificacao}`)
-        }
-        if (vf.recomendacao_analista) {
-          linhas.push(`**Recomendação:** ${vf.recomendacao_analista}`)
-        }
-        if (vf.financiamentos_disponiveis) {
-          linhas.push(`**Financiamentos:** ${vf.financiamentos_disponiveis}`)
-        }
+        setMsgs(prev => [...prev, {
+          role: 'assistant',
+          text: `✅ Análise concluída para todos os municípios. Os relatórios foram salvos em **Análises**.`,
+        }])
+      } else {
+        setMsgs(prev => [...prev, {
+          role: 'assistant',
+          text: 'Dados completos salvos em **Análises** e enviados ao **Dashboard**.',
+        }])
       }
-
-      if (data.conclusao) {
-        linhas.push('', `**Conclusão:** ${data.conclusao}`)
-      }
-
-      linhas.push('', 'Os dados completos foram enviados para o **Dashboard** e salvos em **Análises**.')
-
-      setMsgs(prev => [...prev, { role: 'assistant', text: linhas.filter(Boolean).join('\n') }])
     } catch {
       pararProgresso()
       setMsgs(prev => [...prev, {
@@ -233,6 +396,7 @@ export default function AIFab() {
     pararProgresso()
     setMsgs([BOAS_VINDAS])
     setMunicipioAtual(null)
+    setFilaMunicipios([])
     setUltimaAnalise(null)
   }
 
@@ -278,8 +442,10 @@ export default function AIFab() {
               <div className="ai-fab__header-text">
                 <span className="ai-fab__header-title">NEXORA IA</span>
                 <span className="ai-fab__header-sub">
-                  {municipioAtual ? `📍 ${municipioAtual.nome}` : 'Assistente de conectividade'}
-                </span>
+                    {municipioAtual
+                      ? `📍 ${municipioAtual.nome}${filaMunicipios.length > 0 ? ` +${filaMunicipios.length} na fila` : ''}`
+                      : 'Assistente de conectividade'}
+                  </span>
               </div>
               {ultimaAnalise && (
                 <button className="ai-fab__header-dash" onClick={irParaDashboard} title="Ver análise no Dashboard">
@@ -302,21 +468,8 @@ export default function AIFab() {
                     <div className="ai-fab__avatar"><Bot size={11} /></div>
                   )}
                   <div className="ai-fab__bubble">
-                   {m.text.split('\n').map((line, j) => {
-                     if (!line) return <br key={j} />
-                     // Render **bold** segments
-                     const parts = line.split(/(\*\*[^*]+\*\*)/)
-                     return (
-                       <span key={j} style={{ display: 'block' }}>
-                         {parts.map((p, k) =>
-                           p.startsWith('**') && p.endsWith('**')
-                             ? <strong key={k}>{p.slice(2, -2)}</strong>
-                             : p
-                         )}
-                       </span>
-                     )
-                   })}
-                 </div>
+                    <BubbleContent text={m.text} isUser={m.role === 'user'} />
+                  </div>
                 </div>
               ))}
 

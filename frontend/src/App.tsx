@@ -7,6 +7,7 @@ import MapaPage from './pages/MapaPage'
 import DashboardPage from './pages/DashboardPage'
 import CompararPage from './pages/CompararPage'
 import AnalisesPage from './pages/AnalisesPage'
+import InvestigarPage from './pages/InvestigarPage'
 import NotFoundPage from './pages/NotFoundPage'
 
 type Theme = 'light' | 'dark'
@@ -29,6 +30,7 @@ function AnimatedRoutes() {
         <Route path="/dashboard"   element={<DashboardPage />} />
         <Route path="/comparar"    element={<CompararPage />} />
         <Route path="/analises"    element={<AnalisesPage />} />
+        <Route path="/investigar"  element={<InvestigarPage />} />
         <Route path="*"            element={<NotFoundPage />} />
       </Routes>
     </AnimatePresence>
