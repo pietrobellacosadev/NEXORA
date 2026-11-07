@@ -40,10 +40,17 @@ class TestConfigPrioridade:
         assert "super-secret" not in str(s)
 
     def test_modelo_por_agente(self):
-        s = Settings()
-        assert s.groq_model_for("market") == "llama-3.1-8b-instant"
-        assert s.groq_model_for("social") == "llama-3.1-8b-instant"
-        assert s.groq_model_for("consolidator") == "llama-3.3-70b-versatile"
+        # Instancia com modelos explícitos para isolar o teste do .env e dos defaults
+        s = Settings(
+            groq_model_market="openai/gpt-oss-20b",
+            groq_model_social="openai/gpt-oss-20b",
+            groq_model_consolidator="openai/gpt-oss-120b",
+        )
+        assert s.groq_model_for("market") == "openai/gpt-oss-20b"
+        assert s.groq_model_for("social") == "openai/gpt-oss-20b"
+        assert s.groq_model_for("consolidator") == "openai/gpt-oss-120b"
+        # Agente desconhecido cai no fallback (consolidator)
+        assert s.groq_model_for("inexistente") == "openai/gpt-oss-120b"
 
 
 # ── Testes do cliente (mockado) ───────────────────────────────────────────────

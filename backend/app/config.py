@@ -31,14 +31,14 @@ class Settings(BaseSettings):
     groq_api_key_consolidator: SecretStr = Field(default=SecretStr(""))
 
     # ── GroqCloud — modelos por agente ────────────────────────────────────────
-    # Modelos validados no free-tier GroqCloud (2026-11):
-    #   llama-3.1-8b-instant      — rápido, bom para agentes especialistas
-    #   llama-3.3-70b-versatile   — melhor qualidade, para consolidador
-    #   gemma2-9b-it              — alternativa Google
+    # Modelos validados na conta GroqCloud (2026-11):
+    #   openai/gpt-oss-20b   — intermediário, rápido, agentes especialistas
+    #   openai/gpt-oss-120b  — maior capacidade, agente consolidador
+    #   qwen/qwen3.8-27b     — alternativa (verificar disponibilidade)
     # Override via GROQ_MODEL_MARKET / GROQ_MODEL_SOCIAL / GROQ_MODEL_CONSOLIDATOR no .env
-    groq_model_market: str = Field(default="llama-3.1-8b-instant")
-    groq_model_social: str = Field(default="llama-3.1-8b-instant")
-    groq_model_consolidator: str = Field(default="llama-3.3-70b-versatile")
+    groq_model_market: str = Field(default="openai/gpt-oss-20b")
+    groq_model_social: str = Field(default="openai/gpt-oss-20b")
+    groq_model_consolidator: str = Field(default="openai/gpt-oss-120b")
 
     # ── GroqCloud — limites de consumo ────────────────────────────────────────
     groq_max_tokens: int = Field(default=4096)
