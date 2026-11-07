@@ -41,8 +41,8 @@ class Settings(BaseSettings):
 
     # ── GroqCloud — limites de consumo ────────────────────────────────────────
     groq_max_tokens: int = Field(default=4096)
-    groq_timeout_seconds: int = Field(default=60)
-    groq_max_retries: int = Field(default=2)
+    groq_timeout_seconds: int = Field(default=90)
+    groq_max_retries: int = Field(default=4)
 
     def groq_key_for(self, agent: str) -> str:
         """

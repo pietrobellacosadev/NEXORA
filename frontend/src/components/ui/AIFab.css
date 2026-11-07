@@ -87,6 +87,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.ai-fab__header-dash,
 .ai-fab__header-clear,
 .ai-fab__header-close {
   display: grid;
@@ -101,6 +102,7 @@
   flex-shrink: 0;
   transition: background var(--t-fast);
 }
+.ai-fab__header-dash:hover,
 .ai-fab__header-clear:hover,
 .ai-fab__header-close:hover { background: rgba(255, 255, 255, 0.25); }
 

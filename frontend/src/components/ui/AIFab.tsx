@@ -4,11 +4,14 @@
  * Abre um chat com o Agente Consolidador da NEXORA.
  */
 import { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
-import { Bot, X, Send, Loader, MessageCircle, RefreshCw } from 'lucide-react'
+import { Bot, X, Send, Loader, MessageCircle, RefreshCw, ExternalLink } from 'lucide-react'
 import api from '../../lib/api'
 import type { ResultadoConsolidado } from '../../types'
 import './AIFab.css'
+
+export const AI_ANALYSIS_KEY = 'nexora-ai-analysis'
 
 interface ChatMsg {
   role: 'user' | 'assistant'
@@ -48,11 +51,13 @@ async function resolverMunicipio(texto: string): Promise<{ codigo: string; nome:
 }
 
 export default function AIFab() {
+  const navigate = useNavigate()
   const [aberto, setAberto] = useState(false)
   const [msgs, setMsgs] = useState<ChatMsg[]>([BOAS_VINDAS])
   const [input, setInput] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [municipioAtual, setMunicipioAtual] = useState<{ codigo: string; nome: string } | null>(null)
+  const [ultimaAnalise, setUltimaAnalise] = useState<ResultadoConsolidado | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -95,14 +100,20 @@ export default function AIFab() {
         pergunta: txt,
       })
 
+      // Salva análise completa para o Dashboard
+      localStorage.setItem(AI_ANALYSIS_KEY, JSON.stringify(data))
+      setUltimaAnalise(data)
+
       const resposta = [
-        `**${muni.nome}** — Análise concluída`,
+        `**${muni.nome}** — Análise concluída ✅`,
         '',
         data.sintese,
         data.viabilidade_financeira
-          ? `\n💰 **${data.viabilidade_financeira.tipo_rede_recomendado ?? 'Rede'}** · ${data.viabilidade_financeira.investimento_estimado_range ?? ''} · Retorno: ${data.viabilidade_financeira.classificacao ?? ''}`
+          ? `**Rede recomendada:** ${data.viabilidade_financeira.tipo_rede_recomendado ?? ''} · Retorno: ${data.viabilidade_financeira.classificacao ?? ''}`
           : '',
-        data.conclusao ? `\n✅ ${data.conclusao}` : '',
+        data.conclusao ? `**Conclusão:** ${data.conclusao}` : '',
+        '',
+        'Os dados completos (mercado, social, custos) foram enviados para o **Dashboard**.',
       ].filter(Boolean).join('\n')
 
       setMsgs(prev => [...prev, { role: 'assistant', text: resposta }])
@@ -123,6 +134,12 @@ export default function AIFab() {
   const limpar = () => {
     setMsgs([BOAS_VINDAS])
     setMunicipioAtual(null)
+    setUltimaAnalise(null)
+  }
+
+  const irParaDashboard = () => {
+    setAberto(false)
+    navigate('/dashboard')
   }
 
   return (
@@ -165,6 +182,11 @@ export default function AIFab() {
                   {municipioAtual ? `📍 ${municipioAtual.nome}` : 'Assistente de conectividade'}
                 </span>
               </div>
+              {ultimaAnalise && (
+                <button className="ai-fab__header-dash" onClick={irParaDashboard} title="Ver análise no Dashboard">
+                  <ExternalLink size={12} />
+                </button>
+              )}
               <button className="ai-fab__header-clear" onClick={limpar} title="Nova conversa">
                 <RefreshCw size={12} />
               </button>

@@ -4,12 +4,14 @@ import { motion, AnimatePresence } from 'motion/react'
 import {
   BarChart3, TrendingUp, Users, Map, RefreshCw,
   AlertCircle, ArrowRight, GitCompare, Trophy,
-  Plus, Search, X,
+  Plus, Search, X, Brain, DollarSign, ShieldCheck,
+  ChevronDown, ChevronRight, Zap,
 } from 'lucide-react'
 import ReactECharts from 'echarts-for-react'
 import api from '../lib/api'
-import type { PerfilMunicipio, IndicadorItem } from '../types'
+import type { PerfilMunicipio, IndicadorItem, ResultadoConsolidado } from '../types'
 import Spinner from '../components/ui/Spinner'
+import { AI_ANALYSIS_KEY } from '../components/ui/AIFab'
 import './DashboardPage.css'
 
 // ── Indicadores exibidos no dashboard ────────────────────────────────────────
@@ -66,6 +68,8 @@ export default function DashboardPage() {
   const [carregandoCod, setCarregandoCod] = useState<string | null>(null)
   const [erro, setErro] = useState('')
   const [relatorioIdx, setRelatorioIdx] = useState(0)
+  const [analiseIA, setAnaliseIA] = useState<ResultadoConsolidado | null>(null)
+  const [analiseAberta, setAnaliseAberta] = useState(true)
 
   // Busca de municípios
   const [busca, setBusca] = useState('')
@@ -76,6 +80,19 @@ export default function DashboardPage() {
 
   const relatorios = pilar === 'mercado' ? RELATORIOS_MERCADO : RELATORIOS_SOCIAL
   const relatorio = relatorios[relatorioIdx]
+
+  // Lê análise IA do localStorage ao montar
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(AI_ANALYSIS_KEY)
+      if (raw) setAnaliseIA(JSON.parse(raw))
+    } catch { /* ignora */ }
+  }, [])
+
+  const dispensarAnalise = () => {
+    setAnaliseIA(null)
+    localStorage.removeItem(AI_ANALYSIS_KEY)
+  }
 
   // Reset índice ao trocar pilar se sair do range
   useEffect(() => {
@@ -300,6 +317,139 @@ export default function DashboardPage() {
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.28, ease: EASE }}
     >
+
+      {/* ── Painel de Análise IA ────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {analiseIA && (
+          <motion.div
+            className="db__ai-panel"
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {/* Header */}
+            <div className="db__ai-header">
+              <div className="db__ai-icon"><Brain size={16} /></div>
+              <div className="db__ai-header-text">
+                <span className="db__ai-title">Análise IA — {analiseIA.municipio}</span>
+                <span className="db__ai-sub">{analiseIA.pergunta}</span>
+              </div>
+              <button
+                className="db__ai-toggle"
+                onClick={() => setAnaliseAberta(o => !o)}
+                aria-label={analiseAberta ? 'Recolher' : 'Expandir'}
+              >
+                {analiseAberta ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
+              </button>
+              <button className="db__ai-dismiss" onClick={dispensarAnalise} aria-label="Fechar análise">
+                <X size={14} />
+              </button>
+            </div>
+
+            <AnimatePresence>
+              {analiseAberta && (
+                <motion.div
+                  className="db__ai-body"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {/* Síntese */}
+                  <p className="db__ai-sintese">{analiseIA.sintese}</p>
+                  {analiseIA.conclusao && (
+                    <p className="db__ai-conclusao"><strong>Conclusão:</strong> {analiseIA.conclusao}</p>
+                  )}
+
+                  {/* Métricas rápidas */}
+                  <div className="db__ai-metrics">
+                    {analiseIA.viabilidade_financeira && (
+                      <>
+                        {analiseIA.viabilidade_financeira.tipo_rede_recomendado && (
+                          <div className="db__ai-metric db__ai-metric--ai">
+                            <Zap size={13} />
+                            <div>
+                              <span className="db__ai-metric-label">Rede recomendada</span>
+                              <span className="db__ai-metric-val">{analiseIA.viabilidade_financeira.tipo_rede_recomendado}</span>
+                            </div>
+                          </div>
+                        )}
+                        {analiseIA.viabilidade_financeira.investimento_estimado_range && (
+                          <div className="db__ai-metric db__ai-metric--market">
+                            <DollarSign size={13} />
+                            <div>
+                              <span className="db__ai-metric-label">Investimento estimado</span>
+                              <span className="db__ai-metric-val">{analiseIA.viabilidade_financeira.investimento_estimado_range}</span>
+                            </div>
+                          </div>
+                        )}
+                        {analiseIA.viabilidade_financeira.classificacao && (
+                          <div className={`db__ai-metric db__ai-metric--${analiseIA.viabilidade_financeira.classificacao === 'ALTO' ? 'ok' : analiseIA.viabilidade_financeira.classificacao === 'BAIXO' ? 'warn' : 'social'}`}>
+                            <TrendingUp size={13} />
+                            <div>
+                              <span className="db__ai-metric-label">Viabilidade</span>
+                              <span className="db__ai-metric-val">{analiseIA.viabilidade_financeira.classificacao}</span>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+                    {analiseIA.mercado?.custo_estimado?.custo_por_domicilio && (
+                      <div className="db__ai-metric db__ai-metric--market">
+                        <DollarSign size={13} />
+                        <div>
+                          <span className="db__ai-metric-label">Custo por domicílio</span>
+                          <span className="db__ai-metric-val">{analiseIA.mercado.custo_estimado.custo_por_domicilio}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Constatações dos pilares */}
+                  <div className="db__ai-pilares">
+                    {(analiseIA.mercado?.constatacoes?.length ?? 0) > 0 && (
+                      <div className="db__ai-pilar db__ai-pilar--market">
+                        <div className="db__ai-pilar-hd">
+                          <TrendingUp size={13} />
+                          <strong>Mercado</strong>
+                        </div>
+                        <ul className="db__ai-pilar-list">
+                          {analiseIA.mercado.constatacoes.slice(0, 4).map((c, i) => <li key={i}>{c}</li>)}
+                        </ul>
+                      </div>
+                    )}
+                    {(analiseIA.social?.constatacoes?.length ?? 0) > 0 && (
+                      <div className="db__ai-pilar db__ai-pilar--social">
+                        <div className="db__ai-pilar-hd">
+                          <Users size={13} />
+                          <strong>Social</strong>
+                        </div>
+                        <ul className="db__ai-pilar-list">
+                          {analiseIA.social.constatacoes.slice(0, 4).map((c, i) => <li key={i}>{c}</li>)}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Programas elegíveis */}
+                  {(analiseIA.social?.programas_elegiveis?.length ?? 0) > 0 && (
+                    <div className="db__ai-programas">
+                      <div className="db__ai-programas-hd">
+                        <ShieldCheck size={13} />
+                        <strong>Programas públicos aplicáveis</strong>
+                      </div>
+                      <ul className="db__ai-programas-list">
+                        {analiseIA.social!.programas_elegiveis!.map((p, i) => <li key={i}>{p}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Cabeçalho ──────────────────────────────────────────────────────── */}
       <div className="db__header">

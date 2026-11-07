@@ -81,12 +81,12 @@ class GroqClient:
                     if resp.status_code == 429:
                         raw_ra = resp.headers.get("retry-after", "")
                         try:
-                            retry_after = int(raw_ra)
+                            retry_after = int(float(raw_ra))
                         except (ValueError, TypeError):
-                            retry_after = 20
-                        # Retenta se ainda há tentativas disponíveis (sem limite de wait)
+                            retry_after = 30
                         if tentativa < self._max_retries:
-                            wait = min(retry_after, 60)  # aguarda no máximo 60s por tentativa
+                            # Aguarda o tempo indicado pelo servidor (sem cap artificial)
+                            wait = max(retry_after, 5)
                             logger.warning(
                                 "GroqCloud rate-limit (agente=%s, tentativa=%d/%d). Aguardando %ds.",
                                 self._agent, tentativa + 1, self._max_retries, wait,

@@ -1,14 +1,13 @@
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
-import { Home, Map, BarChart2, Brain, Clock } from 'lucide-react'
+import { Home, Map, BarChart2, Clock } from 'lucide-react'
 import './NotFoundPage.css'
 
 const ATALHOS = [
-  { to: '/',           label: 'Início',     icon: Home          },
-  { to: '/mapa',       label: 'Mapa',       icon: Map           },
-  { to: '/dashboard',  label: 'Dashboard',  icon: BarChart2     },
-  { to: '/analises',   label: 'Análises',   icon: Clock         },
-  { to: '/investigar', label: 'Investigar', icon: Brain },
+  { to: '/',          label: 'Início',    icon: Home    },
+  { to: '/mapa',      label: 'Mapa',      icon: Map     },
+  { to: '/dashboard', label: 'Dashboard', icon: BarChart2 },
+  { to: '/analises',  label: 'Análises',  icon: Clock   },
 ]
 
 export default function NotFoundPage() {

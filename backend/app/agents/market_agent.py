@@ -86,7 +86,7 @@ class AgenteMarket:
 
         try:
             resposta_raw = await self._client.chat(
-                messages, max_tokens=1200, temperature=0.1, json_mode=True
+                messages, max_tokens=1200, temperature=0.1, json_mode=False
             )
             return self._parsear(resposta_raw, tarefa)
         except GroqError as exc:
