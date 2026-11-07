@@ -7,6 +7,7 @@ import {
   ShieldCheck, BarChart2,
 } from 'lucide-react'
 import type { ResultadoConsolidado } from '../types'
+import { openAIChat } from '../components/ui/AIFab'
 import './AnalisesPage.css'
 
 export const ANALISES_STORAGE_KEY = 'nexora-analises-recentes'
@@ -167,15 +168,15 @@ export default function AnalisesPage() {
                   <div className="analises__empty-icon"><Brain size={24} /></div>
                   <p className="analises__empty-title">Nenhuma análise ainda</p>
                   <p className="analises__empty-desc">
-                    Use a página <strong>Investigar</strong> para gerar análises por IA.
+                    Use o chat de IA (botão roxo no canto da tela) para gerar análises.
                     Elas aparecerão aqui automaticamente.
                   </p>
                   <button
                     className="analises__ir-btn"
-                    onClick={() => navigate('/investigar')}
+                    onClick={() => openAIChat({ codigo: '', nome: '' })}
                   >
                     <Brain size={14} />
-                    Ir para Investigar
+                    Abrir chat IA
                   </button>
                 </>
               ) : (
@@ -267,7 +268,7 @@ export default function AnalisesPage() {
                     </button>
                     <button
                       className="analises__det-btn analises__det-btn--ghost"
-                      onClick={() => navigate(`/investigar?municipio=${aberta.codigo_ibge}&nome=${encodeURIComponent(aberta.municipio)}`)}
+                      onClick={() => openAIChat({ codigo: aberta.codigo_ibge, nome: aberta.municipio })}
                       title="Nova investigação"
                     >
                       <Brain size={13} /> Nova investigação

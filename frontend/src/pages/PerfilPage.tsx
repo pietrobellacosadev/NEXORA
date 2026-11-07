@@ -10,6 +10,7 @@ import ReactECharts from 'echarts-for-react'
 import api from '../lib/api'
 import type { MunicipioResumo, PerfilMunicipio, IndicadorItem } from '../types'
 import Spinner from '../components/ui/Spinner'
+import { openAIChat } from '../components/ui/AIFab'
 import './PerfilPage.css'
 
 export default function PerfilPage() {
@@ -227,10 +228,10 @@ export default function PerfilPage() {
                 </button>
                 <button
                   className="perfil__muni-btn"
-                  onClick={() => navigate(`/investigar?municipio=${perfil.municipio.codigo_ibge}&nome=${encodeURIComponent(perfil.municipio.nome)}`)}
+                  onClick={() => openAIChat({ codigo: perfil.municipio.codigo_ibge, nome: perfil.municipio.nome })}
                 >
                   <Brain size={14} aria-hidden="true" />
-                  Investigar com IA
+                  Analisar com IA
                   <ExternalLink size={13} aria-hidden="true" />
                 </button>
               </div>

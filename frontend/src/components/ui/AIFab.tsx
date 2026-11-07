@@ -13,6 +13,13 @@ import './AIFab.css'
 
 export const AI_ANALYSIS_KEY = 'nexora-ai-analysis'
 
+/** Abre o chat da IA pré-carregado com um município */
+export function openAIChat(municipio: { codigo: string; nome: string }, pergunta?: string) {
+  window.dispatchEvent(
+    new CustomEvent('nexora:open-ai-chat', { detail: { municipio, pergunta } })
+  )
+}
+
 interface ChatMsg {
   role: 'user' | 'assistant'
   text: string
@@ -60,6 +67,34 @@ export default function AIFab() {
   const [ultimaAnalise, setUltimaAnalise] = useState<ResultadoConsolidado | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // Abre o chat quando disparado por outras páginas
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { municipio, pergunta } = (e as CustomEvent<{ municipio: { codigo: string; nome: string }; pergunta?: string }>).detail
+      const muniValido = municipio.codigo.trim().length >= 7
+      if (muniValido) setMunicipioAtual(municipio)
+      setAberto(true)
+      if (pergunta) {
+        setInput(pergunta)
+      } else {
+        setMsgs(prev => {
+          const jaTemBoasVindas = prev.length === 1 && prev[0].role === 'assistant'
+          if (jaTemBoasVindas) {
+            return [{
+              role: 'assistant',
+              text: muniValido
+                ? `Olá! Vou analisar **${municipio.nome}**. O que você gostaria de saber? (viabilidade de internet, custos, programas públicos…)`
+                : BOAS_VINDAS.text,
+            }]
+          }
+          return prev
+        })
+      }
+    }
+    window.addEventListener('nexora:open-ai-chat', handler)
+    return () => window.removeEventListener('nexora:open-ai-chat', handler)
+  }, [])
 
   useEffect(() => {
     if (aberto) {

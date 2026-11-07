@@ -4,6 +4,7 @@ import {
   Map, BarChart2, Brain, ArrowRight,
   TrendingUp, Users, ShieldCheck, Wifi, Activity, Clock,
 } from 'lucide-react'
+import { openAIChat } from '../components/ui/AIFab'
 import './InicioPage.css'
 
 const STATS = [
@@ -39,7 +40,7 @@ const FEATURES = [
     badge: null,
   },
   {
-    to: '/investigar',
+    to: null,
     icon: Brain,
     title: 'Investigação por IA',
     desc: 'Três agentes especializados investigam em paralelo e o Consolidador sintetiza análise equilibrada.',
@@ -107,10 +108,13 @@ export default function InicioPage() {
               Explorar mapa
               <ArrowRight size={14} aria-hidden="true" />
             </Link>
-            <Link to="/investigar" className="dash__btn dash__btn--ghost">
+            <button
+              className="dash__btn dash__btn--ghost"
+              onClick={() => openAIChat({ codigo: '', nome: '' })}
+            >
               <Brain size={15} aria-hidden="true" />
               Investigar município
-            </Link>
+            </button>
           </div>
         </div>
 
@@ -157,23 +161,45 @@ export default function InicioPage() {
           animate="show"
         >
           {FEATURES.map(({ to, icon: Icon, title, desc, color, badge }) => (
-            <motion.div key={to} variants={item}>
-              <Link to={to} className={`dash__card dash__card--${color}`}>
-                <div className="dash__card-top">
-                  <div className={`dash__card-icon dash__card-icon--${color}`}>
-                    <Icon size={20} aria-hidden="true" />
+            <motion.div key={title} variants={item}>
+              {to ? (
+                <Link to={to} className={`dash__card dash__card--${color}`}>
+                  <div className="dash__card-top">
+                    <div className={`dash__card-icon dash__card-icon--${color}`}>
+                      <Icon size={20} aria-hidden="true" />
+                    </div>
+                    {badge && <span className={`dash__badge dash__badge--${color}`}>{badge}</span>}
                   </div>
-                  {badge && <span className={`dash__badge dash__badge--${color}`}>{badge}</span>}
-                </div>
-                <h3 className="dash__card-title">{title}</h3>
-                <p className="dash__card-desc">{desc}</p>
-                <div className="dash__card-footer">
-                  <span className={`dash__card-cta dash__card-cta--${color}`}>
-                    Acessar
-                    <ArrowRight size={13} aria-hidden="true" />
-                  </span>
-                </div>
-              </Link>
+                  <h3 className="dash__card-title">{title}</h3>
+                  <p className="dash__card-desc">{desc}</p>
+                  <div className="dash__card-footer">
+                    <span className={`dash__card-cta dash__card-cta--${color}`}>
+                      Acessar
+                      <ArrowRight size={13} aria-hidden="true" />
+                    </span>
+                  </div>
+                </Link>
+              ) : (
+                <button
+                  className={`dash__card dash__card--${color}`}
+                  onClick={() => openAIChat({ codigo: '', nome: '' })}
+                >
+                  <div className="dash__card-top">
+                    <div className={`dash__card-icon dash__card-icon--${color}`}>
+                      <Icon size={20} aria-hidden="true" />
+                    </div>
+                    {badge && <span className={`dash__badge dash__badge--${color}`}>{badge}</span>}
+                  </div>
+                  <h3 className="dash__card-title">{title}</h3>
+                  <p className="dash__card-desc">{desc}</p>
+                  <div className="dash__card-footer">
+                    <span className={`dash__card-cta dash__card-cta--${color}`}>
+                      Abrir chat IA
+                      <ArrowRight size={13} aria-hidden="true" />
+                    </span>
+                  </div>
+                </button>
+              )}
             </motion.div>
           ))}
         </motion.div>

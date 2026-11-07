@@ -4,12 +4,13 @@ import { motion, AnimatePresence } from 'motion/react'
 import {
   MapPin, Search, X, ChevronRight,
   TrendingUp, Users, BarChart2, AlertCircle,
-  GitCompare, Check, Info, Layers,
+  GitCompare, Check, Info, Layers, Brain,
 } from 'lucide-react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import api from '../lib/api'
 import type { MunicipioResumo, PerfilMunicipio, IndicadorItem } from '../types'
+import { openAIChat } from '../components/ui/AIFab'
 import Spinner from '../components/ui/Spinner'
 import './MapaPage.css'
 
@@ -515,9 +516,9 @@ export default function MapaPage() {
                 </button>
                 <button
                   className="mp-btn mp-btn--ghost"
-                  onClick={() => navigate(`/investigar?municipio=${resumo.codigo_ibge}&nome=${encodeURIComponent(resumo.nome)}`)}
+                  onClick={() => openAIChat({ codigo: resumo.codigo_ibge, nome: resumo.nome })}
                 >
-                  Investigar com IA
+                  <Brain size={13} /> Analisar com IA
                 </button>
               </div>
             </motion.div>
