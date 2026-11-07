@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react'
 import TopBar from './TopBar'
+import AIFab from '../ui/AIFab'
 import './AppLayout.css'
 
 interface AppLayoutProps {
@@ -17,6 +18,7 @@ export default function AppLayout({ children, theme, onToggleTheme }: AppLayoutP
           {children}
         </div>
       </main>
+      <AIFab />
     </div>
   )
 }
