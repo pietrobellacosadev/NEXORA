@@ -77,6 +77,13 @@ export interface ViabilidadeFinanceira {
   payback_anos?: string
   classificacao?: string
   financiamentos_disponiveis?: string
+  // Campos expandidos para análise detalhada
+  potencial_mercado?: string
+  potencial_social?: string
+  tecnologia_recomendada?: string
+  justificativa?: string
+  riscos?: string
+  recomendacao_analista?: string
 }
 
 export interface ResultadoConsolidado {

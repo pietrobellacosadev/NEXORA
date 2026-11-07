@@ -3,7 +3,7 @@ Contratos de comunicação entre os três agentes do NEXORA.
 Define os schemas de entrada, saída e mensagens entre agentes.
 """
 from __future__ import annotations
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional
 from enum import Enum
 
@@ -88,6 +88,36 @@ class ViabilidadeFinanceira(BaseModel):
     payback_anos: Optional[str] = None
     classificacao: Optional[str] = None          # "ALTO", "MÉDIO", "BAIXO"
     financiamentos_disponiveis: Optional[str] = None
+    # Campos expandidos para análise detalhada de analista
+    potencial_mercado: Optional[str] = None       # avaliação narrativa do potencial de mercado
+    potencial_social: Optional[str] = None        # avaliação narrativa do impacto social
+    tecnologia_recomendada: Optional[str] = None  # FTTH / WISP / LTE / 5G / misto
+    justificativa: Optional[str] = None           # por que essa tecnologia
+    riscos: Optional[str] = None                  # principais riscos do projeto
+    recomendacao_analista: Optional[str] = None   # recomendação objetiva final
+
+    @field_validator("financiamentos_disponiveis", mode="before")
+    @classmethod
+    def coerce_financiamentos(cls, v: object) -> Optional[str]:
+        if v is None:
+            return None
+        if isinstance(v, list):
+            return ", ".join(str(i) for i in v if i)
+        return str(v) if v else None
+
+    @field_validator(
+        "tipo_rede_recomendado", "investimento_estimado_range", "payback_anos",
+        "classificacao", "potencial_mercado", "potencial_social",
+        "tecnologia_recomendada", "justificativa", "riscos", "recomendacao_analista",
+        mode="before",
+    )
+    @classmethod
+    def coerce_any_to_str(cls, v: object) -> Optional[str]:
+        if v is None:
+            return None
+        if isinstance(v, list):
+            return "; ".join(str(i) for i in v if i)
+        return str(v) if v else None
 
 
 class ResultadoConsolidado(BaseModel):

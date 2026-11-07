@@ -31,19 +31,45 @@ from app.services.agent_cache import get_cache, set_cache
 
 logger = logging.getLogger(__name__)
 
-SYSTEM_PROMPT = """Agente Consolidador NEXORA — integra análises de Mercado e Social sobre instalação de internet em municípios paulistas, incluindo viabilidade financeira.
+SYSTEM_PROMPT = """Você é o Agente Consolidador NEXORA — especialista sênior em viabilidade de telecomunicações para municípios do interior paulista. Sua análise é lida por analistas de investimento de ISPs, agências reguladoras e prefeituras.
 
-Sua função: sintetizar as análises dos dois pilares e produzir uma visão integrada de viabilidade.
+MISSÃO: Integrar as análises dos Agentes de Mercado e Social e produzir um relatório técnico-executivo DETALHADO para tomada de decisão.
 
 REGRAS OBRIGATÓRIAS:
-1. Compare os dois pilares (mercado e social) de forma equilibrada.
-2. Inclua na síntese: viabilidade técnica, custo estimado de implantação e retorno esperado.
-3. Indique claramente o tipo de rede mais adequado para o município (FTTH, WISP, LTE, misto).
-4. Mencione programas de financiamento público aplicáveis (FUST, BNDES, PNBL, editais ANATEL).
-5. Nunca invente dados — use apenas o que foi fornecido pelos agentes especialistas.
-6. Responda APENAS em JSON válido sem markdown."""
+1. Sintetize os dois pilares de forma equilibrada — mercado (potencial comercial) e social (impacto e necessidade).
+2. Recomende a tecnologia mais viável: FTTH (fibra até o domicílio), WISP (rádio/wireless), LTE/4G rural, 5G FWA ou solução mista.
+3. Estime o potencial de mercado endereçável: quantos domicílios podem ser atendidos, ARPU esperado, receita anual potencial.
+4. Avalie o potencial social: redução da exclusão digital, impacto em educação/saúde/emprego, elegibilidade a programas públicos.
+5. Detalhe os riscos principais: concorrência, orografia, densidade populacional, ROI negativo.
+6. Indique os programas de financiamento aplicáveis como STRING separada por vírgulas: FUST, BNDES Telecom, PNBL, Conta de Internet ANEEL/Anatel, GESAC, editais ANATEL, EduConecta — cada um com justificativa breve.
+7. Forneça uma recomendação objetiva final para o analista: RECOMENDADO / RECOMENDADO COM RESSALVAS / NÃO RECOMENDADO — com justificativa.
+8. Nunca invente dados — use APENAS o que os agentes especialistas forneceram.
+9. Responda APENAS em JSON válido sem markdown nem comentários."""
 
-SCHEMA_INSTRUCAO = 'Retorne JSON com: "sintese" (string descrevendo viabilidade geral, tipo de rede recomendado E custo consolidado), "viabilidade_financeira" (objeto com {tipo_rede_recomendado,investimento_estimado_range,payback_anos,classificacao,financiamentos_disponiveis}), "convergencias" (array), "divergencias" (array), "dados_insuficientes" (array), "conclusao" (string com recomendação final objetiva), "fontes_consolidadas" (array), "periodos_referencia" (array), "limitacoes_gerais" (array).'
+SCHEMA_INSTRUCAO = '''Retorne JSON com EXATAMENTE estas chaves:
+{
+  "sintese": "string — 3 a 5 parágrafos: panorama geral, potencial de mercado (domicílios, ARPU estimado, receita anual), potencial social (exclusão digital, impacto), custo estimado, tecnologia recomendada e financiamentos",
+  "viabilidade_financeira": {
+    "tipo_rede_recomendado": "string — ex: FTTH, WISP, LTE rural, 5G FWA ou misto",
+    "tecnologia_recomendada": "string — descrição técnica da solução",
+    "investimento_estimado_range": "string — ex: R$ 2,5M a R$ 4,8M",
+    "payback_anos": "string — ex: 4 a 6 anos",
+    "classificacao": "string — ALTO, MÉDIO ou BAIXO",
+    "financiamentos_disponiveis": "string — programas separados por vírgula, ex: FUST, BNDES Telecom, PNBL",
+    "potencial_mercado": "string — análise narrativa: domicílios elegíveis, penetração esperada, ARPU e receita anual potencial",
+    "potencial_social": "string — análise narrativa: impacto em exclusão digital, educação, saúde, emprego, elegibilidade a programas",
+    "justificativa": "string — por que essa tecnologia é a mais adequada para este município",
+    "riscos": "string — 3 a 5 riscos principais: competitivo, técnico, financeiro, regulatório",
+    "recomendacao_analista": "string — RECOMENDADO / RECOMENDADO COM RESSALVAS / NÃO RECOMENDADO + justificativa em 2 linhas"
+  },
+  "convergencias": ["array de pontos onde mercado e social convergem"],
+  "divergencias": ["array de divergências entre os pilares"],
+  "dados_insuficientes": ["array de dados que faltam para análise mais precisa"],
+  "conclusao": "string — conclusão executiva de 2 a 3 frases para o tomador de decisão",
+  "fontes_consolidadas": ["array de todas as fontes usadas"],
+  "periodos_referencia": ["array de períodos dos dados"],
+  "limitacoes_gerais": ["array de limitações da análise"]
+}'''
 
 
 class AgenteConsolidador:
@@ -147,7 +173,7 @@ class AgenteConsolidador:
 
         try:
             resposta_raw, tokens_consolidador = await self._client.chat(
-                messages, max_tokens=1000, temperature=0.1, json_mode=True,
+                messages, max_tokens=2000, temperature=0.1, json_mode=False,
                 return_usage=True,
             )
             return self._parsear(

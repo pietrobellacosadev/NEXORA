@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'motion/react'
 import { Bot, X, Send, Loader, MessageCircle, RefreshCw, ExternalLink } from 'lucide-react'
 import api from '../../lib/api'
 import type { ResultadoConsolidado } from '../../types'
+import { salvarAnalise } from '../../pages/AnalisesPage'
 import './AIFab.css'
 
 export const AI_ANALYSIS_KEY = 'nexora-ai-analysis'
@@ -21,7 +22,7 @@ export function openAIChat(municipio: { codigo: string; nome: string }, pergunta
 }
 
 interface ChatMsg {
-  role: 'user' | 'assistant'
+  role: 'user' | 'assistant' | 'progress'
   text: string
 }
 
@@ -29,6 +30,13 @@ const BOAS_VINDAS: ChatMsg = {
   role: 'assistant',
   text: 'Olá! Sou o assistente NEXORA. Posso analisar qualquer município paulista — viabilidade de internet, custos de implantação, programas públicos disponíveis e muito mais.\n\nDigite o nome de um município e sua dúvida para começar.',
 }
+
+// Mensagens de progresso exibidas sequencialmente durante a análise
+const PASSOS_PROGRESSO = [
+  '🔍 Agente de Mercado analisando indicadores econômicos e de conectividade…',
+  '👥 Agente Social avaliando impacto social e programas elegíveis…',
+  '🧠 Consolidador sintetizando e gerando recomendação final…',
+]
 
 // Extrai código IBGE e pergunta de uma mensagem livre
 async function resolverMunicipio(texto: string): Promise<{ codigo: string; nome: string } | null> {
@@ -63,10 +71,12 @@ export default function AIFab() {
   const [msgs, setMsgs] = useState<ChatMsg[]>([BOAS_VINDAS])
   const [input, setInput] = useState('')
   const [enviando, setEnviando] = useState(false)
+  const [passoAtual, setPassoAtual] = useState(-1) // índice do passo de progresso ativo
   const [municipioAtual, setMunicipioAtual] = useState<{ codigo: string; nome: string } | null>(null)
   const [ultimaAnalise, setUltimaAnalise] = useState<ResultadoConsolidado | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const progressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Abre o chat quando disparado por outras páginas
   useEffect(() => {
@@ -104,7 +114,35 @@ export default function AIFab() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [msgs, enviando])
+  }, [msgs, enviando, passoAtual])
+
+  // Limpa timers ao desmontar
+  useEffect(() => {
+    return () => {
+      if (progressTimerRef.current) clearTimeout(progressTimerRef.current)
+    }
+  }, [])
+
+  /** Avança o passo de progresso com delay entre cada etapa */
+  function iniciarProgresso() {
+    setPassoAtual(0)
+    // Passo 1 → 2 após ~4s (market agent delay + processamento)
+    progressTimerRef.current = setTimeout(() => {
+      setPassoAtual(1)
+      // Passo 2 → 3 após ~6s (social agent delay)
+      progressTimerRef.current = setTimeout(() => {
+        setPassoAtual(2)
+      }, 6000)
+    }, 4000)
+  }
+
+  function pararProgresso() {
+    if (progressTimerRef.current) {
+      clearTimeout(progressTimerRef.current)
+      progressTimerRef.current = null
+    }
+    setPassoAtual(-1)
+  }
 
   const enviar = async () => {
     const txt = input.trim()
@@ -112,6 +150,7 @@ export default function AIFab() {
     setInput('')
     setMsgs(prev => [...prev, { role: 'user', text: txt }])
     setEnviando(true)
+    iniciarProgresso()
 
     try {
       // Tenta resolver município a partir do contexto atual ou da mensagem
@@ -123,6 +162,7 @@ export default function AIFab() {
       }
 
       if (!muni) {
+        pararProgresso()
         setMsgs(prev => [...prev, {
           role: 'assistant',
           text: 'Não encontrei um município na sua mensagem. Tente algo como:\n"Analise Campinas — viabilidade de fibra óptica"\n\nOu mencione o código IBGE do município.',
@@ -135,24 +175,47 @@ export default function AIFab() {
         pergunta: txt,
       })
 
-      // Salva análise completa para o Dashboard
+      pararProgresso()
+
+      // Salva análise completa para o Dashboard e para o histórico de análises
       localStorage.setItem(AI_ANALYSIS_KEY, JSON.stringify(data))
+      salvarAnalise(data)
       setUltimaAnalise(data)
 
-      const resposta = [
+      const vf = data.viabilidade_financeira
+      const linhas = [
         `**${muni.nome}** — Análise concluída ✅`,
         '',
         data.sintese,
-        data.viabilidade_financeira
-          ? `**Rede recomendada:** ${data.viabilidade_financeira.tipo_rede_recomendado ?? ''} · Retorno: ${data.viabilidade_financeira.classificacao ?? ''}`
-          : '',
-        data.conclusao ? `**Conclusão:** ${data.conclusao}` : '',
-        '',
-        'Os dados completos (mercado, social, custos) foram enviados para o **Dashboard**.',
-      ].filter(Boolean).join('\n')
+      ]
 
-      setMsgs(prev => [...prev, { role: 'assistant', text: resposta }])
+      if (vf) {
+        if (vf.tecnologia_recomendada || vf.tipo_rede_recomendado) {
+          linhas.push(`**Tecnologia recomendada:** ${vf.tecnologia_recomendada ?? vf.tipo_rede_recomendado}`)
+        }
+        if (vf.investimento_estimado_range) {
+          linhas.push(`**Investimento estimado:** ${vf.investimento_estimado_range} · Payback: ${vf.payback_anos ?? 'N/D'}`)
+        }
+        if (vf.classificacao) {
+          linhas.push(`**Viabilidade:** ${vf.classificacao}`)
+        }
+        if (vf.recomendacao_analista) {
+          linhas.push(`**Recomendação:** ${vf.recomendacao_analista}`)
+        }
+        if (vf.financiamentos_disponiveis) {
+          linhas.push(`**Financiamentos:** ${vf.financiamentos_disponiveis}`)
+        }
+      }
+
+      if (data.conclusao) {
+        linhas.push('', `**Conclusão:** ${data.conclusao}`)
+      }
+
+      linhas.push('', 'Os dados completos foram enviados para o **Dashboard** e salvos em **Análises**.')
+
+      setMsgs(prev => [...prev, { role: 'assistant', text: linhas.filter(Boolean).join('\n') }])
     } catch {
+      pararProgresso()
       setMsgs(prev => [...prev, {
         role: 'assistant',
         text: 'Erro ao consultar a IA. Verifique se o servidor está rodando e tente novamente.',
@@ -167,6 +230,7 @@ export default function AIFab() {
   }
 
   const limpar = () => {
+    pararProgresso()
     setMsgs([BOAS_VINDAS])
     setMunicipioAtual(null)
     setUltimaAnalise(null)
@@ -255,7 +319,29 @@ export default function AIFab() {
                  </div>
                 </div>
               ))}
-              {enviando && (
+
+              {/* Indicador de progresso dos agentes */}
+              {enviando && passoAtual >= 0 && (
+                <div className="ai-fab__msg ai-fab__msg--assistant">
+                  <div className="ai-fab__avatar"><Bot size={11} /></div>
+                  <div className="ai-fab__bubble ai-fab__bubble--progress">
+                    <div className="ai-fab__progress-steps">
+                      {PASSOS_PROGRESSO.map((passo, idx) => (
+                        <div
+                          key={idx}
+                          className={`ai-fab__progress-step${idx === passoAtual ? ' ai-fab__progress-step--active' : idx < passoAtual ? ' ai-fab__progress-step--done' : ' ai-fab__progress-step--pending'}`}
+                        >
+                          <span className="ai-fab__progress-dot" />
+                          <span>{passo}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Typing dots quando aguardando resposta mas sem passo ainda */}
+              {enviando && passoAtual < 0 && (
                 <div className="ai-fab__msg ai-fab__msg--assistant">
                   <div className="ai-fab__avatar"><Bot size={11} /></div>
                   <div className="ai-fab__bubble ai-fab__bubble--typing">

@@ -2,10 +2,11 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
 import {
-  BarChart3, TrendingUp, Users, Map, RefreshCw,
-  AlertCircle, ArrowRight, GitCompare, Trophy,
+  BarChart3, TrendingUp, Users, RefreshCw,
+  AlertCircle, GitCompare,
   Plus, Search, X, Brain, DollarSign, ShieldCheck,
-  ChevronDown, ChevronRight, Zap,
+  ChevronDown, ChevronRight, Zap, AlertTriangle, CheckCircle2,
+  Wifi, Target,
 } from 'lucide-react'
 import ReactECharts from 'echarts-for-react'
 import api from '../lib/api'
@@ -67,6 +68,7 @@ export default function DashboardPage() {
   const [carregando, setCarregando] = useState(false)
   const [carregandoCod, setCarregandoCod] = useState<string | null>(null)
   const [erro, setErro] = useState('')
+  const [erroTimer, setErroTimer] = useState<ReturnType<typeof setTimeout> | null>(null)
   const [relatorioIdx, setRelatorioIdx] = useState(0)
   const [analiseIA, setAnaliseIA] = useState<ResultadoConsolidado | null>(null)
   const [analiseAberta, setAnaliseAberta] = useState(true)
@@ -93,6 +95,14 @@ export default function DashboardPage() {
     setAnaliseIA(null)
     localStorage.removeItem(AI_ANALYSIS_KEY)
   }
+
+  // Auto-dismiss error toast after 5s
+  const mostrarErro = useCallback((msg: string) => {
+    setErro(msg)
+    if (erroTimer) clearTimeout(erroTimer)
+    const t = setTimeout(() => setErro(''), 5000)
+    setErroTimer(t)
+  }, [erroTimer])
 
   // Reset índice ao trocar pilar se sair do range
   useEffect(() => {
@@ -132,7 +142,7 @@ export default function DashboardPage() {
       const cor = MUNI_COLORS[perfis.length % MUNI_COLORS.length]
       setPerfis(prev => [...prev, { perfil: res.data, cor }])
     } catch {
-      setErro(`Não foi possível carregar ${muni.nome}.`)
+      mostrarErro(`Não foi possível carregar ${muni.nome}.`)
     } finally {
       setCarregandoCod(null)
     }
@@ -354,68 +364,130 @@ export default function DashboardPage() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.2 }}
+                  transition={{ duration: 0.22 }}
                 >
-                  {/* Síntese */}
-                  <p className="db__ai-sintese">{analiseIA.sintese}</p>
-                  {analiseIA.conclusao && (
-                    <p className="db__ai-conclusao"><strong>Conclusão:</strong> {analiseIA.conclusao}</p>
+                  {/* ── Métricas rápidas (KPIs) ── */}
+                  {analiseIA.viabilidade_financeira && (
+                    <div className="db__ai-kpis">
+                      {analiseIA.viabilidade_financeira.classificacao && (
+                        <div className={`db__ai-kpi db__ai-kpi--${
+                          analiseIA.viabilidade_financeira.classificacao === 'ALTO' ? 'ok'
+                          : analiseIA.viabilidade_financeira.classificacao === 'BAIXO' ? 'warn'
+                          : 'social'
+                        }`}>
+                          <div className="db__ai-kpi-icon"><Target size={16} /></div>
+                          <div>
+                            <span className="db__ai-kpi-label">Viabilidade</span>
+                            <span className="db__ai-kpi-val">{analiseIA.viabilidade_financeira.classificacao}</span>
+                          </div>
+                        </div>
+                      )}
+                      {(analiseIA.viabilidade_financeira.tecnologia_recomendada || analiseIA.viabilidade_financeira.tipo_rede_recomendado) && (
+                        <div className="db__ai-kpi db__ai-kpi--ai">
+                          <div className="db__ai-kpi-icon"><Wifi size={16} /></div>
+                          <div>
+                            <span className="db__ai-kpi-label">Tecnologia</span>
+                            <span className="db__ai-kpi-val">{analiseIA.viabilidade_financeira.tecnologia_recomendada ?? analiseIA.viabilidade_financeira.tipo_rede_recomendado}</span>
+                          </div>
+                        </div>
+                      )}
+                      {analiseIA.viabilidade_financeira.investimento_estimado_range && (
+                        <div className="db__ai-kpi db__ai-kpi--market">
+                          <div className="db__ai-kpi-icon"><DollarSign size={16} /></div>
+                          <div>
+                            <span className="db__ai-kpi-label">Investimento estimado</span>
+                            <span className="db__ai-kpi-val">{analiseIA.viabilidade_financeira.investimento_estimado_range}</span>
+                          </div>
+                        </div>
+                      )}
+                      {analiseIA.viabilidade_financeira.payback_anos && (
+                        <div className="db__ai-kpi db__ai-kpi--neutral">
+                          <div className="db__ai-kpi-icon"><Zap size={16} /></div>
+                          <div>
+                            <span className="db__ai-kpi-label">Payback estimado</span>
+                            <span className="db__ai-kpi-val">{analiseIA.viabilidade_financeira.payback_anos}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   )}
 
-                  {/* Métricas rápidas */}
-                  <div className="db__ai-metrics">
-                    {analiseIA.viabilidade_financeira && (
-                      <>
-                        {analiseIA.viabilidade_financeira.tipo_rede_recomendado && (
-                          <div className="db__ai-metric db__ai-metric--ai">
-                            <Zap size={13} />
-                            <div>
-                              <span className="db__ai-metric-label">Rede recomendada</span>
-                              <span className="db__ai-metric-val">{analiseIA.viabilidade_financeira.tipo_rede_recomendado}</span>
-                            </div>
-                          </div>
-                        )}
-                        {analiseIA.viabilidade_financeira.investimento_estimado_range && (
-                          <div className="db__ai-metric db__ai-metric--market">
-                            <DollarSign size={13} />
-                            <div>
-                              <span className="db__ai-metric-label">Investimento estimado</span>
-                              <span className="db__ai-metric-val">{analiseIA.viabilidade_financeira.investimento_estimado_range}</span>
-                            </div>
-                          </div>
-                        )}
-                        {analiseIA.viabilidade_financeira.classificacao && (
-                          <div className={`db__ai-metric db__ai-metric--${analiseIA.viabilidade_financeira.classificacao === 'ALTO' ? 'ok' : analiseIA.viabilidade_financeira.classificacao === 'BAIXO' ? 'warn' : 'social'}`}>
-                            <TrendingUp size={13} />
-                            <div>
-                              <span className="db__ai-metric-label">Viabilidade</span>
-                              <span className="db__ai-metric-val">{analiseIA.viabilidade_financeira.classificacao}</span>
-                            </div>
-                          </div>
-                        )}
-                      </>
-                    )}
-                    {analiseIA.mercado?.custo_estimado?.custo_por_domicilio && (
-                      <div className="db__ai-metric db__ai-metric--market">
-                        <DollarSign size={13} />
-                        <div>
-                          <span className="db__ai-metric-label">Custo por domicílio</span>
-                          <span className="db__ai-metric-val">{analiseIA.mercado.custo_estimado.custo_por_domicilio}</span>
-                        </div>
+                  {/* ── Recomendação do analista (destaque) ── */}
+                  {analiseIA.viabilidade_financeira?.recomendacao_analista && (
+                    <div className="db__ai-recomendacao">
+                      <div className="db__ai-recomendacao-hd">
+                        <CheckCircle2 size={14} />
+                        <strong>Recomendação do Analista</strong>
                       </div>
+                      <p className="db__ai-recomendacao-text">{analiseIA.viabilidade_financeira.recomendacao_analista}</p>
+                    </div>
+                  )}
+
+                  {/* ── Síntese ── */}
+                  <div className="db__ai-section">
+                    <div className="db__ai-section-hd">
+                      <Brain size={13} />
+                      <strong>Síntese consolidada</strong>
+                    </div>
+                    <p className="db__ai-sintese">{analiseIA.sintese}</p>
+                    {analiseIA.conclusao && (
+                      <p className="db__ai-conclusao"><strong>Conclusão:</strong> {analiseIA.conclusao}</p>
                     )}
                   </div>
 
-                  {/* Constatações dos pilares */}
+                  {/* ── Grid de análise detalhada ── */}
+                  {analiseIA.viabilidade_financeira && (
+                    <div className="db__ai-detail-grid">
+                      {analiseIA.viabilidade_financeira.potencial_mercado && (
+                        <div className="db__ai-detail-card db__ai-detail-card--market">
+                          <div className="db__ai-detail-hd">
+                            <TrendingUp size={13} />
+                            <span>Potencial de Mercado</span>
+                          </div>
+                          <p>{analiseIA.viabilidade_financeira.potencial_mercado}</p>
+                        </div>
+                      )}
+                      {analiseIA.viabilidade_financeira.potencial_social && (
+                        <div className="db__ai-detail-card db__ai-detail-card--social">
+                          <div className="db__ai-detail-hd">
+                            <Users size={13} />
+                            <span>Potencial Social</span>
+                          </div>
+                          <p>{analiseIA.viabilidade_financeira.potencial_social}</p>
+                        </div>
+                      )}
+                      {analiseIA.viabilidade_financeira.justificativa && (
+                        <div className="db__ai-detail-card db__ai-detail-card--ai">
+                          <div className="db__ai-detail-hd">
+                            <Zap size={13} />
+                            <span>Justificativa Técnica</span>
+                          </div>
+                          <p>{analiseIA.viabilidade_financeira.justificativa}</p>
+                        </div>
+                      )}
+                      {analiseIA.viabilidade_financeira.riscos && (
+                        <div className="db__ai-detail-card db__ai-detail-card--warn">
+                          <div className="db__ai-detail-hd">
+                            <AlertTriangle size={13} />
+                            <span>Riscos identificados</span>
+                          </div>
+                          <p>{analiseIA.viabilidade_financeira.riscos}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* ── Pilares: constatações ── */}
                   <div className="db__ai-pilares">
                     {(analiseIA.mercado?.constatacoes?.length ?? 0) > 0 && (
                       <div className="db__ai-pilar db__ai-pilar--market">
                         <div className="db__ai-pilar-hd">
                           <TrendingUp size={13} />
                           <strong>Mercado</strong>
+                          <span className="db__ai-pilar-count">{analiseIA.mercado.constatacoes.length}</span>
                         </div>
                         <ul className="db__ai-pilar-list">
-                          {analiseIA.mercado.constatacoes.slice(0, 4).map((c, i) => <li key={i}>{c}</li>)}
+                          {analiseIA.mercado.constatacoes.slice(0, 5).map((c, i) => <li key={i}>{c}</li>)}
                         </ul>
                       </div>
                     )}
@@ -424,24 +496,52 @@ export default function DashboardPage() {
                         <div className="db__ai-pilar-hd">
                           <Users size={13} />
                           <strong>Social</strong>
+                          <span className="db__ai-pilar-count">{analiseIA.social.constatacoes.length}</span>
                         </div>
                         <ul className="db__ai-pilar-list">
-                          {analiseIA.social.constatacoes.slice(0, 4).map((c, i) => <li key={i}>{c}</li>)}
+                          {analiseIA.social.constatacoes.slice(0, 5).map((c, i) => <li key={i}>{c}</li>)}
                         </ul>
                       </div>
                     )}
                   </div>
 
-                  {/* Programas elegíveis */}
-                  {(analiseIA.social?.programas_elegiveis?.length ?? 0) > 0 && (
+                  {/* ── Financiamentos e programas ── */}
+                  {(analiseIA.viabilidade_financeira?.financiamentos_disponiveis || (analiseIA.social?.programas_elegiveis?.length ?? 0) > 0) && (
                     <div className="db__ai-programas">
                       <div className="db__ai-programas-hd">
                         <ShieldCheck size={13} />
-                        <strong>Programas públicos aplicáveis</strong>
+                        <strong>Financiamentos e programas públicos aplicáveis</strong>
                       </div>
-                      <ul className="db__ai-programas-list">
-                        {analiseIA.social!.programas_elegiveis!.map((p, i) => <li key={i}>{p}</li>)}
-                      </ul>
+                      {analiseIA.viabilidade_financeira?.financiamentos_disponiveis && (
+                        <div className="db__ai-financ-tags">
+                          {analiseIA.viabilidade_financeira.financiamentos_disponiveis.split(',').map((f, i) => (
+                            <span key={i} className="db__ai-financ-tag">{f.trim()}</span>
+                          ))}
+                        </div>
+                      )}
+                      {(analiseIA.social?.programas_elegiveis?.length ?? 0) > 0 && (
+                        <ul className="db__ai-programas-list">
+                          {analiseIA.social!.programas_elegiveis!.map((p, i) => <li key={i}>{p}</li>)}
+                        </ul>
+                      )}
+                    </div>
+                  )}
+
+                  {/* ── Convergências / Divergências ── */}
+                  {((analiseIA.convergencias?.length ?? 0) > 0 || (analiseIA.divergencias?.length ?? 0) > 0) && (
+                    <div className="db__ai-cvd">
+                      {(analiseIA.convergencias?.length ?? 0) > 0 && (
+                        <div className="db__ai-cvd-block db__ai-cvd-block--green">
+                          <div className="db__ai-cvd-hd"><CheckCircle2 size={12} /> Convergências</div>
+                          <ul>{analiseIA.convergencias.map((c, i) => <li key={i}>{c}</li>)}</ul>
+                        </div>
+                      )}
+                      {(analiseIA.divergencias?.length ?? 0) > 0 && (
+                        <div className="db__ai-cvd-block db__ai-cvd-block--warn">
+                          <div className="db__ai-cvd-hd"><AlertTriangle size={12} /> Divergências</div>
+                          <ul>{analiseIA.divergencias.map((d, i) => <li key={i}>{d}</li>)}</ul>
+                        </div>
+                      )}
                     </div>
                   )}
                 </motion.div>
