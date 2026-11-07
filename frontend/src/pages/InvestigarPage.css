@@ -113,23 +113,24 @@
 .inv__muni-codigo { font-size: var(--text-xs); color: var(--color-muted); font-variant-numeric: tabular-nums; }
 
 .inv__input {
+  width: 100%;
   padding: var(--sp-3) var(--sp-4);
   border: 1.5px solid var(--color-line);
   border-radius: var(--r-md);
   background: var(--color-surface);
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   color: var(--color-ink);
   transition: border-color var(--t-fast), box-shadow var(--t-fast);
+  outline: none;
 }
 .inv__input::placeholder { color: var(--color-muted); }
 .inv__input:focus {
-  outline: none;
   border-color: var(--color-ai);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-ai) 15%, transparent);
+  box-shadow: var(--shadow-focus-ai);
 }
 
 .inv__field--grow .inv__input {
-  min-height: 52px;
+  min-height: 50px;
   resize: none;
 }
 
@@ -289,7 +290,7 @@
 }
 
 /* ── Resultado ───────────────────────────────────────────────────────────── */
-.inv__resultado { display: flex; flex-direction: column; gap: var(--sp-4); }
+.inv__resultado { display: flex; flex-direction: column; gap: var(--sp-5); }
 
 .inv__sintese {
   background: var(--color-card);
@@ -305,6 +306,8 @@
   align-items: center;
   gap: var(--sp-2);
   margin-bottom: var(--sp-4);
+  padding-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--color-line);
 }
 .inv__sintese-icon { color: var(--color-ai); }
 
@@ -325,21 +328,26 @@
   margin-left: auto;
 }
 
+/* Síntese: múltiplos parágrafos com espaçamento correto */
 .inv__sintese-text {
   font-size: var(--text-base);
-  line-height: 1.75;
+  line-height: 1.8;
   color: var(--color-ink);
-  margin-bottom: var(--sp-3);
-  margin-top: 0;
+  margin: 0;
+  white-space: pre-line;   /* preserva quebras de linha internas */
 }
+/* Cada parágrafo da síntese */
+.inv__sintese-text + .inv__sintese-text { margin-top: var(--sp-3); }
 
 .inv__conclusao {
   font-size: var(--text-sm);
-  color: var(--color-muted);
-  font-style: italic;
-  border-top: 1px solid var(--color-line);
-  padding-top: var(--sp-3);
-  margin: 0;
+  color: var(--color-ink);
+  background: var(--color-ai-lt);
+  border-radius: var(--r-md);
+  padding: var(--sp-3) var(--sp-4);
+  margin: var(--sp-4) 0 0;
+  border-left: 3px solid var(--color-ai);
+  line-height: 1.7;
 }
 
 .inv__pilares { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-4); }
