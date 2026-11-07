@@ -41,9 +41,9 @@ class TestConfigPrioridade:
 
     def test_modelo_por_agente(self):
         s = Settings()
-        assert s.groq_model_for("market") == "qwen/qwen3.8-27b"
-        assert s.groq_model_for("social") == "qwen/qwen3.8-27b"
-        assert s.groq_model_for("consolidator") == "openai/gpt-oss-120b"
+        assert s.groq_model_for("market") == "llama-3.1-8b-instant"
+        assert s.groq_model_for("social") == "llama-3.1-8b-instant"
+        assert s.groq_model_for("consolidator") == "llama-3.3-70b-versatile"
 
 
 # ── Testes do cliente (mockado) ───────────────────────────────────────────────
