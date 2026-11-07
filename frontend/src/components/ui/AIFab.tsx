@@ -286,8 +286,8 @@ export default function AIFab() {
       if (vf.recomendacao_analista) {
         itens.push(`- **Recomendação:** ${vf.recomendacao_analista}`)
       }
-      if (vf.financiamentos_disponiveis) {
-        itens.push(`- **Financiamentos:** ${vf.financiamentos_disponiveis}`)
+      if (vf.financiamentos_disponiveis && vf.financiamentos_disponiveis.length > 0) {
+        itens.push(`- **Financiamentos:** ${vf.financiamentos_disponiveis.join(' · ')}`)
       }
       if (itens.length) {
         blocos.push('---')

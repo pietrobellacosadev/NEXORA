@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'motion/react'
 import {
   Home, Map, BarChart3,
-  Sun, Moon, Clock, GitCompare, Brain,
+  Sun, Moon, Clock, GitCompare,
 } from 'lucide-react'
 import { ANALISES_STORAGE_KEY } from '../../pages/AnalisesPage'
 import './TopBar.css'
@@ -14,12 +14,11 @@ interface TopBarProps {
 }
 
 const NAV_ITEMS = [
-  { to: '/',           label: 'Início',     icon: Home,       exact: true  },
-  { to: '/mapa',       label: 'Mapa',       icon: Map,        exact: false },
-  { to: '/dashboard',  label: 'Dashboard',  icon: BarChart3,  exact: false },
-  { to: '/investigar', label: 'Investigar', icon: Brain,      exact: false },
-  { to: '/comparar',   label: 'Comparar',   icon: GitCompare, exact: false },
-  { to: '/analises',   label: 'Análises',   icon: Clock,      exact: false },
+  { to: '/',          label: 'Início',    icon: Home,       exact: true  },
+  { to: '/mapa',      label: 'Mapa',      icon: Map,        exact: false },
+  { to: '/dashboard', label: 'Dashboard', icon: BarChart3,  exact: false },
+  { to: '/comparar',  label: 'Comparar',  icon: GitCompare, exact: false },
+  { to: '/analises',  label: 'Análises',  icon: Clock,      exact: false },
 ]
 
 export default function TopBar({ theme, onToggleTheme }: TopBarProps) {

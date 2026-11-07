@@ -518,10 +518,10 @@ export default function DashboardPage() {
                         <ShieldCheck size={13} />
                         <strong>Financiamentos e programas públicos aplicáveis</strong>
                       </div>
-                      {analiseIA.viabilidade_financeira?.financiamentos_disponiveis && (
+                      {(analiseIA.viabilidade_financeira?.financiamentos_disponiveis?.length ?? 0) > 0 && (
                         <div className="db__ai-financ-tags">
-                          {analiseIA.viabilidade_financeira.financiamentos_disponiveis.split(',').map((f, i) => (
-                            <span key={i} className="db__ai-financ-tag">{f.trim()}</span>
+                          {analiseIA.viabilidade_financeira!.financiamentos_disponiveis!.map((f, i) => (
+                            <span key={i} className="db__ai-financ-tag">{f}</span>
                           ))}
                         </div>
                       )}

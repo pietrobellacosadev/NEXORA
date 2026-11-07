@@ -123,7 +123,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--sp-2);
-  margin-bottom: var(--sp-7);
+  margin-bottom: var(--sp-6);
 }
 
 .dash__pill {

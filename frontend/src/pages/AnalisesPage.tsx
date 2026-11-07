@@ -293,12 +293,12 @@ function RelatorioView({ analise }: { analise: AnaliseRecord }) {
             icone={<ShieldCheck size={14} />}
             cor="ok"
           >
-            {vf?.financiamentos_disponiveis && (
+            {vf?.financiamentos_disponiveis && vf.financiamentos_disponiveis.length > 0 && (
               <div className="ar__tags-wrap">
                 <div className="ar__campo-label"><DollarSign size={11} /> Financiamentos aplicáveis</div>
                 <div className="ar__tags">
-                  {vf.financiamentos_disponiveis.split(',').map((f, i) => (
-                    <span key={i} className="ar__tag ar__tag--ok">{f.trim()}</span>
+                  {vf.financiamentos_disponiveis.map((f, i) => (
+                    <span key={i} className="ar__tag ar__tag--ok">{f}</span>
                   ))}
                 </div>
               </div>
