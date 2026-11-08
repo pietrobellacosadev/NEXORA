@@ -360,7 +360,22 @@ Mensagens em **português**, no imperativo presente, com prefixo indicando a nat
 
 Projeto desenvolvido para apresentação institucional a representantes da IBM e da Fundação Telefônica, com foco em inteligência territorial e inclusão digital.
 
+- Pietro Bellacosa
+- José Henrique de Almeida
+- Liam Castro de Oliiveira
+- Lucas Macario dos Santos
+  
 ---
+
+## Vídeo de Demonstração
+
+Veja o NEXORA funcionando em 3 minutos:
+
+**[▶ Assistir ao vídeo de demonstração](docs/NEXORA_pitch.mp4)**
+
+> Vídeo com dados parcialmente simulados (perfis de Limeira, Americana e Piracicaba e resposta dos agentes de IA simulados; Campinas usa dados do banco).
+ 
+--
 
 <div align="center">
   <sub>NEXORA — Inteligência Territorial · Estado de São Paulo · 2026</sub>
